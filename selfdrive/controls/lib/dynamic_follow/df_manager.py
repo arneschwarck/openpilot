@@ -21,13 +21,12 @@ class dfManager:
     self.sm = messaging.SubMaster(['dynamicFollowButton', 'dynamicFollowData'])
     self.button_updated = False
 
-    self.cur_user_profile = self.op_params.get('dynamic_follow').strip().lower()
-    if not isinstance(self.cur_user_profile, str) or self.cur_user_profile not in self.df_profiles.to_idx:
-      self.cur_user_profile = self.df_profiles.default  # relaxed
-      self.op_params.put('dynamic_follow', self.df_profiles.to_profile[self.cur_user_profile])
-    else:
-      self.cur_user_profile = self.df_profiles.to_idx[self.cur_user_profile]
+    self.cur_user_profile = self.op_params.get('dynamic_follow_mod')
+    if self.cur_user_profile < 0 or self.cur_user_profile > 3:
+      self.cur_user_profile = 3
+      self.op_params.put('dynamic_follow_mod', self.cur_user_profile)
     self.last_user_profile = self.cur_user_profile
+    print("init dynamic follow profile:%d" % self.cur_user_profile)
 
     self.cur_model_profile = 0
     self.alert_duration = 2.0
@@ -62,10 +61,11 @@ class dfManager:
     df_out.user_profile_text = self.df_profiles.to_profile[df_out.user_profile]
 
     if self.cur_user_profile != self.last_user_profile:
-      self.op_params.put('dynamic_follow', self.df_profiles.to_profile[df_out.user_profile])  # save current profile for next drive
+      self.op_params.put('dynamic_follow_mod', df_out.user_profile)  # save current profile for next drive
       self.change_time = sec_since_boot()
       self.last_is_auto = False
       df_out.changed = True
+      print("update dynamic follow profile:%d" % self.cur_user_profile)
 
     if self.is_auto:
       df_out.model_profile = self.sm['dynamicFollowData'].profilePred

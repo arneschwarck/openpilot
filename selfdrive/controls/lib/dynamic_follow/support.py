@@ -21,11 +21,12 @@ class dfData:
 
 
 class dfProfiles:
-  traffic = 0
-  relaxed = 1
-  roadtrip = 2
-  auto = 3
-  to_profile = {0: 'traffic', 1: 'relaxed', 2: 'roadtrip', 3: 'auto'}
+  off = 0
+  traffic = 1
+  relaxed = 2
+  roadtrip = 3
+  auto = 4
+  to_profile = {0: 'off', 1: 'traffic', 2: 'relaxed', 3: 'roadtrip', 4: 'auto'}
   to_idx = {v: k for k, v in to_profile.items()}
 
-  default = relaxed
+  default = off

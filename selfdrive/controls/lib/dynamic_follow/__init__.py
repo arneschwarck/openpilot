@@ -11,7 +11,7 @@ from cereal.messaging import SubMaster
 from selfdrive.controls.lib.dynamic_follow.auto_df import predict
 from selfdrive.controls.lib.dynamic_follow.df_manager import dfManager
 from selfdrive.controls.lib.dynamic_follow.support import LeadData, CarData, dfData, dfProfiles
-from common.data_collector import DataCollector
+#from common.data_collector import DataCollector
 travis = False
 
 
@@ -39,7 +39,7 @@ class IntegralDistanceFactor:
     self.i = clip(self.i, self._to_clip[0], self._to_clip[-1])  # clip to reasonable range
     self._slow_reset()  # slowly reset from max to 0
     fact = interp(self.i, self._to_clip, self._mods)
-    print("I: {}, FACT: {}".format(round(self.i, 4), round(fact, 3)))
+    #print("I: {}, FACT: {}".format(round(self.i, 4), round(fact, 3)))
     return fact
 
   def _slow_reset(self):
@@ -79,7 +79,7 @@ class DynamicFollow:
     self.sng_TR = 1.8  # reacceleration stop and go TR
     self.sng_speed = 18.0 * CV.MPH_TO_MS
 
-    self._setup_collector()
+    #self._setup_collector()
     self._setup_changing_variables()
 
   def _setup_collector(self):
@@ -112,10 +112,10 @@ class DynamicFollow:
     self._update_car(CS)
     self._get_profiles()
 
-    if self.mpc_id == 1 and self.log_auto_df:
-      self._gather_data()
+    #if self.mpc_id == 1 and self.log_auto_df:
+    #  self._gather_data()
 
-    if not self.lead_data.status:
+    if not self.lead_data.status or self.user_profile == self.df_profiles.off:
       self.TR = self.default_TR
     else:
       self._store_df_data()
@@ -123,7 +123,7 @@ class DynamicFollow:
 
     if not travis:
       self._change_cost(libmpc)
-      self._send_cur_state()
+      #self._send_cur_state()
 
     return self.TR
 
