@@ -309,10 +309,21 @@ static void ui_draw_vision_event(UIState *s) {
     ui_draw_image(s, {img_turn_x, img_turn_y, img_turn_size, img_turn_size}, "trafficSign_turn", 1.0f);
   } else if (s->scene.controls_state.getEngageable()) {
     // draw steering wheel
-    const int radius = 96;
-    const int center_x = s->viz_rect.right() - radius - bdr_s * 2;
-    const int center_y = s->viz_rect.y + radius  + (bdr_s * 1.5);
-    ui_draw_circle_image(s, center_x, center_y, radius, "wheel", bg_colors[s->status], 1.0f);
+    const int bg_wheel_size = 96;
+    const int bg_wheel_x = s->viz_rect.right() - bg_wheel_size - bdr_s * 2;
+    const int bg_wheel_y = s->viz_rect.y + (bg_wheel_size / 2) + (bdr_s * 1.5);
+    ui_draw_circle_image(s, bg_wheel_x, bg_wheel_y, bg_wheel_size, "wheel", bg_colors[s->status], 1.0f, bg_wheel_y - 25);
+
+    // draw hands on wheel pictogram under wheel pictogram.
+    auto handsOnWheelState = s->scene.dmonitoring_state.getHandsOnWheelState();
+    if (handsOnWheelState >= cereal::DriverMonitoringState::HandsOnWheelState::WARNING) {
+      NVGcolor color = COLOR_RED;
+      if (handsOnWheelState == cereal::DriverMonitoringState::HandsOnWheelState::WARNING) {
+        color = COLOR_YELLOW;
+      }
+      const int wheel_y = bg_wheel_y + bdr_s + 2 * bg_wheel_size;
+      ui_draw_circle_image(s, bg_wheel_x, wheel_y, bg_wheel_size, "hands_on_wheel", color, 1.0f, wheel_y - 25);
+    }
   }
 }
 
@@ -952,6 +963,7 @@ void ui_nvg_init(UIState *s) {
   // init images
   std::vector<std::pair<const char *, const char *>> images = {
       {"wheel", "../assets/img_chffr_wheel.png"},
+      {"hands_on_wheel", "../assets/img_hands_on_wheel.png"},
       {"trafficSign_turn", "../assets/img_trafficSign_turn.png"},
       {"driver_face", "../assets/img_driver_face.png"},
       {"button_settings", "../assets/images/button_settings.png"},

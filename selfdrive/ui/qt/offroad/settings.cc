@@ -308,6 +308,13 @@ QWidget * ArnePilot_panel() {
   QVBoxLayout *toggles_list = new QVBoxLayout();
   //toggles_list->setMargin(50);
 
+  toggles_list->addWidget(new ParamControl("HandsOnWheelMonitoring",
+                                            "Enable Hands on Wheel Monitoring",
+                                            "Monitor and alert when driver is not keeping the hands on the steering wheel.",
+                                            "../assets/offroad/icon_openpilot.png"
+                                            ));
+  toggles_list->addWidget(horizontal_line());
+
   toggles_list->addWidget(new ParamControl("DevBBUI",
                                             "Developer UI",
                                             "Show usefull information. such as steerin angle, radar distance, accelection, rpm, etc. list goes on and on.",
