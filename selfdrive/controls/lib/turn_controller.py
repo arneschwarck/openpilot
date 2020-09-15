@@ -3,8 +3,8 @@ import math
 from enum import Enum
 from common.numpy_fast import interp
 from common.params import Params
-#from common.realtime import sec_since_boot
 from selfdrive.config import Conversions as CV
+from selfdrive.controls.lib.lane_planner import TRAJECTORY_SIZE
 
 
 _LON_MPC_STEP = 0.2  # Time stemp of longitudinal control (5 Hz)
@@ -109,7 +109,7 @@ class TurnController():
   @property
   def state(self):
     return self._state
-  
+
   @state.setter
   def state(self, value):
     if value != self._state:
@@ -117,15 +117,14 @@ class TurnController():
       if value == TurnState.DISABLED:
         self._reset()
     self._state = value
-  
+
   @property
   def is_active(self):
     return self._state != TurnState.DISABLED
-
+    
   def _reset(self):
     self._v_turn_future = 0.0
     self._current_curvature = 0.0
-    self._d_poly = [0., 0., 0., 0.]
     self._max_pred_curvature = 0.0
     self._max_pred_lat_acc = 0.0
     self._v_target_distance = 200.0
@@ -136,7 +135,14 @@ class TurnController():
     self.v_turn = 0.0
 
   def _update_calculations(self):
-    pred_curvatures = eval_curvature(self._d_poly, _EVAL_RANGE)
+    # Get path poly aproximation from model data
+    md = self._model_data
+    if len(md.position.x) == TRAJECTORY_SIZE:
+      path_poly = np.polyfit(md.position.x, md.position.y, 3)
+    else:
+      path_poly = np.array([0., 0., 0., 0.])
+
+    pred_curvatures = eval_curvature(path_poly, _EVAL_RANGE)
     max_pred_curvature_idx = np.argmax(pred_curvatures)
     self._max_pred_curvature = pred_curvatures[max_pred_curvature_idx]
     self._max_pred_lat_acc = self._v_ego**2 * self._max_pred_curvature
@@ -219,12 +225,14 @@ class TurnController():
     self.v_turn = self._v_ego + self.a_turn * _LON_MPC_STEP  # speed in next Longitudinal control step.
     self._v_turn_future = self._v_ego + self.a_turn * 4.  # speed in 4 seconds.
 
-  def update(self, enabled, v_ego, a_ego, v_cruise_setpoint, steeringAngleDeg):
+  def update(self, enabled, v_ego, a_ego, v_cruise_setpoint, sm):
     self._op_enabled = enabled
     self._v_ego = v_ego
     self._a_ego = a_ego
     self._v_cruise_setpoint = v_cruise_setpoint
-    self._current_curvature = abs(steeringAngleDeg * CV.DEG_TO_RAD / (self._CP.steerRatio * self._CP.wheelbase))
+    self._current_curvature = abs(
+        sm['carState'].steeringAngleDeg * CV.DEG_TO_RAD / (self._CP.steerRatio * self._CP.wheelbase))
+    self._model_data = sm['modelV2']
 
     self._update_calculations()
     self._state_transition()

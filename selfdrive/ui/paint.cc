@@ -301,36 +301,20 @@ static void ui_draw_vision_speed(UIState *s) {
 }
 
 static void ui_draw_vision_event(UIState *s) {
-  const int viz_event_w = 220;
-  const int viz_event_x = s->viz_rect.right() - (viz_event_w + bdr_s*3);
-  const int viz_event_y = s->viz_rect.y + (bdr_s*1.5);
-
-   // draw steering wheel
-    float angleSteers = s->scene.car_state.getSteeringAngleDeg();
-    //int steerOverride = s->scene.car_state.getSteeringPressed();
-
-    const int bg_wheel_size = 96;
-    const int bg_wheel_x = viz_event_x + (viz_event_w - bg_wheel_size);
-    const int bg_wheel_y = viz_event_y + (bg_wheel_size/2);
-    const int img_wheel_size = bg_wheel_size*1.5;
-    const int img_wheel_x = bg_wheel_x - (img_wheel_size/2);
-    const int img_wheel_y = bg_wheel_y - 55;
-    const float img_rotation = angleSteers/180*3.141592;
-    nvgBeginPath(s->vg);
-    nvgCircle(s->vg, bg_wheel_x, (bg_wheel_y + (bdr_s*1.5)), bg_wheel_size);
-    nvgFillColor(s->vg,bg_colors[s->status]);
-    nvgFill(s->vg);
-    float img_wheel_alpha = 0.1f;
-    nvgSave(s->vg);
-    nvgTranslate(s->vg,bg_wheel_x, bg_wheel_y + (bdr_s*1.5));
-    nvgRotate(s->vg,-img_rotation);
-    nvgBeginPath(s->vg);
-    NVGpaint imgPaint = nvgImagePattern(s->vg, img_wheel_x-bg_wheel_x, img_wheel_y-(bg_wheel_y + (bdr_s*1.5)), img_wheel_size, img_wheel_size, 0, s->images["wheel"], img_wheel_alpha);
-    nvgRect(s->vg, img_wheel_x-bg_wheel_x, img_wheel_y-(bg_wheel_y + (bdr_s*1.5)), img_wheel_size, img_wheel_size);
-    nvgFillPaint(s->vg, imgPaint);
-    nvgFill(s->vg);
-    nvgRestore(s->vg);
+  if (s->scene.controls_state.getDecelForModelDEPRECATED() && s->scene.controls_state.getEnabled()) {
+    // draw winding road sign
+    const int img_turn_size = 96;
+    const int img_turn_x = s->viz_rect.right() - img_turn_size - bdr_s;
+    const int img_turn_y = s->viz_rect.y + (bdr_s * 1.5);
+    ui_draw_image(s, {img_turn_x, img_turn_y, img_turn_size, img_turn_size}, "trafficSign_turn", 1.0f);
+  } else if (s->scene.controls_state.getEngageable()) {
+    // draw steering wheel
+    const int radius = 96;
+    const int center_x = s->viz_rect.right() - radius - bdr_s * 2;
+    const int center_y = s->viz_rect.y + radius  + (bdr_s * 1.5);
+    ui_draw_circle_image(s, center_x, center_y, radius, "wheel", bg_colors[s->status], 1.0f);
   }
+}
 
 static void ui_draw_vision_face(UIState *s) {
   const int radius = 96;
