@@ -329,11 +329,11 @@ QWidget * ArnePilot_panel() {
                                               ));
   toggles_list->addWidget(horizontal_line());
 
-  toggles_list->addWidget(new ParamControl("MaxDecelerationForTurns",
-                                            "Turn Controller.",
-                                            "Turning on this will vehicle speed durning turn. It will slow down based on...  ",
-                                            "../assets/offroad/icon_shell.png"
-                                              ));
+  toggles_list->addWidget(new ParamControl("TurnVisionControl",
+                                           "Enable vision based turn control",
+                                           "Use vision path predictions to estimate the appropiate speed to drive through turns ahead.",
+                                           "../assets/offroad/icon_road.png"
+                                           ));
 
   QWidget *widget = new QWidget;
   widget->setLayout(toggles_list);
