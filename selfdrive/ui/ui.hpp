@@ -217,6 +217,11 @@ typedef struct UIState {
   // device state
   bool awake;
 
+  // speed limit controll state
+  bool speed_limit_control_enabled;
+  float speed_limit_perc_offset;
+  double last_speed_limit_sign_tap;
+
   bool sidebar_collapsed;
   Rect video_rect, viz_rect;
   float car_space_transform[6];

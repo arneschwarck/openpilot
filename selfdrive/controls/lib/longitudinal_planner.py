@@ -76,7 +76,7 @@ class Planner():
     self.mpc2 = LongitudinalMpc(2)
     if not travis:
       self.turn_controller = TurnController(CP)
-      self.speed_limit_controller = SpeedLimitController()
+      self.speed_limit_controller = SpeedLimitController(cp)
       self.turn_speed_controller = TurnSpeedController()
 
     self.v_acc_start = 0.0
@@ -204,7 +204,7 @@ class Planner():
       self.v_cruise = max(self.v_cruise, 0.)
       # update speed limit solution calculation.
       if not travis:
-        self.speed_limit_controller.update(enabled, self.v_acc_start, self.a_acc_start, sm,
+        self.speed_limit_controller.update(enabled, self.v_acc_start, self.a_acc_start, sm['carState'],
                                          v_cruise_setpoint, accel_limits_turns, jerk_limits, self.events)
       # update turn speed solution calculation.
         self.turn_speed_controller.update(enabled, self.v_acc_start, self.a_acc_start, sm, accel_limits_turns,
@@ -288,6 +288,7 @@ class Planner():
       longitudinalPlan.speedLimit = float(self.speed_limit_controller.speed_limit)
 
       longitudinalPlan.decelForTurnDEPRECATED = bool(self.turn_controller.is_active)
+      longitudinalPlan.speedLimitControlState = self.speed_limit_controller.state
     longitudinalPlan.eventsDEPRECATED = self.events.to_msg()
 
     longitudinalPlan.processingDelay = (plan_send.logMonoTime / 1e9) - sm.rcv_time['radarState']
