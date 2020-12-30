@@ -30,6 +30,7 @@ a.out
 *.class
 *.pyxbldc
 *.vcd
+*.qmlc
 config.json
 clcache
 compile_commands.json
