@@ -48,6 +48,8 @@ sudo apt-get update && sudo apt-get install -y \
     qtwebengine5-dev \
     qtlocation5-dev \
     qtpositioning5-dev \
+    qtdeclarative5-dev \
+    libqt5location5-plugin-mapboxgl \
     qml-module-qtlocation \
     qml-module-qtpositioning \
     qml-module-qtquick2 \
