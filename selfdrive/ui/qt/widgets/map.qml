@@ -13,48 +13,32 @@ Map {
 
   width: 512
   height: 512
+  // anchors.centerIn: parent;
+  // anchors.fill: parent
 
-  center: QtPositioning.coordinate(60.170448, 24.942046) // Helsinki
-  zoomLevel: 12
+  center: QtPositioning.coordinate()
+  zoomLevel: 16
+
+  property variant carPosition: QtPositioning.coordinate()
+  property real carBearing: 0;
 
   // activeMapType: MapType.CarNavigationMap
 
-  MapParameter {
-    type: "source"
+  MapQuickItem {
+    id: car
 
-    property var name: "routeSource"
-    property var sourceType: "geojson"
-    property var data: '{ "type": "FeatureCollection", "features": \
-      [{ "type": "Feature", "properties": {}, "geometry": { \
-      "type": "LineString", "coordinates": [[ 24.934938848018646, \
-      60.16830257086771 ], [ 24.943315386772156, 60.16227776476442 ]]}}]}'
-  }
+    anchorPoint.x: icon.width/2
+    anchorPoint.y: icon.height/2
 
-  MapParameter {
-    type: "layer"
+    coordinate: carPosition
+    rotation: carBearing
+    // NumberAnimation on rotation { from: 0; to: 360; duration: 2000; loops: Animation.Infinite; }
 
-    property var name: "route"
-    property var layerType: "line"
-    property var source: "routeSource"
-
-    // Draw under the first road label layer
-    // of the mapbox-streets style.
-    property var before: "road-label-small"
-  }
-
-  MapParameter {
-    type: "paint"
-
-    property var layer: "route"
-    property var lineColor: "blue"
-    property var lineWidth: 8.0
-  }
-
-  MapParameter {
-    type: "layout"
-
-    property var layer: "route"
-    property var lineJoin: "round"
-    property var lineCap: "round"
+    sourceItem: Rectangle {
+      id: icon
+      color: "darkgrey"
+      width: 25
+      height: 60
+    }
   }
 }
