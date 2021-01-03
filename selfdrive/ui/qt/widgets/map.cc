@@ -2,7 +2,7 @@
 
 #include <QGeoCoordinate>
 #include <QQmlProperty>
-// #include <QQuickWidget>
+#include <QQuickWidget>
 #include <QQuickView>
 #include <QStackedLayout>
 #include <QVariant>
@@ -20,16 +20,18 @@ const std::string mapbox_access_token_path = util::getenv_default("HOME", "/.com
 QtMap::QtMap(QWidget *parent) : QWidget(parent) {
   QStackedLayout* layout = new QStackedLayout();
 
-  // TODO might have to use this for stacking
-  // QQuickWidget *map = new QQuickWidget();
-  // map->setSource(QUrl::fromLocalFile("qt/widgets/map.qml"));
-  // QSize size = map->size();
+  // might have to use this method for stacking
+  QQuickWidget *map = new QQuickWidget();
+  map->setSource(QUrl::fromLocalFile("qt/widgets/map.qml"));
+  mapObject = map->rootObject();
+  QSize size = map->size();
 
-  QQuickView *mapView = new QQuickView();
-  mapView->setSource(QUrl::fromLocalFile("qt/widgets/map.qml"));
-  QSize size = mapView->size();
-  map = QWidget::createWindowContainer(mapView, this);
-  mapObject = mapView->rootObject();
+  // using this method seems to make other ui drawing break (eg. video is all black)
+  // QQuickView *mapView = new QQuickView();
+  // mapView->setSource(QUrl::fromLocalFile("qt/widgets/map.qml"));
+  // QSize size = mapView->size();
+  // map = QWidget::createWindowContainer(mapView, this);
+  // mapObject = mapView->rootObject();
   // TODO focus stuff needed? https://www.qtdeveloperdays.com/sites/default/files/Adding%20QtQuick%20base%20windows%20to%20an%20existing%20QWidgets%20Application-dark.pdf
   // setFocusProxy(map); // focus container widget when top level widget is focused
   // setFocusPolicy(Qt::NoFocus); // work around QML activation issue
@@ -48,8 +50,8 @@ QtMap::QtMap(QWidget *parent) : QWidget(parent) {
   QVariantMap parameters;
   parameters["mapboxgl.access_token"] = mapboxAccessToken;
   parameters[QStringLiteral("osm.useragent")] = QStringLiteral("QtLocation Mapviewer example");
-  QMetaObject::invokeMethod(mapObject, "initializeProviders",
-                            Q_ARG(QVariant, QVariant::fromValue(parameters)));
+  // QMetaObject::invokeMethod(mapObject, "initializeProviders",
+  //                           Q_ARG(QVariant, QVariant::fromValue(parameters)));
 
   // Start polling loop
   sm = new SubMaster({"gpsLocationExternal"});
