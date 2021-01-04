@@ -25,6 +25,12 @@ QtMap::QtMap(QWidget *parent) : QWidget(parent) {
   map->setSource(QUrl::fromLocalFile("qt/widgets/map.qml"));
   mapObject = map->rootObject();
   QSize size = map->size();
+  // QSizeF scaledSize = QSizeF(512, 512);//mapObject->size() * 4.0;
+  QSizeF scaledSize = mapObject->size() * mapObject->scale();
+  // QSize scaledSize = (mapObject->size() * mapObject->scale()).toSize();
+  qDebug() << "size" << size;
+  qDebug() << "scaledSize" << scaledSize;
+  qDebug() << "mapObject->scale()" << mapObject->scale();
 
   // using this method seems to make other ui drawing break (eg. video is all black)
   // QQuickView *mapView = new QQuickView();
@@ -36,8 +42,16 @@ QtMap::QtMap(QWidget *parent) : QWidget(parent) {
   // setFocusProxy(map); // focus container widget when top level widget is focused
   // setFocusPolicy(Qt::NoFocus); // work around QML activation issue
 
-  map->setFixedSize(size);
-  setFixedSize(size);
+  // map->setFixedSize(scaledSize.toSize());
+  // mapObject->setSize(scaledSize);
+  // setFixedSize(scaledSize.toSize());
+  map->setFixedSize(scaledSize.toSize());
+  // mapObject->cale(2.0);
+  // mapObject->setX(256);
+  // mapObject->setY(256);
+  // mapObject->setSize(QSizeF(256, 256));
+  setFixedSize(scaledSize.toSize());
+
   layout->addWidget(map);
   setLayout(layout);
 

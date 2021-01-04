@@ -9,8 +9,15 @@ Map {
   }
 
   id: map
-  width: 512
-  height: 512
+
+  // TODO: is there a better way to make map text bigger?
+  width: 256
+  height: 256
+  scale: 2.5
+  x: width * (scale-1)
+  y: height * (scale-1)
+  transformOrigin: Item.BottomRight
+
   center: QtPositioning.coordinate()
   zoomLevel: 16
   visible: center.isValid
@@ -36,8 +43,8 @@ Map {
     sourceItem: Image {
       id: icon
       source: "arrow-" + (map.nightMode ? "night" : "day") + ".svg"
-      width: 60
-      height: 60
+      width: 60 / map.scale
+      height: 60 / map.scale
     }
   }
 }
