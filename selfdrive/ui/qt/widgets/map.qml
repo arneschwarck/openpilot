@@ -5,8 +5,6 @@ import QtPositioning 5.9
 Map {
   plugin: Plugin {
     name: "mapboxgl"
-    // DEVELOPMENT
-    // PluginParameter { name: "mapboxgl.access_token"; value: "pk.eyJ1IjoicXRzZGsiLCJhIjoiY2l5azV5MHh5MDAwdTMybzBybjUzZnhxYSJ9.9rfbeqPjX2BusLRDXHCOBA" }
     PluginParameter { name: "mapboxgl.mapping.use_fbo"; value: "false" }
   }
 
@@ -19,8 +17,12 @@ Map {
 
   property variant carPosition: QtPositioning.coordinate()
   property real carBearing: 0;
+  property bool nightMode: true;
 
-  // activeMapType: MapType.CarNavigationMap
+  onSupportedMapTypesChanged: {
+    activeMapType = Array.from(supportedMapTypes)
+      .find(t => t.style === MapType.CarNavigationMap && t.night == nightMode)
+  }
 
   MapQuickItem {
     id: car
@@ -33,7 +35,7 @@ Map {
 
     sourceItem: Image {
       id: icon
-      source: "arrow.svg"
+      source: "arrow-" + (map.nightMode ? "night" : "day") + ".svg"
       width: 60
       height: 60
     }
