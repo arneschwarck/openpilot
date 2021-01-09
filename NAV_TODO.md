@@ -1,0 +1,17 @@
+- [ ] map ux
+  - [ ] map stacking context
+  - [ ] copyright text size
+  - [ ] mapmatching snap to road
+  - [ ] button for followMe
+  - [ ] locked north vs not
+  - [ ] mouse ctrl/shift rotation/tilt
+  - [ ] satellite on/off
+  - [ ] followMe zoom level based on speed
+- [ ] navigation
+  - [ ] directions route on map
+  - [ ] detect going off-route -> recalculate
+  - [ ] nav rtc between comma connect and openpilot - athena messages
+- [ ] lane lines
+  - [ ] draw lane lines on satellite view
+  - [ ] mapbox directions lane info?
+  - [ ] indicate desired lane(s)

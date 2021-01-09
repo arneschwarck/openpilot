@@ -19,7 +19,6 @@ private:
   QWidget *map;
   QQuickItem *mapObject;
   QBasicTimer timer;
-  int i = 0;
 
   void updatePosition();
 };
