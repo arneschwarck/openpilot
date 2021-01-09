@@ -20,17 +20,13 @@ const std::string mapbox_access_token_path = util::getenv_default("HOME", "/.com
 QtMap::QtMap(QWidget *parent) : QWidget(parent) {
   QStackedLayout* layout = new QStackedLayout();
 
-  // might have to use QQuickWidget for proper stacking
+  // might have to use QQuickWidget for proper stacking?
   QQuickWidget *map = new QQuickWidget();
   map->setSource(QUrl::fromLocalFile("qt/widgets/map.qml"));
   mapObject = map->rootObject();
   QSize size = map->size();
-  QSizeF scaledSize = mapObject->size() * mapObject->scale();
-  qDebug() << "size" << size;
-  qDebug() << "scaledSize" << scaledSize;
-  qDebug() << "mapObject->scale()" << mapObject->scale();
 
-  // using QQuickView seems to make other ui drawing break (eg. video is all black)
+  // using QQuickView seems to make other ui drawing break (eg. video is all black) - maybe need resetOpenGLState()?
   // QQuickView *mapView = new QQuickView();
   // mapView->setSource(QUrl::fromLocalFile("qt/widgets/map.qml"));
   // QSize size = mapView->size();
@@ -41,6 +37,10 @@ QtMap::QtMap(QWidget *parent) : QWidget(parent) {
   // setFocusProxy(map); // focus container widget when top level widget is focused
   // setFocusPolicy(Qt::NoFocus); // work around QML activation issue
 
+  QSizeF scaledSize = mapObject->size() * mapObject->scale();
+  qDebug() << "size" << size;
+  qDebug() << "scaledSize" << scaledSize;
+  qDebug() << "mapObject->scale()" << mapObject->scale();
   map->setFixedSize(scaledSize.toSize());
   setFixedSize(scaledSize.toSize());
 
