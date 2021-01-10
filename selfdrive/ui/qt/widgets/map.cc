@@ -80,10 +80,6 @@ void QtMap::timerEvent(QTimerEvent *event) {
 }
 
 void QtMap::updatePosition() {
-  // TODO move these to qml?
-  bool mapFollowsCar = true;
-  bool lockedToNorth = true;
-
   if (sm->update(0) > 0) {
     if (sm->updated("gpsLocationExternal")) {
       cereal::GpsLocationData::Reader gps = (*sm)["gpsLocationExternal"].getGpsLocationExternal();
@@ -91,15 +87,6 @@ void QtMap::updatePosition() {
       QGeoCoordinate position = gps.getAccuracy() > 1000 ? QGeoCoordinate() : QGeoCoordinate(gps.getLatitude(), gps.getLongitude(), gps.getAltitude());
       QQmlProperty::write(mapObject, "carPosition", QVariant::fromValue(position));
       QQmlProperty::write(mapObject, "carBearing", bearing);
-
-      if (mapFollowsCar) {
-        QQmlProperty::write(mapObject, "center", QVariant::fromValue(position));
-        QQmlProperty::write(mapObject, lockedToNorth ? "bearing" : "carBearing", 0);
-        QQmlProperty::write(mapObject, lockedToNorth ? "carBearing" : "bearing", bearing);
-      }
-      // qDebug()
-      //  << "Bearing:" << QQmlProperty::read(mapObject, "carBearing").toFloat()
-      //  << "| Position:" << posLong << posLat;
     }
   }
 }
