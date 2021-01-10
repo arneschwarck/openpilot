@@ -17,7 +17,7 @@ const std::string mapbox_access_token_path = "/persist/mapbox/access_token";
 const std::string mapbox_access_token_path = util::getenv_default("HOME", "/.comma/persist/mapbox/access_token", "/persist/mapbox/access_token");
 #endif
 
-QtMap::QtMap(QWidget *parent) : QWidget(parent) {
+QtMap::QtMap(QWidget *parent) : QFrame(parent) {
   QStackedLayout* layout = new QStackedLayout();
 
   // might have to use QQuickWidget for proper stacking?
@@ -71,13 +71,16 @@ void QtMap::timerEvent(QTimerEvent *event) {
   if (!event)
     return;
 
-  if (event->timerId() == timer.timerId())
-    updatePosition();
+  if (event->timerId() == timer.timerId()) {
+    if (isVisible())
+      updatePosition();
+  }
   else
     QObject::timerEvent(event);
 }
 
 void QtMap::updatePosition() {
+  // TODO move these to qml?
   bool mapFollowsCar = true;
   bool lockedToNorth = true;
 

@@ -10,7 +10,7 @@ Map {
 
   id: map
 
-  // TODO: is there a better way to make map text bigger?
+  // TODO is there a better way to make map text bigger?
   width: 256
   height: 256
   scale: 2.5
@@ -20,15 +20,20 @@ Map {
 
   center: QtPositioning.coordinate()
   zoomLevel: 16
-  visible: center.isValid
+  copyrightsVisible: false // TODO re-enable
 
   property variant carPosition: QtPositioning.coordinate()
   property real carBearing: 0;
   property bool nightMode: true;
+  property bool satelliteMode: false;
 
   onSupportedMapTypesChanged: {
-    activeMapType = Array.from(supportedMapTypes)
-      .find(t => t.style === MapType.CarNavigationMap && t.night == nightMode)
+    function score(mapType) {
+      // prioritize satelliteMode over nightMode
+      return 2 * (mapType.style === (satelliteMode ? MapType.HybridMap : MapType.CarNavigationMap))
+            + (mapType.night === nightMode)
+    }
+    activeMapType = Array.from(supportedMapTypes).sort((a, b) => score(b)-score(a))[0]
   }
 
   MapQuickItem {
@@ -37,6 +42,7 @@ Map {
     anchorPoint.x: icon.width/2
     anchorPoint.y: icon.height/2
 
+    opacity: 0.8
     coordinate: carPosition
     rotation: carBearing
 

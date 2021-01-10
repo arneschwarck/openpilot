@@ -37,13 +37,18 @@ HomeWindow::HomeWindow(QWidget* parent) : QWidget(parent) {
   glWindow = new GLWindow(this);
   layout->addWidget(glWindow);
 
-  // map
-  QWidget *map = new QtMap(this);
-  layout->addWidget(map, 0, 0, Qt::AlignRight | Qt::AlignBottom);
-
   // draw offroad UI on top of onroad UI
   home = new OffroadHome();
   layout->addWidget(home);
+
+  // map
+  map = new QtMap(this);
+  QFrame* mapContainer = new QFrame();
+  QVBoxLayout* mapContainerLayout = new QVBoxLayout(mapContainer);
+  mapContainerLayout->addWidget(map, 0, Qt::AlignRight | Qt::AlignBottom);
+  mapContainerLayout->setContentsMargins(0, 0, 30, 30);
+  layout->addWidget(mapContainer);
+  layout->setCurrentWidget(mapContainer);
 
   QObject::connect(glWindow, SIGNAL(offroadTransition(bool)), home, SLOT(setVisible(bool)));
   QObject::connect(glWindow, SIGNAL(offroadTransition(bool)), this, SIGNAL(offroadTransition(bool)));
@@ -328,7 +333,7 @@ void GLWindow::paintGL() {
     double dt = cur_draw_t - prev_draw_t;
     if (dt > 66 && onroad){
       // warn on sub 15fps
-      LOGW("slow frame(%llu) time: %.2f", ui_state.sm->frame, dt);
+      // LOGW("slow frame(%llu) time: %.2f", ui_state.sm->frame, dt);
     }
     prev_draw_t = cur_draw_t;
   }
