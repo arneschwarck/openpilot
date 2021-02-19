@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import numpy as np
 from time import strftime, gmtime
 import cereal.messaging as messaging
 from common.realtime import Ratekeeper
@@ -11,7 +12,7 @@ QUERY_RADIUS = 3000  # mts
 MIN_DISTANCE_FOR_NEW_QUERY = 1000  # mts
 FULL_STOP_MAX_SPEED = 1.39  # m/s Max speed for considering car is stopped.
 
-_DEBUG = True
+_DEBUG = False
 
 
 def _debug(msg):
@@ -136,33 +137,29 @@ class MapD():
 
     speed_limit = self.route.current_speed_limit
     next_speed_limit_section = self.route.next_speed_limit_section
-    turn_speed_limit_section = self.route.current_curvature_speed_limit_section
-    next_turn_speed_limit_section = self.route.next_curvature_speed_limit_section
+    current_curvature = self.route.immediate_curvature
+    curvatures_ahead = self.route._curvatures_ahead
+    curvatures_ahead = np.array([]) if curvatures_ahead is None else curvatures_ahead
+    next_subst_curvature = self.route.next_substantial_curvature
 
-    map_data_msg = messaging.new_message('liveMapData')
+    map_data_msg = messaging.new_message('liveMapDataDEPRECATED')
     map_data_msg.valid = sm.all_alive_and_valid(service_list=['gpsLocationExternal'])
+    map_data_msg.liveMapDataDEPRECATED.lastGps = self.last_gps
+    map_data_msg.liveMapDataDEPRECATED.speedLimitValid = bool(speed_limit is not None)
+    map_data_msg.liveMapDataDEPRECATED.speedLimit = float(speed_limit if speed_limit is not None else 0.0)
+    map_data_msg.liveMapDataDEPRECATED.speedLimitAheadValid = bool(next_speed_limit_section is not None)
+    map_data_msg.liveMapDataDEPRECATED.speedLimitAhead = float(next_speed_limit_section.value
+                                                               if next_speed_limit_section is not None else 0.0)
+    map_data_msg.liveMapDataDEPRECATED.speedLimitAheadDistance = float(next_speed_limit_section.start
+                                                                       if next_speed_limit_section is not None else 0.0)
+    map_data_msg.liveMapDataDEPRECATED.curvatureValid = bool(current_curvature is not None)
+    map_data_msg.liveMapDataDEPRECATED.curvature = float(current_curvature if current_curvature is not None else 0.0)
+    map_data_msg.liveMapDataDEPRECATED.roadCurvatureX = [float(c[0]) for c in curvatures_ahead]
+    map_data_msg.liveMapDataDEPRECATED.roadCurvature = [float(c[1]) for c in curvatures_ahead]
+    map_data_msg.liveMapDataDEPRECATED.distToTurn = float(next_subst_curvature[0]
+                                                          if next_subst_curvature is not None else 0.0)
 
-    map_data_msg.liveMapData.lastGpsTimestamp = self.last_gps.timestamp
-    map_data_msg.liveMapData.speedLimitValid = bool(speed_limit is not None)
-    map_data_msg.liveMapData.speedLimit = float(speed_limit if speed_limit is not None else 0.0)
-    map_data_msg.liveMapData.speedLimitAheadValid = bool(next_speed_limit_section is not None)
-    map_data_msg.liveMapData.speedLimitAhead = float(next_speed_limit_section.value
-                                                     if next_speed_limit_section is not None else 0.0)
-    map_data_msg.liveMapData.speedLimitAheadDistance = float(next_speed_limit_section.start
-                                                             if next_speed_limit_section is not None else 0.0)
-
-    map_data_msg.liveMapData.turnSpeedLimitValid = bool(turn_speed_limit_section is not None)
-    map_data_msg.liveMapData.turnSpeedLimit = float(turn_speed_limit_section.value
-                                                    if turn_speed_limit_section is not None else 0.0)
-    map_data_msg.liveMapData.turnSpeedLimitEndDistance = float(turn_speed_limit_section.end
-                                                               if turn_speed_limit_section is not None else 0.0)
-    map_data_msg.liveMapData.turnSpeedLimitAheadValid = bool(next_turn_speed_limit_section is not None)
-    map_data_msg.liveMapData.turnSpeedLimitAhead = float(next_turn_speed_limit_section.value
-                                                         if next_turn_speed_limit_section is not None else 0.0)
-    map_data_msg.liveMapData.turnSpeedLimitAheadDistance = float(next_turn_speed_limit_section.start
-                                                                 if next_turn_speed_limit_section is not None else 0.0)
-
-    pm.send('liveMapData', map_data_msg)
+    pm.send('liveMapDataDEPRECATED', map_data_msg)
     _debug(f'Mapd *****: Publish: \n{map_data_msg}\n********')
 
 
@@ -175,7 +172,7 @@ def mapd_thread(sm=None, pm=None):
   if sm is None:
     sm = messaging.SubMaster(['gpsLocationExternal'])
   if pm is None:
-    pm = messaging.PubMaster(['liveMapData'])
+    pm = messaging.PubMaster(['liveMapDataDEPRECATED'])
 
   while True:
     sm.update()

@@ -1,11 +1,25 @@
 import numpy as np
-from scipy import interpolate
 from enum import Enum
-from selfdrive.mapd.lib.geo import DIRECTION, R, vectors
+from selfdrive.mapd.lib.geo import DIRECTION, R
 
-_TURN_CURVATURE_THRESHOLD = 0.003  # 1/mts. A curvature over this value will generate a speed limit section.
-_MAX_LAT_ACC = 2.0  # Maximum lateral acceleration in turns.
-_SPLINE_EVAL_STEP = 10  # mts for spline evaluation for curvature calculation
+_TURN_CURVATURE_THRESHOLD = 0.001  # 1/mts. A curvature over this value will generate a speed limit section.
+_MAX_LAT_ACC = 1.5  # Maximum lateral acceleration in turns.
+
+
+def vectors(points):
+  """Provides a array of vectors on cartesian space (x, y).
+     Each vector represents the path from a point in `points` to the next.
+     `points` must by a (N, 2) array of [lat, lon] pairs in radians.
+  """
+  latA = points[:-1, 0]
+  latB = points[1:, 0]
+  delta = np.diff(points, axis=0)
+  dlon = delta[:, 1]
+
+  x = np.sin(dlon) * np.cos(latB)
+  y = np.cos(latA) * np.sin(latB) - (np.sin(latA) * np.cos(latB) * np.cos(dlon))
+
+  return np.column_stack((x, y))
 
 
 def nodes_raw_data_array_for_wr(wr, drop_last=False):
@@ -37,79 +51,70 @@ def node_calculations(points):
   # (N-1, 1) array. No distance for v[-1]
   d = np.linalg.norm(v, axis=1)
 
+  # Calculate angles between vectors when stack one after the other.
+  # https://math.stackexchange.com/questions/2610186/discrete-points-curvature-analysis
+  # (N-2, 1) array. v[0] and v[-1] have no angle
+  dot = np.sum(-v[:-1] * v[1:], axis=1)
+  a = np.arccos(dot / (d[:-1] * d[1:]))
+
+  # Calculate the curvature from the circumcircle of a triangle
+  # https://www.mathopenref.com/trianglecircumcircle.html
+  # (N-2, 1) array. v[0] and v[-1] have no curvature
+  c = 2. * np.sin(a) / np.linalg.norm(v[:-1] + v[1:], axis=1)
+
   # Calculate the bearing (from true north clockwise) for every node.
   # (N-1, 1) array. No bearing for v[-1]
   b = np.arctan2(v[:, 0], v[:, 1])
 
+  # Pad the outputs to match the size of arrays to N
+
   # Add origin to vector space. (i.e first node in list)
   v = np.concatenate(([[0., 0.]], v))
-
   # Provide distance to previous node and distance to next node
   dp = np.concatenate(([0.], d))
   dn = np.concatenate((d, [0.]))
-
+  # Angles on edge nodes should be pi. i.e. a straight line.
+  a = np.concatenate(([[np.pi], a, [np.pi]]))
+  # Curvature on edges should be 0. i.e a straight line.
+  c = np.concatenate(([[0.], c, [0.]]))
   # Bearing of last node should keep bearing from previous.
   b = np.concatenate((b, [b[-1]]))
 
-  return v, dp, dn, b
-
-
-def spline_curvature_calculations(vect, dist_prev):
-  """Provides an array of curvatures and its distances by applying a spline interpolation
-  to the path described by the nodes data.
-  """
-  # create cumulative arrays for distance traveled and vector (x, y)
-  ds = np.cumsum(dist_prev, axis=0)
-  vs = np.cumsum(vect, axis=0)
-
-  # spline interpolation
-  tck, u = interpolate.splprep([vs[:, 0], vs[:, 1]])
-
-  # evaluate every _SPLINE_EVAL_STEP mts.
-  n = max(int(ds[-1] / _SPLINE_EVAL_STEP), len(u))
-  unew = np.arange(0, n + 1) / n
-
-  # get derivatives
-  d1 = interpolate.splev(unew, tck, der=1)
-  d2 = interpolate.splev(unew, tck, der=2)
-
-  # calculate curvatures
-  num = d1[0] * d2[1] - d1[1] * d2[0]
-  den = (d1[0]**2 + d1[1]**2)**(1.5)
-  curv = np.abs(num / den)
-  curv_ds = unew * ds[-1]
-
-  return curv, curv_ds
+  return v, dp, dn, a, c, b
 
 
 def speed_limits_for_curvatures_data(curv, dist):
   """Provides the calculations for the speed limits from the curvatures array and distances,
-    by providing distances to curvature sections and correspoinding speed limit values
+      by providing indexes to curvature sections and correspoinding speed limit values
   """
-  # Find where curvatures overshoot turn curvature threshold and define as section
-  is_section = curv >= _TURN_CURVATURE_THRESHOLD
+  # Find where curvatures overshoot turn curvature threshold
+  overshoots = curv >= _TURN_CURVATURE_THRESHOLD
+
+  # Speed section nodes are those that overshoot if a neighboring node also does.
+  overshoots = np.concatenate(([[0.], overshoots, [0.]]))
+  is_section = np.convolve(overshoots, np.ones(3), 'valid') >= 2
 
   # Find the indixes where the region starts
   is_section_ = np.concatenate(([False], is_section))
-  idx_start = np.nonzero((is_section_[:-1] != is_section_[1:]) & is_section_[1:])[0]
+  idx_up = np.nonzero((is_section_[:-1] != is_section_[1:]) & is_section_[1:])[0]
 
   # Find the indexes where the sections end
   is_section_ = np.concatenate((is_section, [False]))
-  idx_stop = np.nonzero((is_section_[:-1] != is_section_[1:]) & is_section_[:-1])[0]
+  idx_down = np.nonzero((is_section_[:-1] != is_section_[1:]) & is_section_[:-1])[0]
 
   # Find the maximum curvature in the sections
   max_curvs = np.array([])
-  for i in range(len(idx_start)):
-    if idx_start[i] < idx_stop[i]:
-      max_curvs = np.append(max_curvs, np.amax(curv[idx_start[i]:idx_stop[i]]))
+  for i in range(len(idx_up)):
+    if idx_up[i] < idx_down[i]:
+      max_curvs = np.append(max_curvs, np.amax(curv[idx_up[i]:idx_down[i]]))
     else:
-      max_curvs = np.append(max_curvs, curv[idx_start[i]])
+      max_curvs = np.append(max_curvs, curv[idx_up[i]])
 
   # Caclulate speed limit for confort on the section
   speed_limits = np.sqrt(_MAX_LAT_ACC / max_curvs)
 
   # Stack data and return
-  return np.column_stack((dist[idx_start], dist[idx_stop], speed_limits))
+  return np.column_stack((idx_up, idx_down, speed_limits))
 
 
 class SpeedLimitSection():
@@ -136,7 +141,9 @@ class NodeDataIdx(Enum):
   y = 5             # y value of cartesian vector representing the section between last node and this node.
   dist_prev = 6     # distance to previous node.
   dist_next = 7     # distance to next node
-  bearing = 8       # bearing of the vector departing from this node.
+  angle = 8         # angles between line segments coming into this node and leaving this node.
+  curvature = 9     # estimated curvature at this node.
+  bearing = 10      # bearing of the vector departing from this node.
 
 
 class NodesData:
@@ -166,16 +173,16 @@ class NodesData:
     # Ensure we have more than 3 points, if not calculations are not possible.
     if len(points) < 3:
       return
-    vect, dist_prev, dist_next, bearing = node_calculations(points)
+    vect, dist_prev, dist_next, angle, curvature, bearing = node_calculations(points)
 
     # append calculations to nodes_data
-    # nodes_data structure: [id, lat, lon, speed_limit, x, y, dist_prev, dist_next, bearing]
-    self._nodes_data = np.column_stack((nodes_data, vect, dist_prev, dist_next, bearing))
+    # nodes_data structure: [id, lat, lon, speed_limit, x, y, dist_prev, dist_next, angle, curvature, bearing]
+    self._nodes_data = np.column_stack((nodes_data, vect, dist_prev, dist_next, angle, curvature, bearing))
 
     # Store calculcations for curvature sections speed limits
-    # _curvature_speed_sections_data structure: [dist_start, dist_stop, speed_limits]
-    curv, curv_ds = spline_curvature_calculations(vect, dist_prev)
-    self._curvature_speed_sections_data = speed_limits_for_curvatures_data(curv, curv_ds)
+    # _curvature_speed_sections_data structure: [idx_up, idx_down, speed_limits]
+    dist = np.cumsum(dist_next, axis=0)
+    self._curvature_speed_sections_data = speed_limits_for_curvatures_data(curvature, dist)
 
   @property
   def count(self):
@@ -241,18 +248,26 @@ class NodesData:
     if len(self._curvature_speed_sections_data) == 0 or ahead_idx is None:
       return []
 
-    # Find the current distance traveled so far on the route.
-    dist_curr = np.cumsum(self.get(NodeDataIdx.dist_next)[:ahead_idx])[-1] - distance_to_node_ahead
+    # Find the cumulative distances from the current location
+    dist = np.concatenate(([distance_to_node_ahead], self.get(NodeDataIdx.dist_next)[ahead_idx:]))
+    dist = np.cumsum(dist, axis=0)
 
-    # Filter the sections to get only those where the stop distance is ahead of current.
-    sec_filter = self._curvature_speed_sections_data[:, 1] > dist_curr
-    data = self._curvature_speed_sections_data[sec_filter]
-
-    # Offset distances to current distance.
-    data[:, 0] -= dist_curr
-    data[:, 1] -= dist_curr
+    # Get indexes and limits from data and adjust to ahead_idx
+    idx_up = self._curvature_speed_sections_data[:, 0] - ahead_idx
+    idx_down = self._curvature_speed_sections_data[:, 1] - ahead_idx
+    speed_limits = self._curvature_speed_sections_data[:, 2]
 
     # Create speed limits sections
-    limits_ahead = [SpeedLimitSection(max(0., d[0]), d[1], d[2]) for d in data]
+    limits_ahead = []
+    for i in range(len(idx_up)):
+      up_idx = int(idx_up[i])
+      down_idx = int(idx_down[i])
+
+      if up_idx < 0:
+        if down_idx >= 0:
+          limits_ahead.append(SpeedLimitSection(0, dist[down_idx], speed_limits[i]))
+        continue
+
+      limits_ahead.append(SpeedLimitSection(dist[up_idx], dist[down_idx], speed_limits[i]))
 
     return limits_ahead
