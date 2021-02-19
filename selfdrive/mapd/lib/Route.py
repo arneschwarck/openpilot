@@ -43,10 +43,12 @@ class Route():
     self._locate()
 
   def __repr__(self):
-    return f'Route: {self.way_collection_id}, idx ahead: {self._ahead_idx} of {self._nodes_data.count}'
+    count = self._nodes_data.count if self._nodes_data is not None else None
+    return f'Route: {self.way_collection_id}, idx ahead: {self._ahead_idx} of {count}'
 
   def _reset(self):
     self._limits_ahead = None
+    self._cuvature_limits_ahead = None
     self._curvatures_ahead = None
     self._ahead_idx = None
     self._distance_to_node_ahead = None
@@ -130,11 +132,37 @@ class Route():
     return self._limits_ahead
 
   @property
+  def curvature_speed_limits_ahead(self):
+    """Returns and array of SpeedLimitSection objects for the actual route ahead of current location due to curvatures
+    """
+    if self._cuvature_limits_ahead is not None:
+      return self._cuvature_limits_ahead
+
+    if self._nodes_data is None or self._ahead_idx is None:
+      return []
+
+    self._cuvature_limits_ahead = self._nodes_data. \
+        curvatures_speed_limit_sections_ahead(self._ahead_idx, self._distance_to_node_ahead)
+
+    return self._cuvature_limits_ahead
+
+  @property
   def current_speed_limit(self):
     if not self.located:
       return None
 
     limits_ahead = self.speed_limits_ahead
+    if not len(limits_ahead) or limits_ahead[0].start != 0:
+      return None
+
+    return limits_ahead[0].value
+
+  @property
+  def current_curvature_speed_limit(self):
+    if not self.located:
+      return None
+
+    limits_ahead = self.curvature_speed_limits_ahead
     if not len(limits_ahead) or limits_ahead[0].start != 0:
       return None
 
@@ -155,6 +183,17 @@ class Route():
         return section
 
     return None
+
+  @property
+  def next_curvature_speed_limit_section(self):
+    if not self.located:
+      return None
+
+    limits_ahead = self.curvature_speed_limits_ahead
+    if not len(limits_ahead):
+      return None
+
+    return limits_ahead[0]
 
   @property
   def curvatures_ahead(self):
