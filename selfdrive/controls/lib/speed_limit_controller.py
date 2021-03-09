@@ -1,4 +1,6 @@
 import numpy as np
+import time
+from enum import Enum
 from cereal import log, car
 from common.params import Params
 from common.realtime import sec_since_boot
@@ -11,12 +13,22 @@ _WAIT_TIME_LIMIT_RISE = 2.0  # Waiting time before raising the speed limit.
 _MIN_ADAPTING_BRAKE_ACC = -1.5  # Minimum acceleration allowed when adapting to lower speed limit.
 _MIN_ADAPTING_BRAKE_JERK = -1.0  # Minimum jerk allowed when adapting to lower speed limit.
 _SPEED_OFFSET_TH = -3.0  # m/s Maximum offset between speed limit and current speed for adapting state.
-_LIMIT_ADAPT_TIME = 5.0  # Ideal time (s) to adapt to lower speed limit. i.e. braking.
+_LIMIT_ADAPT_TIME = 10.0  # Ideal time (s) to adapt to lower speed limit. i.e. braking.
 
 _MAX_SPEED_OFFSET_DELTA = 1.0  # m/s Maximum delta for speed limit changes.
 
+_MAX_MAP_DATA_AGE = 10.0  # s Maximum time to hold to map data, then consider it invalid.
+
 SpeedLimitControlState = log.ControlsState.SpeedLimitControlState
 EventName = car.CarEvent.EventName
+
+_DEBUG = False
+
+
+def _debug(msg):
+  if not _DEBUG:
+    return
+  print(msg)
 
 
 def _description_for_state(speed_limit_control_state):
@@ -28,6 +40,97 @@ def _description_for_state(speed_limit_control_state):
     return 'ADAPTING'
   if speed_limit_control_state == SpeedLimitControlState.active:
     return 'ACTIVE'
+
+
+class SpeedLimitResolver():
+  class Key(Enum):
+    car_state = 'car_state'
+    map_data = 'map_data'
+
+  class Policy(Enum):
+    car_state_only = 0
+    map_data_only = 1
+    car_state_priority = 2
+    map_data_priority = 3
+    combined = 4
+
+  def __init__(self, v_ego, current_speed_limit, sm, policy=Policy.map_data_priority):
+    self._results = {}
+    self._v_ego = v_ego
+    self._current_speed_limit = current_speed_limit
+    self._sm = sm
+    self._policy = policy
+    self.speed_limit = 0.
+
+  def resolve(self):
+    self._get_from_car_state()
+    self._get_from_map_data()
+    self._consolidate()
+
+  def _get_from_car_state(self):
+    self._results[SpeedLimitResolver.Key.car_state] = self._sm['carState'].cruiseState.speedLimit
+
+  def _get_from_map_data(self):
+    self._results[SpeedLimitResolver.Key.map_data] = 0.
+
+    # Ignore if no live map data
+    sock = 'liveMapDataDEPRECATED'
+    if self._sm.logMonoTime[sock] is None:
+      _debug('SL: No map data for speed limit')
+      return
+
+    # Load limits from map_data
+    map_data = self._sm[sock]
+    speed_limit = map_data.speedLimit if map_data.speedLimitValid else 0.0
+
+    # Calculate the age of the gps fix. Ignore if too old.
+    gps_fix_age = time.time() - map_data.lastGps.timestamp * 1e-3
+    if gps_fix_age > _MAX_MAP_DATA_AGE:
+      _debug(f'SL: Ignoring map data as is too old. Age: {gps_fix_age}')
+      return
+
+    # Estimate the time left to reach new speed limit ahead (if any) and use it if we are close
+    # enough while traveling when the speed limit is being reduced or set for the first time.
+    if map_data.speedLimitAheadValid and self._v_ego > 0:
+      next_speed_limit = map_data.speedLimitAhead
+      if self._current_speed_limit == 0 or next_speed_limit <= self._current_speed_limit:
+        next_speed_limit_time = (map_data.speedLimitAheadDistance / self._v_ego) - gps_fix_age
+        if next_speed_limit_time <= _LIMIT_ADAPT_TIME:
+          speed_limit = next_speed_limit
+
+    # Populate results
+    self._results[SpeedLimitResolver.Key.map_data] = speed_limit
+
+  def _consolidate(self):
+    values = []
+
+    if self._policy == SpeedLimitResolver.Policy.car_state_only or \
+       self._policy == SpeedLimitResolver.Policy.car_state_priority or \
+       self._policy == SpeedLimitResolver.Policy.combined:
+      values.append(self._results[SpeedLimitResolver.Key.car_state])
+
+    if self._policy == SpeedLimitResolver.Policy.map_data_only or \
+       self._policy == SpeedLimitResolver.Policy.map_data_priority or \
+       self._policy == SpeedLimitResolver.Policy.combined:
+      values.append(self._results[SpeedLimitResolver.Key.map_data])
+
+    if max(values) == 0.:
+      if self._policy == SpeedLimitResolver.Policy.car_state_priority:
+        values.append(self._results[SpeedLimitResolver.Key.map_data])
+
+      elif self._policy == SpeedLimitResolver.Policy.map_data_priority:
+        values.append(self._results[SpeedLimitResolver.Key.car_state])
+
+    # Get all non-zero values and set the minimum if any, otherwise 0.
+    values = np.array(values)
+    values = values[values > 0.]
+
+    if len(values) > 0:
+      self.speed_limit = np.amin(values)
+    else:
+      self.speed_limit = 0.
+
+    _debug(f'SL: *** Speed Limit set: {self.speed_limit}')
 
 
 class SpeedLimitController():
@@ -70,7 +173,7 @@ class SpeedLimitController():
   @state.setter
   def state(self, value):
     if value != self._state:
-      print(f'Speed Limit Controller state: {_description_for_state(value)}')
+      _debug(f'Speed Limit Controller state: {_description_for_state(value)}')
       if value == SpeedLimitControlState.adapting:
         self._adapting_cycles = 0  # Reset adapting state cycle count when entereing state.
       elif value == SpeedLimitControlState.tempInactive:
@@ -85,15 +188,19 @@ class SpeedLimitController():
     return self.state > SpeedLimitControlState.tempInactive
 
   @property
-  def speed_limit(self):
+  def speed_limit_offseted(self):
     return self._speed_limit * (1.0 + self._speed_limit_perc_offset / 100.0)
+
+  @property
+  def speed_limit(self):
+    return self._speed_limit
 
   def _update_params(self):
     time = sec_since_boot()
     if time > self._last_params_update + 5.0:
       self._speed_limit_perc_offset = float(self._params.get("SpeedLimitPercOffset"))
       self._is_enabled = self._params.get("SpeedLimitControl", encoding='utf8') == "1"
-      print(f'Updated Speed limit params. enabled: {self._is_enabled}, \
+      _debug(f'Updated Speed limit params. enabled: {self._is_enabled}, \
               perc_offset: {self._speed_limit_perc_offset:.1f}')
       self._last_params_update = time
 
@@ -111,7 +218,7 @@ class SpeedLimitController():
       elif time > self._last_speed_limit_set_change_ts + _WAIT_TIME_LIMIT_RISE:
         self._speed_limit = self._speed_limit_set
     # Update current velocity offset (error)
-    self._v_offset = self.speed_limit - self._v_ego
+    self._v_offset = self.speed_limit_offseted - self._v_ego
     # Update change tracking variables
     self._speed_limit_changed = self._speed_limit != self._speed_limit_prev
     self._v_cruise_setpoint_changed = self._v_cruise_setpoint != self._v_cruise_setpoint_prev
@@ -171,7 +278,7 @@ class SpeedLimitController():
     elif self.state == SpeedLimitControlState.adapting:
       # Calculate to adapt speed on target time.
       adapting_time = max(_LIMIT_ADAPT_TIME - self._adapting_cycles * _LON_MPC_STEP, 1.0)  # min adapt time 1 sec.
-      a_target = (self.speed_limit - self._v_ego) / adapting_time
+      a_target = (self.speed_limit_offseted - self._v_ego) / adapting_time
       # smooth out acceleration using jerk limits.
       j_limits = np.array(self._adapting_jerk_limits)
       a_limits = self._a_ego + j_limits * _LON_MPC_STEP
@@ -183,7 +290,7 @@ class SpeedLimitController():
     # active
     elif self.state == SpeedLimitControlState.active:
       # Calculate following same cruise logic in planner.py
-      self.v_limit, self.a_limit = speed_smoother(self._v_ego, self._a_ego, self.speed_limit,
+      self.v_limit, self.a_limit = speed_smoother(self._v_ego, self._a_ego, self.speed_limit_offseted,
                                                   self._active_accel_limits[1], self._active_accel_limits[0],
                                                   self._active_jerk_limits[1], self._active_jerk_limits[0],
                                                   _LON_MPC_STEP)
@@ -202,11 +309,16 @@ class SpeedLimitController():
     elif self._speed_limit_set_change < 0:
       events.add(EventName.speedLimitDecrease)
 
-  def update(self, enabled, v_ego, a_ego, CS, v_cruise_setpoint, accel_limits, jerk_limits, events=Events()):
+  def update(self, enabled, v_ego, a_ego, sm, v_cruise_setpoint, accel_limits, jerk_limits,
+             events=Events()):
     self._op_enabled = enabled
     self._v_ego = v_ego
     self._a_ego = a_ego
-    self._speed_limit_set = CS.cruiseState.speedLimit
+
+    resolver = SpeedLimitResolver(v_ego, self.speed_limit, sm)
+    resolver.resolve()
+    self._speed_limit_set = resolver.speed_limit
+
     self._v_cruise_setpoint = v_cruise_setpoint
     self._active_accel_limits = accel_limits
     self._active_jerk_limits = jerk_limits

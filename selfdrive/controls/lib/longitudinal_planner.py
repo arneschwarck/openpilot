@@ -171,7 +171,7 @@ class Planner():
       # cruise speed can't be negative even is user is distracted
       self.v_cruise = max(self.v_cruise, 0.)
       # update speed limit solution calculation.
-      self.speed_limit_controller.update(enabled, self.v_acc_start, self.a_acc_start, sm['carState'],
+      self.speed_limit_controller.update(enabled, self.v_acc_start, self.a_acc_start, sm,
                                          v_cruise_setpoint, accel_limits_turns, jerk_limits, self.events)
     else:
       starting = long_control_state == LongCtrlState.starting
@@ -241,6 +241,7 @@ class Planner():
 
     longitudinalPlan.decelForTurnDEPRECATED = bool(self.turn_controller.is_active)
     longitudinalPlan.speedLimitControlState = self.speed_limit_controller.state
+    longitudinalPlan.speedLimit = float(self.speed_limit_controller.speed_limit)
     longitudinalPlan.eventsDEPRECATED = self.events.to_msg()
 
     longitudinalPlan.processingDelay = (plan_send.logMonoTime / 1e9) - sm.rcv_time['radarState']
