@@ -12,7 +12,7 @@ QUERY_RADIUS = 3000  # mts
 MIN_DISTANCE_FOR_NEW_QUERY = 1000  # mts
 FULL_STOP_MAX_SPEED = 1.39  # m/s Max speed for considering car is stopped.
 
-_DEBUG = False
+_DEBUG = True
 
 
 def _debug(msg):
