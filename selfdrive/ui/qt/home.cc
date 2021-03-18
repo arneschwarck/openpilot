@@ -39,7 +39,7 @@ HomeWindow::HomeWindow(QWidget* parent) : QWidget(parent) {
 
   // map
   QWidget *map = new QtMap(this);
-  layout->addWidget(map, 0, 0);
+  layout->addWidget(map, 0, 0, Qt::AlignRight | Qt::AlignVCenter);
 
   // draw offroad UI on top of onroad UI
   home = new OffroadHome();
