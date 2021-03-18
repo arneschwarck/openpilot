@@ -7,7 +7,7 @@
 #include <QStackedLayout>
 #include <QVariant>
 
-#include "common/utilpp.h"
+#include "common/util.h"
 #include "map.hpp"
 // #include "mapManager.hpp"
 
@@ -83,7 +83,7 @@ void QtMap::updatePosition() {
   if (sm->update(0) > 0) {
     if (sm->updated("gpsLocationExternal")) {
       cereal::GpsLocationData::Reader gps = (*sm)["gpsLocationExternal"].getGpsLocationExternal();
-      float bearing = gps.getBearing();
+      float bearing = gps.getBearingDeg();
       QGeoCoordinate position = gps.getAccuracy() > 1000 ? QGeoCoordinate() : QGeoCoordinate(gps.getLatitude(), gps.getLongitude(), gps.getAltitude());
       QQmlProperty::write(mapObject, "carPosition", QVariant::fromValue(position));
       QQmlProperty::write(mapObject, "carBearing", bearing);
