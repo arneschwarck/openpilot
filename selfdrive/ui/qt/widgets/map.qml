@@ -4,8 +4,11 @@ import QtPositioning 5.9
 
 Map {
   plugin: Plugin {
-    name: "mapboxgl"
-    PluginParameter { name: "mapboxgl.mapping.use_fbo"; value: "false" }
+    name: "osm"
+    PluginParameter { name: "osm.mapping.cache.directory"; value: "/tmp/tile_cache" }
+    // name: "mapboxgl"
+    // PluginParameter { name: "mapboxgl.mapping.use_fbo"; value: "false" }
+    // PluginParameter { name: "mapboxgl.mapping.cache.directory"; value: "/tmp/tile_cache" }
   }
 
   id: map

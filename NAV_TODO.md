@@ -2,8 +2,8 @@
   - [ ] map stacking context
   - [ ] copyright text size
   - [ ] mapmatching snap to road
-  - [ ] button for followMe
-  - [ ] locked north vs not
+  - [x] button for followMe
+  - [x] locked north vs not
   - [ ] mouse ctrl/shift rotation/tilt
   - [ ] satellite on/off
   - [ ] followMe zoom level based on speed
