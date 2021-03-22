@@ -6,6 +6,10 @@ Map {
   plugin: Plugin {
     name: "osm"
     PluginParameter { name: "osm.mapping.cache.directory"; value: "/tmp/tile_cache" }
+    PluginParameter { name: "osm.mapping.host"; value: "https://c.tile.openstreetmap.org" }
+    PluginParameter { name: "osm.mapping.highdpi_tiles"; value: "true" }
+
+    // TODO not availble on NEOS yet
     // name: "mapboxgl"
     // PluginParameter { name: "mapboxgl.mapping.use_fbo"; value: "false" }
     // PluginParameter { name: "mapboxgl.mapping.cache.directory"; value: "/tmp/tile_cache" }
@@ -17,28 +21,56 @@ Map {
   width: 256
   height: 256
   scale: 2.5
-  x: width * (scale-1)
-  y: height * (scale-1)
+  x: width * (scale - 1)
+  y: height * (scale - 1)
   transformOrigin: Item.BottomRight
 
   gesture.enabled: true
   center: QtPositioning.coordinate()
-  bearing: 100
+  bearing: 0
   zoomLevel: 16
   copyrightsVisible: false // TODO re-enable
 
+  // keep in sync with car indicator
+  // TODO commonize with car indicator
+  Behavior on center {
+    CoordinateAnimation {
+      easing.type: Easing.Linear;
+      duration: updateInterval;
+    }
+  }
+
+  Behavior on bearing {
+    RotationAnimation {
+      direction: RotationAnimation.Shortest;
+      easing.type: Easing.InOutQuad;
+      duration: updateInterval;
+    }
+  }
+
+  // TODO combine with center animation
+  Behavior on zoomLevel {
+    SmoothedAnimation {
+      velocity: 2;
+    }
+  }
+
   property variant carPosition: QtPositioning.coordinate()
-  property real carBearing: 0;
-  property bool nightMode: true;
-  property bool satelliteMode: false;
-  property bool mapFollowsCar: true;
-  property bool lockedToNorth: true
+  property real carBearing: 0
+  property bool nightMode: true
+  property bool satelliteMode: false
+  property bool mapFollowsCar: true
+  property bool lockedToNorth: false
+
+  // animation durations for continuously updated values should stay close to updateInterval
+  // ...otherwise, animations are always trying to catch up as their target values change
+  property real updateInterval: 100
 
   onSupportedMapTypesChanged: {
     function score(mapType) {
       // prioritize satelliteMode over nightMode
-      return 2 * (mapType.style === (satelliteMode ? MapType.HybridMap : MapType.CarNavigationMap))
-            + (mapType.night === nightMode)
+      return (mapType.style === (satelliteMode ? MapType.HybridMap : MapType.CarNavigationMap)) << 1
+           + (mapType.night === nightMode) << 0
     }
     activeMapType = Array.from(supportedMapTypes).sort((a, b) => score(b)-score(a))[0]
   }
@@ -56,21 +88,18 @@ Map {
   }
 
   onBearingChanged: {
-    // console.log("BEARING: " + bearing)
   }
 
   MouseArea {
     id: compass
-    // visible: !lockedToNorth
+    // visible: !lockedToNorth && !mapFollowsCar // TODO
     width: 50
     height: 45
     x: 0
     y: map.height - height - location.height
     onClicked: {
-      // console.log("North-lock clicked")
       lockedToNorth = !lockedToNorth
-        // TODO animate rotation and (maybe) compass visibility
-      map.bearing = lockedToNorth ? 0 : carBearing
+      map.bearing = lockedToNorth || !mapFollowsCar ? 0 : carBearing
     }
     Image {
       source: "compass.png"
@@ -90,13 +119,13 @@ Map {
     y: map.height - height
     onClicked: {
       if (carPosition.isValid) {
-        // console.log("Location clicked")
         mapFollowsCar = !mapFollowsCar
-        lockedToNorth = false
-        // TODO animate rotation/translation
-        // TODO zoom
-        map.center = carPosition
-        map.bearing = carBearing
+        if (mapFollowsCar) {
+          lockedToNorth = false
+          map.zoomLevel = 16
+          map.center = carPosition
+          map.bearing = carBearing
+        }
       }
     }
     Image {
@@ -112,12 +141,19 @@ Map {
   MapQuickItem {
     id: car
     visible: carPosition.isValid && map.zoomLevel > 10
-    anchorPoint.x: icon.width/2
-    anchorPoint.y: icon.height/2
+    anchorPoint.x: icon.width / 2
+    anchorPoint.y: icon.height / 2
 
     opacity: 0.8
     coordinate: carPosition
     rotation: carBearing - bearing
+
+    Behavior on coordinate {
+      CoordinateAnimation {
+        easing.type: Easing.Linear;
+        duration: updateInterval;
+      }
+    }
 
     sourceItem: Image {
       id: icon
