@@ -195,13 +195,49 @@ static void ui_draw_vision_maxspeed(UIState *s) {
   ui_draw_rect(s->vg, rect, COLOR_WHITE_ALPHA(100), 10, 20.);
 
   nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_BASELINE);
-  ui_draw_text(s, rect.centerX(), 148, "MAX", 26 * 2.5, COLOR_WHITE_ALPHA(is_cruise_set ? 200 : 100), "sans-regular");
+  ui_draw_text(s, rect.centerX(), 148, "SET", 26 * 2.5, COLOR_WHITE_ALPHA(is_cruise_set ? 200 : 100), "sans-regular");
   if (is_cruise_set) {
     const std::string maxspeed_str = std::to_string((int)std::nearbyint(maxspeed));
     ui_draw_text(s, rect.centerX(), 242, maxspeed_str.c_str(), 48 * 2.5, COLOR_WHITE, "sans-bold");
   } else {
     ui_draw_text(s, rect.centerX(), 242, "N/A", 42 * 2.5, COLOR_WHITE_ALPHA(100), "sans-semibold");
   }
+}
+
+static void ui_draw_vision_road_info(UIState *s) {
+  if (!s->scene.gps_planner_points.getValid()) {
+    return;
+  }
+
+  // Road name
+  if (s->scene.track_name.length()) {
+    // TODO: split evenly onto 2 lines if too wide? (maybe can split on ',')
+    nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_BASELINE);
+    ui_draw_text(s,
+                s->viz_rect.centerX(),
+                s->viz_rect.y + s->viz_rect.h - 70,
+                s->scene.track_name.c_str(), 32 * 2.5, COLOR_WHITE, "sans-semibold");
+  }
+
+  // Speed limit
+  float speedlimit = s->scene.gps_planner_points.getSpeedLimit();
+  if (speedlimit <= 0) {
+    return;
+  }
+  if (!s->scene.is_metric) {
+    speedlimit *= 0.6225;
+  }
+
+  const Rect rect = {s->viz_rect.x + (bdr_s * 9), int(s->viz_rect.y + (bdr_s * 1.5)), 184, 202};
+  ui_fill_rect(s->vg, rect, COLOR_BLACK_ALPHA(100), 30.);
+  ui_draw_rect(s->vg, rect, COLOR_WHITE_ALPHA(100), 10, 20.);
+
+  nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_BASELINE);
+  ui_draw_text(s, rect.centerX(), 125, "SPEED", 18 * 2.5, COLOR_WHITE, "sans-semibold");
+  ui_draw_text(s, rect.centerX(), 160, "LIMIT", 18 * 2.5, COLOR_WHITE, "sans-semibold");
+
+  const std::string speedlimit_str = std::to_string((int)std::nearbyint(speedlimit));
+  ui_draw_text(s, rect.centerX(), 242, speedlimit_str.c_str(), 48 * 2.5, COLOR_WHITE, "sans-bold");
 }
 
 static void ui_draw_vision_speed(UIState *s) {
@@ -281,6 +317,7 @@ static void ui_draw_vision_header(UIState *s) {
   ui_fill_rect(s->vg, {s->viz_rect.x, s->viz_rect.y, s->viz_rect.w, header_h}, gradient);
 
   ui_draw_vision_maxspeed(s);
+  ui_draw_vision_road_info(s);
   ui_draw_vision_speed(s);
   ui_draw_vision_event(s);
 }
