@@ -1,6 +1,7 @@
 #include <cassert>
 
 #include <QGeoCoordinate>
+#include <QQmlContext>
 #include <QQmlProperty>
 #include <QQuickWidget>
 #include <QQuickView>
@@ -20,8 +21,14 @@ const std::string mapbox_access_token_path = util::getenv_default("HOME", "/.com
 QtMap::QtMap(QWidget *parent) : QFrame(parent) {
   QStackedLayout* layout = new QStackedLayout();
 
+  auto file = QFile(mapbox_access_token_path.c_str());
+  assert(file.open(QIODevice::ReadOnly));
+  auto mapboxAccessToken = file.readAll();
+  qDebug() << "Mapbox access token:" << mapboxAccessToken;
+
   // might have to use QQuickWidget for proper stacking?
   QQuickWidget *map = new QQuickWidget();
+  map->rootContext()->setContextProperty("mapboxAccessToken", mapboxAccessToken);
   map->setSource(QUrl::fromLocalFile("qt/widgets/map.qml"));
   mapObject = map->rootObject();
   QSize size = map->size();
@@ -46,19 +53,6 @@ QtMap::QtMap(QWidget *parent) : QFrame(parent) {
 
   layout->addWidget(map);
   setLayout(layout);
-
-  // Configure mapbox
-  auto file = QFile(mapbox_access_token_path.c_str());
-  assert(file.open(QIODevice::ReadOnly));
-  auto mapboxAccessToken = file.readAll();
-  qDebug() << "Access token:" << mapboxAccessToken;
-
-  QVariantMap parameters;
-  parameters["mapboxgl.access_token"] = mapboxAccessToken;
-  parameters[QStringLiteral("osm.useragent")] = QStringLiteral("QtLocation Mapviewer example");
-  // TODO pass in mapbox access token
-  // QMetaObject::invokeMethod(mapObject, "initializeProviders",
-  //                           Q_ARG(QVariant, QVariant::fromValue(parameters)));
 
   // Start polling loop
   sm = new SubMaster({"gpsLocationExternal"});
