@@ -1,6 +1,7 @@
 import QtQuick 2.9
 import QtLocation 5.9
 import QtPositioning 5.9
+import "cheap-ruler.js" as CheapRuler
 
 Item {
   id: app
@@ -13,6 +14,21 @@ Item {
   property bool satelliteMode: false
   property bool mapFollowsCar: true
   property bool lockedToNorth: false
+  property variant ruler: CheapRuler.cheapRuler(raleigh.coordinate.latitude)
+
+  Location {
+    id: spartanburg
+    coordinate: QtPositioning.coordinate(34.9495979, -81.9321125)
+  }
+
+  Location {
+    id: raleigh
+    coordinate: QtPositioning.coordinate(35.7796662, -78.6386822)
+  }
+
+  function coordinateToPoint(coordinate) {
+    return [coordinate.longitude, coordinate.latitude]
+  }
 
   // animation durations for continuously updated values shouldn't be much greater than updateInterval
   // ...otherwise, animations are always trying to catch up as their target values change
@@ -236,8 +252,8 @@ Item {
   function updateRoute() {
     console.log("Updating route")
     routeQuery.clearWaypoints();
-    routeQuery.addWaypoint(QtPositioning.coordinate(34.9331869,-82.0262314));
-    routeQuery.addWaypoint(QtPositioning.coordinate(35.8438868,-78.7150952));
+    routeQuery.addWaypoint(spartanburg.coordinate);
+    routeQuery.addWaypoint(raleigh.coordinate);
     routeModel.update()
   }
 
