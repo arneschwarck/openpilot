@@ -36,20 +36,20 @@ static void ui_draw_circle(const UIState *s, float x, float y, float size, NVGco
 }
 
 static void ui_draw_speed_sign(const UIState *s, float x, float y, int size, float speed, float speed_offset, const char *font_name, int ring_alpha, int inner_alpha) {
-  ui_draw_circle_image(s->vg, x, y, float(size), COLOR_RED_ALPHA(ring_alpha));
-  ui_draw_circle_image(s->vg, x, y, float(size) * 0.8, COLOR_WHITE_ALPHA(inner_alpha));
+  ui_draw_circle(s->vg, x, y, float(size), COLOR_RED_ALPHA(ring_alpha));
+  ui_draw_circle(s->vg, x, y, float(size) * 0.8, COLOR_WHITE_ALPHA(inner_alpha));
 
   char speedlimit_str[16];
   nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
   snprintf(speedlimit_str, sizeof(speedlimit_str), "%d", int(speed));
-  ui_draw_text(s->vg, x, y + (bdr_s * 1.5), speedlimit_str, 120, COLOR_BLACK_ALPHA(inner_alpha), "sans-bold");
+  ui_draw_text(s, s->viz_rect.centerX() + (bdr_s * 1.5), speedlimit_str, 120, COLOR_BLACK_ALPHA, "sans-bold");
 
   if (int(speed_offset) == 0) {
     return;
   }
   char speedlimitoffset_str[16];
   snprintf(speedlimitoffset_str, sizeof(speedlimitoffset_str), "%+d", int(speed_offset));
-  ui_draw_text(s->vg, x, y + (bdr_s * 1.5) + 55, speedlimitoffset_str, 50, COLOR_BLACK_ALPHA(inner_alpha), "sans-bold");
+  ui_draw_text(s, s->viz_rect.centerX() + (bdr_s * 1.5) + 55, speedlimitoffset_str, 50, COLOR_BLACK_ALPHA, "sans-bold");
 }
 
 static void draw_chevron(UIState *s, float x, float y, float sz, NVGcolor fillColor, NVGcolor glowColor) {
