@@ -143,6 +143,9 @@ typedef struct UIScene {
   float light_sensor, accel_sensor, gyro_sensor;
   bool started, ignition, is_metric, longitudinal_control, end_to_end;
   uint64_t started_frame;
+  bool speed_limit_control_enabled;
+  float speed_limit_perc_offset;
+  double last_speed_limit_sign_tap;
 } UIScene;
 
 typedef struct UIState {
@@ -175,10 +178,6 @@ typedef struct UIState {
 
   // device state
   bool awake;
-
-  bool speed_limit_control_enabled;
-  float speed_limit_perc_offset;
-  double last_speed_limit_sign_tap;
 
   bool sidebar_collapsed;
   Rect video_rect, viz_rect;
