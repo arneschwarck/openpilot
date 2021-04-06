@@ -131,7 +131,7 @@ class Planner():
     if self.speed_limit_controller.is_active:
       self.v_acc_future = min(self.v_acc_future, self.speed_limit_controller.v_limit_future)
 
-  def update(self, sm, CP, PP):
+  def update(self, sm, CP):
     """Gets called when new radarState is available"""
     cur_time = sec_since_boot()
     v_ego = sm['carState'].vEgo
@@ -194,7 +194,7 @@ class Planner():
     self.mpc1.update(sm['carState'], lead_1)
     self.mpc2.update(sm['carState'], lead_2)
     self.turn_controller.update(enabled, self.v_acc_start, self.a_acc_start, v_cruise_setpoint,
-                                [float(x) for x in PP.LP.d_poly], sm['carState'].steeringAngleDeg)
+                                sm['carState'].steeringAngleDeg)
 
     self.choose_solution(v_cruise_setpoint, enabled)
 
