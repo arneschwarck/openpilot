@@ -235,6 +235,8 @@ selfdrive/controls/lib/longitudinal_planner.py
 selfdrive/controls/lib/radar_helpers.py
 selfdrive/controls/lib/vehicle_model.py
 selfdrive/controls/lib/speed_smoother.py
+selfdrive/controls/lib/speed_limit_controller.py
+selfdrive/controls/lib/turn_controller.py
 selfdrive/controls/lib/fcw.py
 selfdrive/controls/lib/long_mpc.py
 selfdrive/controls/lib/long_mpc_model.py
