@@ -21,7 +21,7 @@ const float y_offset = 0.0;
 const float zoom = 2.35;
 #endif
 
-static void ui_draw_text(const UIState *s, float x, float y, const char *string, float size, NVGcolor color, const char *font_name) {
+static void ui_draw_text(const UIState *s, float x, float y, const char *string, float size, NVGcolor color, int font_name) {
   nvgFontFace(s->vg, font_name);
   nvgFontSize(s->vg, size);
   nvgFillColor(s->vg, color);
@@ -235,19 +235,19 @@ static void ui_draw_vision_speedlimit(UIState *s) {
   if (speedLimit > 0.0) {
     const int viz_maxspeed_w = 189;
     const int viz_maxspeed_h = 202;
-    const float sign_center_x = s->scene.viz_rect.x + bdr_s * 3 + viz_maxspeed_w + speed_sgn_r;
-    const float sign_center_y = s->scene.viz_rect.y + viz_maxspeed_h / 2;
-    const float speed = (s->is_metric ? speedLimit * 3.6 : speedLimit * 2.2369363) + 0.5;
-    const float speed_offset = (s->is_metric ? speedLimitOffset * 3.6 : speedLimitOffset * 2.2369363) + 0.5;
+    const float sign_center_x = s->viz_rect.x + bdr_s * 3 + viz_maxspeed_w + speed_sgn_r;
+    const float sign_center_y = s->viz_rect.y + viz_maxspeed_h / 2;
+    const float speed = (s->scene.is_metric ? speedLimit * 3.6 : speedLimit * 2.2369363) + 0.5;
+    const float speed_offset = (s->scene.is_metric ? speedLimitOffset * 3.6 : speedLimitOffset * 2.2369363) + 0.5;
 
     auto speedLimitControlState = s->scene.controls_state.getSpeedLimitControlState();
-    const bool force_active = s->speed_limit_control_enabled && seconds_since_boot() < s->last_speed_limit_sign_tap + 5.0;
-    const bool inactive = !force_active && (!s->speed_limit_control_enabled || speedLimitControlState == cereal::ControlsState::SpeedLimitControlState::INACTIVE);
-    const bool temp_inactive = !force_active && (s->speed_limit_control_enabled && speedLimitControlState == cereal::ControlsState::SpeedLimitControlState::TEMP_INACTIVE);
+    const bool force_active = s->scene.speed_limit_control_enabled && seconds_since_boot() < s->scene.last_speed_limit_sign_tap + 5.0;
+    const bool inactive = !force_active && (!s->scene.speed_limit_control_enabled || speedLimitControlState == cereal::ControlsState::SpeedLimitControlState::INACTIVE);
+    const bool temp_inactive = !force_active && (s->scene.speed_limit_control_enabled && speedLimitControlState == cereal::ControlsState::SpeedLimitControlState::TEMP_INACTIVE);
     const int ring_alpha = inactive ? 100 : 255;
     const int inner_alpha = inactive || temp_inactive ? 100 : 255;
 
-    ui_draw_speed_sign(s->vg, sign_center_x, sign_center_y, speed_sgn_r, speed, speed_offset, s->font_sans_bold, ring_alpha, inner_alpha);
+    ui_draw_speed_sign(s->vg, sign_center_x, sign_center_y, speed_sgn_r, speed, speed_offset, "sans-bold", ring_alpha, inner_alpha);
     s->scene.ui_speed_sgn_x = sign_center_x - speed_sgn_r;
     s->scene.ui_speed_sgn_y = sign_center_y - speed_sgn_r;
   }
