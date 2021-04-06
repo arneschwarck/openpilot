@@ -36,8 +36,8 @@ static void ui_draw_circle(const UIState *s, float x, float y, float size, NVGco
 }
 
 static void ui_draw_speed_sign(const UIState *s, float x, float y, int size, float speed, float speed_offset, const char *font_name, int ring_alpha, int inner_alpha) {
-  ui_draw_circle(s->vg, x, y, float(size), COLOR_RED_ALPHA(ring_alpha));
-  ui_draw_circle(s->vg, x, y, float(size) * 0.8, COLOR_WHITE_ALPHA(inner_alpha));
+  ui_draw_circle_image(s->vg, x, y, float(size), COLOR_RED_ALPHA(ring_alpha));
+  ui_draw_circle_image(s->vg, x, y, float(size) * 0.8, COLOR_WHITE_ALPHA(inner_alpha));
 
   char speedlimit_str[16];
   nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
