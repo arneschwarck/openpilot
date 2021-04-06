@@ -21,7 +21,7 @@ const float y_offset = 0.0;
 const float zoom = 2.35;
 #endif
 
-static void ui_draw_text(const UIState *s, float x, float y, const char *string, float size, NVGcolor color, int font_name) {
+static void ui_draw_text(const UIState *s, float x, float y, const char *string, float size, NVGcolor color,  const char *font_name) {
   nvgFontFace(s->vg, font_name);
   nvgFontSize(s->vg, size);
   nvgFillColor(s->vg, color);
@@ -247,7 +247,7 @@ static void ui_draw_vision_speedlimit(UIState *s) {
     const int ring_alpha = inactive ? 100 : 255;
     const int inner_alpha = inactive || temp_inactive ? 100 : 255;
 
-    ui_draw_speed_sign(s->vg, sign_center_x, sign_center_y, speed_sgn_r, speed, speed_offset, "sans-bold", ring_alpha, inner_alpha);
+    ui_draw_speed_sign(s->vg, sign_center_x, sign_center_y, speed_sgn_r, speed, speed_offset, ring_alpha, inner_alpha);
     s->scene.ui_speed_sgn_x = sign_center_x - speed_sgn_r;
     s->scene.ui_speed_sgn_y = sign_center_y - speed_sgn_r;
   }
