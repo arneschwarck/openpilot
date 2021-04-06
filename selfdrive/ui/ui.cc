@@ -280,6 +280,8 @@ static void update_params(UIState *s) {
   Params params;
   if (frame % (5*UI_FREQ) == 0) {
     scene.is_metric = params.getBool("IsMetric");
+    scene.speed_limit_control_enabled = params.getBool("SpeedLimitControl");
+    scene.speed_limit_perc_offset = params.getBool("SpeedLimitPercOffset");
   } else if (frame % (6*UI_FREQ) == 0) {
     scene.athenaStatus = NET_DISCONNECTED;
     if (auto last_ping = params.get<float>("LastAthenaPingTime"); last_ping) {
