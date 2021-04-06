@@ -245,8 +245,8 @@ class Planner():
 
     longitudinalPlan.decelForTurnDEPRECATED = bool(self.turn_controller.is_active)
     longitudinalPlan.speedLimitControlState = self.speed_limit_controller.state
-    longitudinalPlan.eventsDEPRECATED = events.to_msg()
 
     longitudinalPlan.processingDelay = (plan_send.logMonoTime / 1e9) - sm.rcv_time['radarState']
+    longitudinalPlan.eventsDEPRECATED = events.to_msg()
 
     pm.send('longitudinalPlan', plan_send)
