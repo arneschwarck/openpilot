@@ -2,7 +2,7 @@ from cereal import log, car
 from selfdrive.config import Conversions as CV
 
 EventName = car.CarEvent.EventName
-HandsOnWheelState = log.DMonitoringState.HandsOnWheelState
+HandsOnWheelState = log.driverMonitoringState.HandsOnWheelState
 
 from common.op_params import opParams
 from common.travis_checker import travis
