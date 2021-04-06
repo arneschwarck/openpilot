@@ -3,7 +3,7 @@ import math
 from enum import Enum
 from common.numpy_fast import interp
 from common.params import Params
-from common.realtime import sec_since_boot
+#from common.realtime import sec_since_boot
 from selfdrive.config import Conversions as CV
 
 

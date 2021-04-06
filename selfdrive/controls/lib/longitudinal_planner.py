@@ -131,7 +131,7 @@ class Planner():
     if self.speed_limit_controller.is_active:
       self.v_acc_future = min(self.v_acc_future, self.speed_limit_controller.v_limit_future)
 
-  def update(self, sm, CP):
+  def update(self, sm, CP, PP):
     """Gets called when new radarState is available"""
     cur_time = sec_since_boot()
     v_ego = sm['carState'].vEgo
