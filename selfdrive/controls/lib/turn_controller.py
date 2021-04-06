@@ -219,13 +219,12 @@ class TurnController():
     self.v_turn = self._v_ego + self.a_turn * _LON_MPC_STEP  # speed in next Longitudinal control step.
     self._v_turn_future = self._v_ego + self.a_turn * 4.  # speed in 4 seconds.
 
-  def update(self, enabled, v_ego, a_ego, v_cruise_setpoint, d_poly, steering_angle):
+  def update(self, enabled, v_ego, a_ego, v_cruise_setpoint, steeringAngleDeg):
     self._op_enabled = enabled
     self._v_ego = v_ego
     self._a_ego = a_ego
     self._v_cruise_setpoint = v_cruise_setpoint
-    self._d_poly = d_poly
-    self._current_curvature = abs(steering_angle * CV.DEG_TO_RAD / (self._CP.steerRatio * self._CP.wheelbase))
+    self._current_curvature = abs(steeringAngleDeg * CV.DEG_TO_RAD / (self._CP.steerRatio * self._CP.wheelbase))
 
     self._update_calculations()
     self._state_transition()
