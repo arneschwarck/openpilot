@@ -28,14 +28,14 @@ static void ui_draw_text(const UIState *s, float x, float y, const char *string,
   nvgText(s->vg, x, y, string, NULL);
 }
 
-static void ui_draw_circle(NVGcontext *vg, float x, float y, float size, NVGcolor color) {
+static void ui_draw_circle(const UIState *s, float x, float y, float size, NVGcolor color) {
   nvgBeginPath(vg);
   nvgCircle(vg, x, y + (bdr_s * 1.5), size);
   nvgFillColor(vg, color);
   nvgFill(vg);
 }
 
-static void ui_draw_speed_sign(NVGcontext *vg, float x, float y, int size, float speed, float speed_offset, const char *font_name, int ring_alpha, int inner_alpha) {
+static void ui_draw_speed_sign(const UIState *s, float x, float y, int size, float speed, float speed_offset, const char *font_name, int ring_alpha, int inner_alpha) {
   ui_draw_circle(vg, x, y, float(size), COLOR_RED_ALPHA(ring_alpha));
   ui_draw_circle(vg, x, y, float(size) * 0.8, COLOR_WHITE_ALPHA(inner_alpha));
 
