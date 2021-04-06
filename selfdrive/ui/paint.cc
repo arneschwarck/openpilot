@@ -257,13 +257,6 @@ static void ui_draw_vision_brake(UIState *s) {
   ui_draw_circle_image(s, center_x, center_y, radius, "brake_disc", s->scene.brakeLights);
 }
 
-static void ui_draw_vision_headlight(UIState *s) {
-  const int radius = 96;
-  const int center_x = (s->viz_rect.x + radius + (bdr_s * 2) + 510);
-  const int center_y = s->viz_rect.bottom() - footer_h / 2;
-  ui_draw_circle_image(s, center_x, center_y, radius, "head_light", s->scene.parkingLightON);
-}
-
 static void ui_draw_driver_view(UIState *s) {
   s->sidebar_collapsed = true;
   const bool is_rhd = s->scene.is_rhd;
@@ -306,7 +299,6 @@ static void ui_draw_driver_view(UIState *s) {
   const int center_y = rect.bottom() - face_radius - bdr_s * 2.5;
   ui_draw_circle_image(s, center_x, center_y, face_radius, "driver_face", face_detected);
   ui_draw_circle_image(s, center_x + 200, center_y, face_radius, "brake_disc", s->scene.brakeLights);
-  ui_draw_circle_image(s, center_x + 400, center_y, face_radius, "head_light", s->scene.headlightON);
 }
 
 static void ui_draw_vision_header(UIState *s) {
@@ -327,7 +319,6 @@ static void ui_draw_vision_header(UIState *s) {
 static void ui_draw_vision_footer(UIState *s) {
   ui_draw_vision_face(s);
   ui_draw_vision_brake(s);
-  ui_draw_vision_headlight(s);
 }
 
 static float get_alert_alpha(float blink_rate) {
@@ -570,7 +561,6 @@ void ui_nvg_init(UIState *s) {
       {"battery", "../assets/images/battery.png"},
       {"battery_charging", "../assets/images/battery_charging.png"},
       {"brake_disc", "../assets/img_brake_disc.png"},
-	    {"head_light", "../assets/img_head_light.png"},
       {"network_0", "../assets/images/network_0.png"},
       {"network_1", "../assets/images/network_1.png"},
       {"network_2", "../assets/images/network_2.png"},
