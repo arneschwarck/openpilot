@@ -1,7 +1,7 @@
 import unittest
 from decimal import Decimal
 from math import pi, sqrt
-from .geo import coord_to_rad, distance, bearing, xy, distance_and_bearing, bearing_delta, DIRECTION, \
+from selfdrive.mapd.lib.geo import coord_to_rad, distance, bearing, xy, distance_and_bearing, bearing_delta, DIRECTION, \
     absoule_delta_with_direction, three_point_tangent_angle, three_point_curvature, xy_distance
 
 
