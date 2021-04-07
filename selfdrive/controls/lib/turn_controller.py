@@ -106,9 +106,9 @@ class TurnController():
   def v_turn_future(self):
     return float(self._v_turn_future) if self.state != TurnState.DISABLED else self._v_cruise_setpoint
 
-  #@property
-  #def state(self):
-  #  return self._state
+  @property
+  def state(self):
+    return self._state
 
   @property
   def is_active(self):
