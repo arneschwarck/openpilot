@@ -1,5 +1,5 @@
-from .WayRelation import WayRelation
-from .Route import Route
+from selfdrive.mapd.lib.WayRelation import WayRelation
+from selfdrive.mapd.lib.Route import Route
 import uuid
 
 
