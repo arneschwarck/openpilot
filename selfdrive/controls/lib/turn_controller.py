@@ -109,18 +109,18 @@ class TurnController():
   @property
   def state(self):
     return self._state
-
+  
+  @state.setter
+  def state(self, value):
+    if value != self._state:
+      print(f'TurnController state: {value.description}')
+      if value == TurnState.DISABLED:
+        self._reset()
+    self._state = value
+  
   @property
   def is_active(self):
     return self._state != TurnState.DISABLED
-
-  #@state.setter
-  #def state(self, value):
-  #  if value != self._state:
-  #    print(f'TurnController state: {value.description}')
-  #    if value == TurnState.DISABLED:
-  #      self._reset()
-  #  self._state = value
 
   def _reset(self):
     self._v_turn_future = 0.0
