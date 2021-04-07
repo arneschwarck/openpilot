@@ -87,7 +87,7 @@ jobs:
     - name: Build Docker image
       run: eval "$BUILD"
     - name: pre-commit
-      run: ${{ env.RUN }} "git init && git add -A && pre-commit run --all"
+      run: ${{ env.RUN }} "pip install overpy && git init && git add -A && pre-commit run --all"
 
   valgrind:
     name: valgrind
