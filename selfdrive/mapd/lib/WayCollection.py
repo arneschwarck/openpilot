@@ -8,7 +8,7 @@ class WayCollection():
   """
   def __init__(self, ways):
     self.id = uuid.uuid4()
-    self.way_relations = list(map(lambda way: WayRelation(way), ways))
+    self.way_relations = list(map(WayRelation, ways)) #list(map(lambda way: WayRelation(way), ways))
 
   def get_route(self, location, bearing):
     """Provides the best route found in the way collection based on provided `location` and `bearing`
