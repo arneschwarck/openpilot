@@ -1,5 +1,5 @@
-from lib.osm import OSM
-from lib.WayCollection import WayCollection
+from selfdrive.mapd.lib.osm import OSM
+from selfdrive.mapd.lib.WayCollection import WayCollection
 from decimal import Decimal
 import sys
 import csv
