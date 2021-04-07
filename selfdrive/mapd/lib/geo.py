@@ -10,7 +10,7 @@ MAX_DIST_FOR_CURVATURE = 500  # mts. Max distance between nodes for curvature ca
 def coord_to_rad(point):
   """Tranform coordinates in degrees to radians
   """
-  return tuple(map(lambda p: radians(p), point))
+  return radians(point[0]),radians(point[1]) #tuple(map(lambda p: radians(p), point))
 
 
 def distance(point_a, point_b):
