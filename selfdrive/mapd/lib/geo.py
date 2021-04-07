@@ -118,11 +118,11 @@ def absoule_delta_with_direction(delta):
     return (delta_ahead, DIRECTION.NONE)
 
 
-def three_point_curvature_alt(ref, prev, next):
+def three_point_curvature_alt(ref_point, prev_point, next_point):
   # https://math.stackexchange.com/questions/2507540/numerical-way-to-solve-for-the-curvature-of-a-curve
   # https://en.wikipedia.org/wiki/Heron%27s_formula
-  prev_r = (prev[0] - ref[0], prev[1] - ref[1])
-  next_r = (next[0] - ref[0], next[1] - ref[1])
+  prev_r = (prev_point[0] - ref_point[0], prev_point[1] - ref_point[1])
+  next_r = (next_point[0] - ref_point[0], next_point[1] - ref_point[1])
 
   prev_ang = atan2(prev_r[0], prev_r[1])
   next_ang = atan2(next_r[0], next_r[1])
@@ -139,12 +139,12 @@ def three_point_curvature_alt(ref, prev, next):
   return 4 * A / (a * b * c)
 
 
-def three_point_tangent_angle(prev, ref, next):
-  """Angle (in readians) of the tangent line formed by three points in sequence `prev`, `ref`, `next`
+def three_point_tangent_angle(prev_point, ref_point, next_point):
+  """Angle (in readians) of the tangent line formed by three points in sequence `prev_point`, `ref_point`, `next_point`
   """
   # https://www.math24.net/curvature-radius
-  prev_vec = (ref[0] - prev[0], ref[1] - prev[1])
-  next_vec = (next[0] - ref[0], next[1] - ref[1])
+  prev_vec = (ref_point[0] - prev_point[0], ref_point[1] - prev_point[1])
+  next_vec = (next_point[0] - ref_point[0], next_point[1] - ref_point[1])
   avg_vec = ((prev_vec[0] + next_vec[0]) / 2., (prev_vec[1] + next_vec[1]) / 2.)
 
   return atan2(avg_vec[1], avg_vec[0])
