@@ -2,7 +2,7 @@ import unittest
 import numpy as np
 from numpy.testing import assert_array_almost_equal
 from .mock_data import MockRoad
-#from .NodesData import vectors
+from .NodesData import vectors
 
 
 class TestNodesData(unittest.TestCase):
