@@ -1,4 +1,4 @@
-from .NodesData import NodesData, NodeDataIdx
+from selfdrive.mapd.lib.NodesData import NodesData, NodeDataIdx
 import numpy as np
 
 
