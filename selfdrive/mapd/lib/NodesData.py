@@ -1,6 +1,6 @@
 import numpy as np
 from enum import Enum
-from .geo import DIRECTION, R
+from selfdrive.mapd.lib.geo import DIRECTION, R
 
 
 def vectors(points):
