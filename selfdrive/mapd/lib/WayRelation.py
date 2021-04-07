@@ -1,4 +1,4 @@
-from .geo import DIRECTION, distance_and_bearing, absoule_delta_with_direction, bearing_delta, bearing
+from selfdrive.mapd.lib.geo import DIRECTION, distance_and_bearing, absoule_delta_with_direction, bearing_delta, bearing
 from common.numpy_fast import interp
 from selfdrive.config import Conversions as CV
 import numpy as np
