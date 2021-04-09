@@ -86,7 +86,7 @@ void HomeWindow::mousePressEvent(QMouseEvent* e) {
     // If touching the speed limit sign area when visible
     ui_state->last_speed_limit_sign_tap = seconds_since_boot();
     ui_state->speed_limit_control_enabled = !ui_state->speed_limit_control_enabled;
-    params().putBool(ui_state->speed_limit_control_enabled, "SpeedLimitControl");
+    Params().putBool(ui_state->speed_limit_control_enabled, "SpeedLimitControl");
   }
 
   // Handle sidebar collapsing
