@@ -36,8 +36,8 @@ static void ui_draw_circle(const UIState *s, float x, float y, float size, NVGco
 }
 
 static void ui_draw_speed_sign(const UIState *s, float x, float y, int size, float speed, float speed_offset, const char *font_name, int ring_alpha, int inner_alpha) {
-  ui_draw_circle(s->vg, x, y, float(size), COLOR_RED_ALPHA(ring_alpha));
-  ui_draw_circle(s->vg, x, y, float(size) * 0.8, COLOR_WHITE_ALPHA(inner_alpha));
+  ui_draw_circle(s, x, y, float(size), COLOR_RED_ALPHA(ring_alpha));
+  ui_draw_circle(s, x, y, float(size) * 0.8, COLOR_WHITE_ALPHA(inner_alpha));
 
   char speedlimit_str[16];
   nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
@@ -247,7 +247,7 @@ static void ui_draw_vision_speedlimit(UIState *s) {
     const int ring_alpha = inactive ? 100 : 255;
     const int inner_alpha = inactive || temp_inactive ? 100 : 255;
 
-    ui_draw_speed_sign(s->vg, sign_center_x, sign_center_y, speed_sgn_r, speed, speed_offset, "sans-bold", ring_alpha, inner_alpha);
+    ui_draw_speed_sign(s, sign_center_x, sign_center_y, speed_sgn_r, speed, speed_offset, "sans-bold", ring_alpha, inner_alpha);
     s->scene.ui_speed_sgn_x = sign_center_x - speed_sgn_r;
     s->scene.ui_speed_sgn_y = sign_center_y - speed_sgn_r;
   }
