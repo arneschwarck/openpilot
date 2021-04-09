@@ -62,7 +62,7 @@ void HomeWindow::mousePressEvent(QMouseEvent* e) {
         ui_state->speed_limit_control_enabled = !ui_state->speed_limit_control_enabled;
         Params().putBool("SpeedLimitControl", false );
       } else {
-        ui_state->sidebar_collapsed = !ui_state->sidebar_collapsed
+        ui_state->sidebar_collapsed = !ui_state->sidebar_collapsed;
       }
     } else {
     Params().putBool("IsDriverViewEnabled", false);
