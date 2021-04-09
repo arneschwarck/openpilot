@@ -387,7 +387,20 @@ class CarInterface(CarInterfaceBase):
     self.cp.update_strings(can_strings)
     self.cp_cam.update_strings(can_strings)
 
+    self.cruise_speed_override = True #TODO: add it to the op_edit or better yet setting.
+
     ret = self.CS.update(self.cp, self.cp_cam)
+
+    if ret.cruiseState.enabled and ret.cruiseState.speed < 12 and self.CP.openpilotLongitudinalControl:
+      if self.cruise_speed_override:
+        if self.init_cruise_speed == 0.:
+          ret.cruiseState.speed = self.init_cruise_speed = max(2, ret.vEgo)
+        else:
+          ret.cruiseState.speed = self.init_cruise_speed
+      else:
+        ret.cruiseState.speed = 2
+    else:
+      self.init_cruise_speed = 0.
 
     ret.canValid = self.cp.can_valid and self.cp_cam.can_valid
     ret.steeringRateLimited = self.CC.steer_rate_limited if self.CC is not None else False
