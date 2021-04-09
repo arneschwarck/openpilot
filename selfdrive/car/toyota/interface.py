@@ -10,8 +10,11 @@ GearShifter = car.CarState.GearShifter
 
 EventName = car.CarEvent.EventName
 
-
 class CarInterface(CarInterfaceBase):
+  def __init__(self, CP, CarController, CarState):
+    super().__init__(CP, CarController, CarState)
+    self.init_cruise_speed = 0.
+
   @staticmethod
   def compute_gb(accel, speed):
     return float(accel) / CarControllerParams.ACCEL_SCALE

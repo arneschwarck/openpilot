@@ -226,11 +226,9 @@ static void ui_draw_engine_rpm(UIState *s) {
 
 static void ui_draw_acceleration_command(UIState *s) {
   char val_str [16];
-  snprintf(val_str, 16, "%d", (s->scene.engineRPM));
-  const std::string accel_cmd_str = std::string(val_str);
-  nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_BASELINE);
-  ui_draw_text(s, s->viz_rect.centerX(), 440, accel_cmd_str.c_str(), 36 * 2.5, COLOR_WHITE, "sans-bold");
-  ui_draw_text(s, s->viz_rect.centerX(), 500, "ENG RPM", 24 * 2.5, COLOR_WHITE_ALPHA(200), "sans-regular");
+  char uom_str[4];
+  snprintf(val_str, sizeof(val_str), "%d", (s->scene.engineRPM));
+  snprintf(uom_str, sizeof(uom_str), "");
 }
 
 static void ui_draw_vision_event(UIState *s) {
