@@ -2,6 +2,8 @@
 #include <iostream>
 #include <sstream>
 #include <cassert>
+#include <QAction>
+#include <QMenu>
 
 #ifndef QCOM
 #include "networking.hpp"
@@ -150,6 +152,19 @@ DevicePanel::DevicePanel(QWidget* parent) : QWidget(parent) {
     QObject::connect(parent, SIGNAL(offroadTransition(bool)), btn, SLOT(setEnabled(bool)));
     device_layout->addWidget(btn);
   }
+
+  // color correction
+
+  QMenu *colorc_menu = new QMenu();
+  colorc_menu->addAction("None", [=]() {Hardware::set_color_mode(0);});
+  colorc_menu->addAction("Deuteranomaly (red-green)", [=]() {Hardware::set_color_mode(1);});
+  colorc_menu->addAction("Protanomaly (red-green)", [=]() {Hardware::set_color_mode(2);});
+  colorc_menu->addAction("Tritanopia (blue-yello)", [=]() {Hardware::set_color_mode(3);});
+
+  QPushButton *set_colorc_btn = new QPushButton("Colour correction");
+  set_colorc_btn->setMenu(colorc_menu);
+  device_layout->addWidget(set_colorc_btn, 0, Qt::AlignBottom);
+  device_layout->addWidget(horizontal_line(), Qt::AlignBottom);
 
   // power buttons
   QHBoxLayout *power_layout = new QHBoxLayout();
