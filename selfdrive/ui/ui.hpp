@@ -109,7 +109,6 @@ typedef struct UIScene {
   int engineRPM;
   bool headlightON;
   bool parkingLightON;
-  float aEgo;
   NetStatus athenaStatus;
 
   cereal::DeviceState::Reader deviceState;

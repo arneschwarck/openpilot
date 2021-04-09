@@ -217,20 +217,20 @@ static void ui_draw_engine_rpm(UIState *s) {
   const std::string engine_rpm_str = std::to_string((int)std::nearbyint(engine_rpm));
   nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_BASELINE);
   if(engine_rpm == 0) {
-  	ui_draw_text(s, s->viz_rect.centerX(), 320 , "EV Mode", 36 * 2.5, COLOR_WHITE, "sans-bold");
+  	ui_draw_text(s, s->viz_rect.centerX(), 320 , "EV Mode", 36 * 2.5, COLOR_YELLOW, "sans-bold");
   } else {
-    ui_draw_text(s, s->viz_rect.centerX(), 300, engine_rpm_str.c_str(), 36 * 2.5, COLOR_WHITE, "sans-bold");
+    ui_draw_text(s, s->viz_rect.centerX(), 300, engine_rpm_str.c_str(), 36 * 2.5, COLOR_RED, "sans-bold");
     ui_draw_text(s, s->viz_rect.centerX(), 360, "RPM", 24 * 2.5, COLOR_WHITE_ALPHA(200), "sans-regular");
   }
 }
 
 static void ui_draw_acceleration_command(UIState *s) {
   char val_str [16];
-  snprintf(val_str, 16, "%.2f", (s->scene.aEgo));
+  snprintf(val_str, 16, "%d", (s->scene.engineRPM));
   const std::string accel_cmd_str = std::string(val_str);
   nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_BASELINE);
   ui_draw_text(s, s->viz_rect.centerX(), 440, accel_cmd_str.c_str(), 36 * 2.5, COLOR_WHITE, "sans-bold");
-  ui_draw_text(s, s->viz_rect.centerX(), 500, "m/s²", 24 * 2.5, COLOR_WHITE_ALPHA(200), "sans-regular");
+  ui_draw_text(s, s->viz_rect.centerX(), 500, "ENG RPM", 24 * 2.5, COLOR_WHITE_ALPHA(200), "sans-regular");
 }
 
 static void ui_draw_vision_event(UIState *s) {
