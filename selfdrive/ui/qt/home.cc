@@ -52,19 +52,6 @@ HomeWindow::HomeWindow(QWidget* parent) : QWidget(parent) {
 void HomeWindow::mousePressEvent(QMouseEvent* e) {
   UIState* ui_state = &glWindow->ui_state;
   if (GLWindow::ui_state.scene.driver_view) {
-    if (ui_state->scene.controls_state.getSpeedLimit() > 0.0
-          && e->x() >= ui_state->scene.ui_speed_sgn_y - speed_sgn_touch_pad
-          && e->x() < ui_state->scene.ui_speed_sgn_y + 2 * speed_sgn_r + speed_sgn_touch_pad
-          && e->y() >= ui_state->scene.ui_speed_sgn_x - speed_sgn_touch_pad
-          && e->y() < ui_state->scene.ui_speed_sgn_x + 2 * speed_sgn_r + speed_sgn_touch_pad) {
-        // If touching the speed limit sign area when visible
-        ui_state->last_speed_limit_sign_tap = seconds_since_boot();
-        ui_state->speed_limit_control_enabled = !ui_state->speed_limit_control_enabled;
-        Params().putBool("SpeedLimitControl", false );
-      } else {
-        ui_state->sidebar_collapsed = !ui_state->sidebar_collapsed;
-      }
-    } else {
     Params().putBool("IsDriverViewEnabled", false);
     GLWindow::ui_state.scene.driver_view = false;
     return;
@@ -86,7 +73,7 @@ void HomeWindow::mousePressEvent(QMouseEvent* e) {
     // If touching the speed limit sign area when visible
     ui_state->last_speed_limit_sign_tap = seconds_since_boot();
     ui_state->speed_limit_control_enabled = !ui_state->speed_limit_control_enabled;
-    Params().putBool("SpeedLimitControl", false);
+    Params().putBool("SpeedLimitControl", true);
   }
 
   // Handle sidebar collapsing
