@@ -1,15 +1,28 @@
 """Install exception handler for process crash."""
 import os
-import requests
 import sys
 import threading
 import capnp
-from selfdrive.version import version, dirty, origin, branch
+import requests
 import traceback
-from datetime import datetime
+from cereal import car
+from common.params import Params
+from selfdrive.version import version, dirty, origin, branch
 
 from selfdrive.hardware import PC
 from selfdrive.swaglog import cloudlog
+
+
+def save_exception(exc_text):
+  i = 0
+  log_file = '{}/{}'.format(CRASHES_DIR, datetime.now().strftime('%Y-%m-%d--%H-%M-%S.%f.log')[:-3])
+  if os.path.exists(log_file):
+    while os.path.exists(log_file + str(i)):
+      i += 1
+    log_file += str(i)
+  with open(log_file, 'w') as f:
+    f.write(exc_text)
+  print('Logged current crash to {}'.format(log_file))
 
 if os.getenv("NOLOG") or os.getenv("NOCRASH") or PC:
   def capture_exception(*args, **kwargs):
@@ -26,33 +39,57 @@ if os.getenv("NOLOG") or os.getenv("NOCRASH") or PC:
 else:
   from raven import Client
   from raven.transport.http import HTTPTransport
-  #from selfdrive.version import origin, branch, smiskol_remote, get_git_commit
-  #from common.op_params import opParams
+  from common.op_params import opParams
+  from datetime import datetime
 
-  CRASHES_DIR = '/data/community/crashes'
+  ret = car.CarParams.new_message()
+  candidate = ret.carFingerprint
+
+  COMMUNITY_DIR = '/data/community'
+  CRASHES_DIR = '{}/crashes'.format(COMMUNITY_DIR)
+
+  if not os.path.exists(COMMUNITY_DIR):
+    os.mkdir(COMMUNITY_DIR)
   if not os.path.exists(CRASHES_DIR):
-    os.makedirs(CRASHES_DIR)
+    os.mkdir(CRASHES_DIR)
 
-  #error_tags = {'dirty': dirty, 'origin': origin, 'branch': branch, 'commit': get_git_commit()}
-  #username = opParams().get('username')
-  #if username is None or not isinstance(username, str):
-    #username = 'undefined'
-  #error_tags['username'] = username
+  params = Params()
+  op_params = opParams()
+  awareness_factor = op_params.get('awareness_factor')
+  alca_min_speed = op_params.get('alca_min_speed')
+  alca_nudge_required = op_params.get('alca_nudge_required')
+  ArizonaMode = op_params.get('ArizonaMode')
+  dynamic_gas_mod = op_params.get('dynamic_gas_mod')
+  keep_openpilot_engaged = op_params.get('keep_openpilot_engaged')
+  set_speed_offset = op_params.get('set_speed_offset')
+  username = op_params.get('username')
+  #uniqueID = op_params.get('uniqueID')
+  try:
+    dongle_id = params.get("DongleId").decode('utf8')
+  except AttributeError:
+    dongle_id = "None"
+  try:
+    ip = requests.get('https://checkip.amazonaws.com/').text.strip()
+  except Exception:
+    ip = "255.255.255.255"
+  error_tags = {'dirty': dirty, 'dongle_id': dongle_id, 'branch': branch, 'remote': origin,
+                'awareness_factor': awareness_factor, 'alca_min_speed': alca_min_speed,
+                'alca_nudge_required': alca_nudge_required, 'ArizonaMode': ArizonaMode,
+                'dynamic_gas_mod': dynamic_gas_mod, 'keep_openpilot_engaged': keep_openpilot_engaged,
+                'set_speed_offset': set_speed_offset, 'fingerprintedAs': candidate}
+  if username is None or not isinstance(username, str):
+    username = 'undefined'
+    #error_tags['uniqueID'] = uniqueID
+  error_tags['username'] = username
 
-  ip = requests.get('https://checkip.amazonaws.com/').text.strip()
-  tags = {
-    'dirty': dirty,
-    'origin': origin,
-    'branch': branch
-  }
+  u_tag = []
+  if isinstance(username, str):
+    u_tag.append(username)
+  if len(u_tag) > 0:
+    error_tags['username'] = ''.join(u_tag)
+
   client = Client('https://137e8e621f114f858f4c392c52e18c6d:8aba82f49af040c8aac45e95a8484970@sentry.io/1404547',
-                  install_sys_hook=False, transport=HTTPTransport, release=version, tags=tags)
-
-  def save_exception(exc_text):
-    log_file = '{}/{}'.format(CRASHES_DIR, datetime.now().strftime('%d-%m-%Y--%I:%M.%S-%p.log'))
-    with open(log_file, 'w') as f:
-      f.write(exc_text)
-    print('Logged current crash to {}'.format(log_file))
+                  install_sys_hook=False, transport=HTTPTransport, release=version, tags=error_tags)
 
   def capture_exception(*args, **kwargs):
     save_exception(traceback.format_exc())
@@ -63,11 +100,13 @@ else:
 
   def bind_user(**kwargs):
     client.user_context(kwargs)
+
   def capture_warning(warning_string):
-    bind_user(id=branch, ip_address=ip)
+    bind_user(id=dongle_id, ip_address=ip, username=username)
     client.captureMessage(warning_string, level='warning')
+
   def capture_info(info_string):
-    bind_user(id=branch, ip_address=ip)
+    bind_user(id=dongle_id, ip_address=ip, username=username)
     client.captureMessage(info_string, level='info')
 
   def bind_extra(**kwargs):
