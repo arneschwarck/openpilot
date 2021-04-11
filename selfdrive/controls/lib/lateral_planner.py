@@ -115,10 +115,10 @@ class LateralPlanner():
       self.lane_change_state = LaneChangeState.off
       self.lane_change_direction = LaneChangeDirection.none
     else:
-      torque_applied = (sm['carState'].steeringPressed and \
-                       ((sm['carState'].steeringTorque > 0 and self.lane_change_direction == LaneChangeDirection.left) or \
-                        (sm['carState'].steeringTorque < 0 and self.lane_change_direction == LaneChangeDirection.right))) or \
-                       (not self.alca_nudge_required and self.lane_change_direction == LaneChangeDirection.left) or \
+      torque_applied = (sm['carState'].steeringPressed and
+                       ((sm['carState'].steeringTorque > 0 and self.lane_change_direction == LaneChangeDirection.left) or
+                        (sm['carState'].steeringTorque < 0 and self.lane_change_direction == LaneChangeDirection.right))) or
+                       (not self.alca_nudge_required and self.lane_change_direction == LaneChangeDirection.left) or 
                        (not self.alca_nudge_required and self.lane_change_direction == LaneChangeDirection.right)
 
       blindspot_detected = ((sm['carState'].leftBlindspot and self.lane_change_direction == LaneChangeDirection.left) or

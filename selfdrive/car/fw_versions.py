@@ -239,7 +239,7 @@ if __name__ == "__main__":
   parser = argparse.ArgumentParser(description='Get firmware version of ECU\'s')
   parser.add_argument('--scan', '-s', action='store_true', help='In-depth scan of ECU\'s. May cause module faults')
   parser.add_argument('--debug', '-d', action='store_true')
-  parser.add_argument('--json', '-j', type=str, nargs=2, metavar=('USERNAME', 'MODEL'), help='Toggles upload of results to a JSON server, Sentry, or both. This helps the fork maintainer. Enter your discord username, and car model. Example: \"./fw_versions.py -j Happy123 COROLLA_TSS2\"')
+  parser.add_argument('--json', '-j', type=str, nargs=2, metavar=('USERNAME', 'MODEL'), help='Toggles upload of results to a JSON server, Sentry, or both. This helps the fork maintainer. Enter your discord username, and car model. Example: \"./fw_versions.py -j Happy123 COROLLA_TSS2\"') # noqa: E501
   args = parser.parse_args()
 
   logcan = messaging.sub_sock('can')
