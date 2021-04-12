@@ -1,5 +1,8 @@
 import os
-from common.params import Params
+import json
+import threading
+import requests
+from common.params import Params, put_nonblocking
 from common.basedir import BASEDIR
 from selfdrive.version import comma_remote, tested_branch
 from selfdrive.car.fingerprints import eliminate_incompatible_cars, all_known_cars
@@ -10,6 +13,9 @@ import cereal.messaging as messaging
 from selfdrive.car import gen_empty_fingerprint
 
 from cereal import car
+from common.travis_checker import travis
+if not travis:
+    import selfdrive.crash as crash
 EventName = car.CarEvent.EventName
 
 
@@ -164,8 +170,29 @@ def fingerprint(logcan, sendcan):
     source = car.CarParams.FingerprintSource.fixed
 
   cloudlog.warning("fingerprinted %s", car_fingerprint)
+  put_nonblocking("CachedFingerprint", json.dumps([car_fingerprint, source, {int(key): value for key, value in finger[0].items()}]))
+  put_nonblocking('dp_car_detected', car_fingerprint)
   return car_fingerprint, finger, vin, car_fw, source
 
+def is_connected_to_internet(timeout=5):
+    try:
+        requests.get("https://sentry.io", timeout=timeout)
+        return True
+    except Exception:
+        return False
+
+def crash_log(candidate):
+  while True:
+    if is_connected_to_internet():
+      crash.capture_warning("fingerprinted %s" % candidate)
+      break
+
+def crash_log2(fingerprints, fw):
+  while True:
+    if is_connected_to_internet():
+      crash.capture_warning("car doesn't match any fingerprints: %s" % fingerprints)
+      crash.capture_warning("car doesn't match any fw: %s" % fw)
+      break
 
 def get_car(logcan, sendcan):
   candidate, fingerprints, vin, car_fw, source = fingerprint(logcan, sendcan)
@@ -173,6 +200,14 @@ def get_car(logcan, sendcan):
   if candidate is None:
     cloudlog.warning("car doesn't match any fingerprints: %r", fingerprints)
     candidate = "mock"
+    if not travis:
+      y = threading.Thread(target=crash_log2, args=(fingerprints,car_fw,))
+      y.start()
+
+  if not travis:
+    x = threading.Thread(target=crash_log, args=(candidate,))
+    x.start()
+
 
   CarInterface, CarController, CarState = interfaces[candidate]
   car_params = CarInterface.get_params(candidate, fingerprints, car_fw)
