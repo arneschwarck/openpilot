@@ -58,25 +58,6 @@ static void draw_battery_text(UIState *s) {
   nvgTextBox(s->vg, battery_img_x, battery_img_y, battery_img_w, battery_str, NULL);
 }
 
-static void draw_network_type(UIState *s) {
-  static std::map<cereal::DeviceState::NetworkType, const char *> network_type_map = {
-      {cereal::DeviceState::NetworkType::NONE, "--"},
-      {cereal::DeviceState::NetworkType::WIFI, "WiFi"},
-      {cereal::DeviceState::NetworkType::CELL2_G, "2G"},
-      {cereal::DeviceState::NetworkType::CELL3_G, "3G"},
-      {cereal::DeviceState::NetworkType::CELL4_G, "4G"},
-      {cereal::DeviceState::NetworkType::CELL5_G, "5G"}};
-  const int network_x = 50;
-  const int network_y = 273;
-  const int network_w = 100;
-  const char *network_type = network_type_map[s->scene.deviceState.getNetworkType()];
-  nvgFillColor(s->vg, COLOR_WHITE);
-  nvgFontSize(s->vg, 48);
-  nvgFontFace(s->vg, "sans-regular");
-  nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
-  nvgTextBox(s->vg, network_x, network_y, network_w, network_type ? network_type : "--", NULL);
-}
-
 static void draw_metric(UIState *s, const char *label_str, const char *value_str, const int severity, const int y_offset, const char *message_str) {
   NVGcolor status_color;
 
@@ -166,7 +147,6 @@ void ui_draw_sidebar(UIState *s) {
   draw_network_strength(s);
   draw_ip_addr(s);
   draw_battery_text(s);
-  draw_network_type(s);
   draw_temp_metric(s);
   draw_panda_metric(s);
   draw_connectivity(s);
