@@ -192,6 +192,9 @@ def thermald_thread():
           pass
     cloudlog.event("CPR", data=cpr_data)
 
+  ts_last_ip = 0
+  ip_addr = '255.255.255.255'
+
   while 1:
     pandaState = messaging.recv_sock(pandaState_sock, wait=True)
     msg = read_thermal(thermal_config)
@@ -257,6 +260,17 @@ def thermald_thread():
       msg.deviceState.batteryPercent = 100
       msg.deviceState.batteryStatus = "Charging"
       msg.deviceState.batteryTempC = 0
+
+    # update ip every 10 seconds
+    ts = sec_since_boot()
+    if ts - ts_last_ip >= 10.:
+      try:
+        result = subprocess.check_output(["ifconfig", "wlan0"], encoding='utf8')  # pylint: disable=unexpected-keyword-arg
+        ip_addr = re.findall(r"inet addr:((\d+\.){3}\d+)", result)[0][0]
+      except:
+        ip_addr = 'N/A'
+      ts_last_ip = ts
+    msg.deviceState.ipAddr = ip_addr
 
     current_filter.update(msg.deviceState.batteryCurrent / 1e6)
 
