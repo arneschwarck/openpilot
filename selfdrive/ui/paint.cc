@@ -620,11 +620,11 @@ static void bb_ui_draw_measures_left(UIState *s, int bb_x, int bb_y, int bb_w ) 
   }
   //BAT LEVEL
   if(true) {
-    char battery_str[7];
+    char uom_str[7];
     NVGcolor val_color = COLOR_WHITE_ALPHA(200);
-    int battery_str = s->scene.deviceState.getBatteryPercent();
-    snprintf(battery_str, sizeof(battery_str), "%d%%%s", s->scene.deviceState.getBatteryPercent(), s->scene.deviceState.getBatteryStatus() == "Charging" ? "+" : "-");
-    bb_h +=bb_ui_draw_measure(s, battery_str, "BAT LVL",
+    //int battery_str = s->scene.deviceState.getBatteryPercent();
+    snprintf(uom_str, sizeof(uom_str), "%d%%%s", s->scene.deviceState.getBatteryPercent(), s->scene.deviceState.getBatteryStatus() == "Charging" ? "+" : "-");
+    bb_h +=bb_ui_draw_measure(s, uom_str, "BAT LVL",
         bb_rx, bb_ry, bb_uom_dx,
         val_color, lab_color, uom_color,
         value_fontSize, label_fontSize, uom_fontSize );
