@@ -257,20 +257,8 @@ static void ui_draw_vision_speed(UIState *s) {
   const float speed = std::max(0.0, s->scene.car_state.getVEgo() * (s->scene.is_metric ? 3.6 : 2.2369363));
   const std::string speed_str = std::to_string((int)std::nearbyint(speed));
   nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_BASELINE);
-  ui_draw_text(s, s->viz_rect.centerX(), 160, speed_str.c_str(), 80 * 2.5, COLOR_WHITE, "sans-bold");
-  ui_draw_text(s, s->viz_rect.centerX(), 220, s->scene.is_metric ? "km/h" : "mph", 24 * 2.5, COLOR_WHITE_ALPHA(200), "sans-regular");
-}
-
-static void ui_draw_engine_rpm(UIState *s) {
-  const float engine_rpm = s->scene.engineRPM;
-  const std::string engine_rpm_str = std::to_string((int)std::nearbyint(engine_rpm));
-  nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_BASELINE);
-  if(engine_rpm == 0) {
-  	ui_draw_text(s, s->viz_rect.centerX(), 320 , "EV Mode", 36 * 2.5, COLOR_YELLOW, "sans-bold");
-  } else {
-    ui_draw_text(s, s->viz_rect.centerX(), 300, engine_rpm_str.c_str(), 36 * 2.5, COLOR_RED, "sans-bold");
-    ui_draw_text(s, s->viz_rect.centerX(), 360, "RPM", 24 * 2.5, COLOR_WHITE_ALPHA(200), "sans-regular");
-  }
+  ui_draw_text(s, s->viz_rect.centerX(), 240, speed_str.c_str(), 100 * 2.5, COLOR_WHITE, "sans-bold");
+  ui_draw_text(s, s->viz_rect.centerX(), 320, s->scene.is_metric ? "㎞/h" : "mph", 36 * 2.5, COLOR_YELLOW_ALPHA(200), "sans-regular");
 }
 
 static void ui_draw_acceleration_command(UIState *s) {
@@ -664,6 +652,22 @@ static void bb_ui_draw_measures_right(UIState *s, int bb_x, int bb_y, int bb_w )
     bb_ry = bb_y + bb_h;
   }
 
+  if (true) {
+    char val_str[16];
+    char uom_str[4];
+    NVGcolor val_color = nvgRGBA(255, 255, 255, 200);
+    if(s->scene.engineRPM == 0) {
+      snprintf(val_str, sizeof(val_str), "OFF");
+    }
+    else {snprintf(val_str, sizeof(val_str), "%d", (s->scene.engineRPM));}
+    snprintf(uom_str, sizeof(uom_str), "");
+    bb_h +=bb_ui_draw_measure(s,  val_str, uom_str, "ENG RPM",
+        bb_rx, bb_ry, bb_uom_dx,
+        val_color, lab_color, uom_color,
+        value_fontSize, label_fontSize, uom_fontSize );
+    bb_ry = bb_y + bb_h;
+  }
+
   //finally draw the frame
   bb_h += 20;
   nvgBeginPath(s->vg);
@@ -704,8 +708,6 @@ static void ui_draw_vision_header(UIState *s) {
   ui_draw_vision_speedlimit(s);
   ui_draw_vision_speed(s);
   ui_draw_vision_event(s);
-  ui_draw_engine_rpm(s);
-  ui_draw_acceleration_command(s);
   bb_ui_draw_UI(s);
 }
 
