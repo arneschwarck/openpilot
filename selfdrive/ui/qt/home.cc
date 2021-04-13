@@ -77,7 +77,7 @@ void HomeWindow::mousePressEvent(QMouseEvent* e) {
   }
 
   // dashcam REC
-  if (ui_state->scene.started && ui_state->sidebar_collapsed && !ui_state->scene.map_on_top && rec_btn.ptInRect(e->x(), e->y())) {
+  if (ui_state->scene.started && ui_state->sidebar_collapsed && rec_btn.ptInRect(e->x(), e->y())) {
     ui_state->scene.recording = !ui_state->scene.recording;
     ui_state->scene.touched = true;
     return;
