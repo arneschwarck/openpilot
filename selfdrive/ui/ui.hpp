@@ -144,6 +144,7 @@ typedef struct UIScene {
   char ipAddr[20];
   int fanSpeed;
   bool brakePress;
+  bool leftBlinker, rightBlinker;
 
   NetStatus athenaStatus;
 

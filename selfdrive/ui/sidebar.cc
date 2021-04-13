@@ -37,7 +37,7 @@ static void draw_ip_addr(UIState *s) {
 
   char network_ip_str[20];
   snprintf(network_ip_str, sizeof(network_ip_str), "%s", s->scene.ipAddr);
-  nvgFillColor(s->vg, COLOR_YELLOW);
+  nvgFillColor(s->vg, COLOR_WHITE);
   nvgFontSize(s->vg, 28);
   nvgFontFace(s->vg, "sans-bold");
   nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
