@@ -187,7 +187,7 @@ typedef struct UIState {
   float speed_limit_perc_offset;
   double last_speed_limit_sign_tap;
   bool driving_record;
-  bool is_OpenpilotViewEnabled
+  bool is_OpenpilotViewEnabled;
 
   bool sidebar_collapsed;
   Rect video_rect, viz_rect;
