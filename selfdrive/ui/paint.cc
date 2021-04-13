@@ -695,9 +695,9 @@ static void bb_ui_draw_UI(UIState *s) {
 
 static void ui_draw_vision_header(UIState *s) {
   NVGpaint gradient = nvgLinearGradient(s->vg, s->viz_rect.x,
-                        s->viz_rect.y+(header_h-(header_h/2.0)),
+                        s->viz_rect.y+(header_h-(header_h/2.5)),
                         s->viz_rect.x, s->viz_rect.y+header_h,
-                        nvgRGBAf(0,0,0,0.6), nvgRGBAf(0,0,0,0));
+                        nvgRGBAf(0,0,0,0.45), nvgRGBAf(0,0,0,0));
 
   ui_fill_rect(s->vg, {s->viz_rect.x, s->viz_rect.y, s->viz_rect.w, header_h}, gradient);
 
