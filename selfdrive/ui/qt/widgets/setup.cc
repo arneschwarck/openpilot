@@ -132,13 +132,13 @@ PrimeAdWidget::PrimeAdWidget(QWidget* parent) : QWidget(parent) {
   vlayout->setMargin(30);
   vlayout->setSpacing(15);
 
-  vlayout->addWidget(new QLabel("Easy Driving kumar~"), 1, Qt::AlignCenter);
+  vlayout->addWidget(new QLabel("Easy Driving~"), 1, Qt::AlignCenter);
 
-  QPixmap logo("../assets/offroad/icon_openpilot.png");
-  QLabel *hkg = new QLabel();
-  hkg->setPixmap(logo.scaledToWidth(430, Qt::SmoothTransformation));
-  hkg->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
-  vlayout->addWidget(hkg, 0, Qt::AlignCenter);
+  QPixmap logo("../assets/icon_prius.png");
+  QLabel *kumar = new QLabel();
+  kumar->setPixmap(logo.scaledToWidth(430, Qt::SmoothTransformation));
+  kumar->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
+  vlayout->addWidget(kumar, 0, Qt::AlignCenter);
 
 /*
 
