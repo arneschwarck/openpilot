@@ -131,6 +131,7 @@ typedef struct UIScene {
   char batteryStatus[64];
   char ipAddr[20];
   int fanSpeed;
+  bool brakePress;
 
   NetStatus athenaStatus;
 
