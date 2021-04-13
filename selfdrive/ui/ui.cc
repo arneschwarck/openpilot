@@ -9,6 +9,7 @@
 #include "common/visionimg.h"
 #include "ui.hpp"
 #include "paint.hpp"
+#include "dashcam.h"
 
 // Projects a point in car to space to the corresponding point in full frame
 // image space.
@@ -355,4 +356,5 @@ void ui_update(UIState *s) {
   update_status(s);
   update_alert(s);
   update_vision(s);
+  dashcam(s);
 }
