@@ -116,6 +116,12 @@ typedef struct UIScene {
   int engineRPM;
   bool headlightON;
   bool parkingLightON;
+  int recording_count;
+  int recording_quality;
+  bool recording;
+  bool is_OpenpilotViewEnabled;
+  bool touched;
+
   NetStatus athenaStatus;
 
   cereal::DeviceState::Reader deviceState;
@@ -181,6 +187,7 @@ typedef struct UIState {
   bool speed_limit_control_enabled;
   float speed_limit_perc_offset;
   double last_speed_limit_sign_tap;
+  bool driving_record;
 
   bool sidebar_collapsed;
   Rect video_rect, viz_rect;
