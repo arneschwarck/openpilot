@@ -261,13 +261,6 @@ static void ui_draw_vision_speed(UIState *s) {
   ui_draw_text(s, s->viz_rect.centerX(), 320, s->scene.is_metric ? "㎞/h" : "mph", 36 * 2.5, COLOR_YELLOW_ALPHA(200), "sans-regular");
 }
 
-static void ui_draw_acceleration_command(UIState *s) {
-  char val_str [16];
-  char uom_str[4];
-  snprintf(val_str, sizeof(val_str), "%d", (s->scene.engineRPM));
-  snprintf(uom_str, sizeof(uom_str), "");
-}
-
 static void ui_draw_vision_event(UIState *s) {
   const int viz_event_w = 220;
   const int viz_event_x = s->viz_rect.right() - (viz_event_w + bdr_s*3);
@@ -704,7 +697,6 @@ static void ui_draw_vision_header(UIState *s) {
   if (s->scene.longitudinal_control) {
     ui_draw_vision_maxspeed(s);
   }
-  ui_draw_vision_maxspeed(s);
   ui_draw_vision_speedlimit(s);
   ui_draw_vision_speed(s);
   ui_draw_vision_event(s);
