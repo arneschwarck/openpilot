@@ -347,7 +347,7 @@ selfdrive/ui/*.hpp
 selfdrive/ui/ui
 selfdrive/ui/text
 selfdrive/ui/spinner
-
+selfdrive/ui/dashcam.h
 selfdrive/ui/qt/*.cc
 selfdrive/ui/qt/*.hpp
 selfdrive/ui/qt/offroad/*.cc
