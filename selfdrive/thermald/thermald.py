@@ -270,7 +270,7 @@ def thermald_thread():
       try:
         result = subprocess.check_output(["ifconfig", "wlan0"], encoding='utf8')  # pylint: disable=unexpected-keyword-arg
         ip_addr = re.findall(r"inet addr:((\d+\.){3}\d+)", result)[0][0]
-      except Exception as e:
+      except Exception:
         ip_addr = 'N/A'
       ts_last_ip = ts
     msg.deviceState.ipAddr = ip_addr
