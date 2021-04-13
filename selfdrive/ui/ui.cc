@@ -9,6 +9,7 @@
 #include "common/visionimg.h"
 #include "ui.hpp"
 #include "paint.hpp"
+//#include "dashcam.h"
 
 // Projects a point in car to space to the corresponding point in full frame
 // image space.
@@ -49,7 +50,7 @@ static void ui_init_vision(UIState *s) {
 void ui_init(UIState *s) {
   s->sm = new SubMaster({
     "modelV2", "controlsState", "liveCalibration", "radarState", "deviceState", "liveLocationKalman",
-    "pandaState", "carParams", "driverState", "driverMonitoringState", "sensorEvents", "carState", "ubloxGnss",
+    "pandaState", "carParams", "driverState", "driverMonitoringState", "sensorEvents", "carState", "ubloxGnss", "gpsLocationExternal",
 #ifdef QCOM2
     "roadCameraState",
 #endif
@@ -65,6 +66,8 @@ void ui_init(UIState *s) {
 #ifdef QCOM2
   s->wide_camera = Params().getBool("EnableWideCamera");
 #endif
+
+  s->scene.satelliteCount = -1;
 
   ui_nvg_init(s);
 
@@ -140,20 +143,27 @@ static void update_model(UIState *s, const cereal::ModelDataV2::Reader &model) {
   update_line_data(s, model_position, 0.5, 1.22, &scene.track_vertices, max_idx);
 }
 
-static void update_sockets(UIState *s) {
+static void update_sockets(UIState *s){
   SubMaster &sm = *(s->sm);
-  if (sm.update(0) == 0) return;
+  sm.update(0);
+}
+
+static void update_state(UIState *s) {
+  SubMaster &sm = *(s->sm);
 
   UIScene &scene = s->scene;
   if (scene.started && sm.updated("controlsState")) {
     scene.controls_state = sm["controlsState"].getControlsState();
+    scene.angleSteersDes = scene.controls_state.getSteeringAngleDesiredDeg();
   }
   if (sm.updated("carState")) {
     scene.car_state = sm["carState"].getCarState();
     s->scene.engineRPM = scene.car_state.getEngineRPM();
+    s->scene.brakePress = scene.car_state.getBrakePressed();
     s->scene.brakeLights = scene.car_state.getBrakeLights();
     s->scene.parkingLightON = scene.car_state.getParkingLightON();
     s->scene.headlightON = scene.car_state.getHeadlightON();
+    s->scene.angleSteers = scene.car_state.getSteeringAngleDeg();
   }
   if (sm.updated("radarState")) {
     std::optional<cereal::ModelDataV2::XYZTData::Reader> line;
@@ -184,6 +194,11 @@ static void update_sockets(UIState *s) {
   }
   if (sm.updated("deviceState")) {
     scene.deviceState = sm["deviceState"].getDeviceState();
+    s->scene.cpuPerc = scene.deviceState.getCpuUsagePercent();
+    s->scene.cpuTemp = scene.deviceState.getCpuTempC()[0];
+    s->scene.fanSpeed = scene.deviceState.getFanSpeedPercentDesired();
+    auto data = sm["deviceState"].getDeviceState();
+    snprintf(scene.ipAddr, sizeof(scene.ipAddr), "%s", data.getIpAddr().cStr());
   }
   if (sm.updated("pandaState")) {
     auto pandaState = sm["pandaState"].getPandaState();
@@ -197,6 +212,9 @@ static void update_sockets(UIState *s) {
     if (data.which() == cereal::UbloxGnss::MEASUREMENT_REPORT) {
       scene.satelliteCount = data.getMeasurementReport().getNumMeas();
     }
+    auto data2 = sm["gpsLocationExternal"].getGpsLocationExternal();
+      scene.gpsAccuracyUblox = data2.getAccuracy();
+      scene.altitudeUblox = data2.getAltitude();
   }
   if (sm.updated("liveLocationKalman")) {
     scene.gpsOK = sm["liveLocationKalman"].getLiveLocationKalman().getGpsOK();
@@ -352,7 +370,9 @@ static void update_status(UIState *s) {
 void ui_update(UIState *s) {
   update_params(s);
   update_sockets(s);
+  update_state(s);
   update_status(s);
   update_alert(s);
   update_vision(s);
+  //dashcam(s);
 }

@@ -36,8 +36,19 @@
 #define COLOR_WHITE_ALPHA(x) nvgRGBA(255, 255, 255, x)
 #define COLOR_RED_ALPHA(x) nvgRGBA(201, 34, 49, x)
 #define COLOR_YELLOW nvgRGBA(218, 202, 37, 255)
+#define COLOR_YELLOW_ALPHA(x) nvgRGBA(255, 255, 0, x)
 #define COLOR_RED nvgRGBA(201, 34, 49, 255)
 #define COLOR_RED_ALPHA(x) nvgRGBA(201, 34, 49, x)
+#define COLOR_ORANGE nvgRGBA(255, 175, 3, 255)
+#define COLOR_ORANGE_ALPHA(x) nvgRGBA(255, 175, 3, x)
+#define COLOR_GREEN nvgRGBA(0, 255, 0, 255)
+#define COLOR_GREEN_ALPHA(x) nvgRGBA(0, 255, 0, x)
+#define COLOR_ENGAGED nvgRGBA(23, 134, 68, 255)
+#define COLOR_ENGAGED_ALPHA(x) nvgRGBA(23, 134, 68, x)
+#define COLOR_WARNING nvgRGBA(218, 111, 37, 255)
+#define COLOR_WARNING_ALPHA(x) nvgRGBA(218, 111, 37, x)
+#define COLOR_ENGAGEABLE nvgRGBA(23, 51, 73, 255)
+#define COLOR_ENGAGEABLE_ALPHA(x) nvgRGBA(23, 51, 73, x)
 
 #define UI_BUF_COUNT 4
 
@@ -60,6 +71,7 @@ const Rect settings_btn = {50, 35, 200, 117};
 const Rect home_btn = {60, 1080 - 180 - 40, 180, 180};
 const int speed_sgn_r = 96;
 const int speed_sgn_touch_pad = 50;
+const Rect rec_btn = {1745, 905, 140, 140};
 
 const int UI_FREQ = 20;   // Hz
 
@@ -116,6 +128,25 @@ typedef struct UIScene {
   int engineRPM;
   bool headlightON;
   bool parkingLightON;
+  int recording_count;
+  int recording_quality;
+  bool recording;
+  bool touched;
+  float gpsAccuracyUblox;
+  float altitudeUblox;
+  int cpuPerc;
+  float cpuTemp;
+  float angleSteers;
+  float angleSteersDes;
+  int batteryPercent;
+  bool batteryCharging;
+  char batteryStatus[64];
+  char ipAddr[20];
+  int fanSpeed;
+  bool brakePress;
+  bool leftBlinker, rightBlinker;
+  int blinker_blinkingrate;
+  
   NetStatus athenaStatus;
 
   cereal::DeviceState::Reader deviceState;
@@ -181,6 +212,8 @@ typedef struct UIState {
   bool speed_limit_control_enabled;
   float speed_limit_perc_offset;
   double last_speed_limit_sign_tap;
+  bool driving_record;
+  bool is_OpenpilotViewEnabled;
 
   bool sidebar_collapsed;
   Rect video_rect, viz_rect;

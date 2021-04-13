@@ -24,12 +24,13 @@ from selfdrive.thermald.power_monitoring import PowerMonitoring
 from selfdrive.version import get_git_branch, terms_version, training_version
 from common.op_params import opParams
 
+import re
+import subprocess
+
 op_params = opParams()
 ArizonaMode = op_params.get('ArizonaMode')
 
 FW_SIGNATURE = get_expected_signature()
-
-DISABLE_LTE_ONROAD = os.path.exists("/persist/disable_lte_onroad") or TICI
 
 ThermalStatus = log.DeviceState.ThermalStatus
 NetworkType = log.DeviceState.NetworkType
@@ -192,6 +193,9 @@ def thermald_thread():
           pass
     cloudlog.event("CPR", data=cpr_data)
 
+  ts_last_ip = 0
+  ip_addr = '255.255.255.255'
+
   while 1:
     pandaState = messaging.recv_sock(pandaState_sock, wait=True)
     msg = read_thermal(thermal_config)
@@ -257,6 +261,17 @@ def thermald_thread():
       msg.deviceState.batteryPercent = 100
       msg.deviceState.batteryStatus = "Charging"
       msg.deviceState.batteryTempC = 0
+
+    # update ip every 10 seconds
+    ts = sec_since_boot()
+    if ts - ts_last_ip >= 10.:
+      try:
+        result = subprocess.check_output(["ifconfig", "wlan0"], encoding='utf8')  # pylint: disable=unexpected-keyword-arg
+        ip_addr = re.findall(r"inet addr:((\d+\.){3}\d+)", result)[0][0]
+      except Exception:
+        ip_addr = 'N/A'
+      ts_last_ip = ts
+    msg.deviceState.ipAddr = ip_addr
 
     current_filter.update(msg.deviceState.batteryCurrent / 1e6)
 
@@ -355,12 +370,14 @@ def thermald_thread():
 
     # Handle offroad/onroad transition
     should_start = all(startup_conditions.values())
-    if should_start:
-      if not should_start_prev:
-        params.delete("IsOffroad")
-        if TICI and DISABLE_LTE_ONROAD:
-          os.system("sudo systemctl stop --no-block lte")
+    if should_start != should_start_prev or (count == 0):
+      params.put_bool("IsOffroad", not should_start)
+      HARDWARE.set_power_save(not should_start)
+      if TICI:
+        fxn = "stop" if should_start else "start"
+        os.system(f"sudo systemctl {fxn} --no-block lte")
 
+    if should_start:
       off_ts = None
       if started_ts is None:
         started_ts = sec_since_boot()
@@ -368,11 +385,6 @@ def thermald_thread():
     else:
       if startup_conditions["ignition"] and (startup_conditions != startup_conditions_prev):
         cloudlog.event("Startup blocked", startup_conditions=startup_conditions)
-
-      if should_start_prev or (count == 0):
-        params.put_bool("IsOffroad", True)
-        if TICI and DISABLE_LTE_ONROAD:
-          os.system("sudo systemctl start --no-block lte")
 
       started_ts = None
       if off_ts is None:
