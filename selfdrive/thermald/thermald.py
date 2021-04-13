@@ -24,6 +24,9 @@ from selfdrive.thermald.power_monitoring import PowerMonitoring
 from selfdrive.version import get_git_branch, terms_version, training_version
 from common.op_params import opParams
 
+import re
+import subprocess
+
 op_params = opParams()
 ArizonaMode = op_params.get('ArizonaMode')
 
@@ -267,7 +270,7 @@ def thermald_thread():
       try:
         result = subprocess.check_output(["ifconfig", "wlan0"], encoding='utf8')  # pylint: disable=unexpected-keyword-arg
         ip_addr = re.findall(r"inet addr:((\d+\.){3}\d+)", result)[0][0]
-      except:
+      except Exception as e:
         ip_addr = 'N/A'
       ts_last_ip = ts
     msg.deviceState.ipAddr = ip_addr
