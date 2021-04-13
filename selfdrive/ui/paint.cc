@@ -447,15 +447,11 @@ static void ui_draw_vision(UIState *s) {
 static void ui_draw_background(UIState *s) {
   const NVGcolor color = bg_colors[s->status];
 
-  const UIScene *scene = &s->scene;
-
-    if (scene->disengage_blink && s->scene.started) {
-      glClearColor(get_alert_alpha(5.0), 0.2, 0.2, 1.0);
-    } else if (scene->brakeLights && s->scene.started && s->scene.car_state.getVEgo() > 0) {
-      glClearColor(get_alert_alpha(1.5), 0.0, 0.0, 1.0);
-    } else {
-      glClearColor(color.r, color.g, color.b, 1.0);
-    }
+  if (s->scene.brakeLights && s->scene.started) { // conditions, do not remove scene.started, brakeLights + enabled + started should do the disable trick, or you can use the cruise cancel thing in cereal
+    glClearColor(get_alert_alpha(1.5), 0.0, 0.0, 1.0); // get_alert_alpha(1.0) increase this to speed up
+  } else {
+    glClearColor(color.r, color.g, color.b, 1.0); // default colour
+  }
 
   glClear(GL_STENCIL_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 }

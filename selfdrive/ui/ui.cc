@@ -147,20 +147,6 @@ static void update_sockets(UIState *s) {
   UIScene &scene = s->scene;
   if (scene.started && sm.updated("controlsState")) {
     scene.controls_state = sm["controlsState"].getControlsState();
-    auto alert_sound = scene.controls_state.getAlertSound();
-
-      if (alert_sound == AudibleAlert::CHIME_DISENGAGE) {
-      s->scene.disengage_blink = true;
-      } else if (alert_sound == AudibleAlert::CHIME_DISENGAGE) {
-      s->scene.disengage_blink = false;
-      }
-
-      if (alert_sound == AudibleAlert::CHIME_ENGAGE) {
-      s->scene.engage_blink = true;
-	    } else if (alert_sound != AudibleAlert::CHIME_ENGAGE) {
-      s->scene.engage_blink = false;
-	}
-
   }
   if (sm.updated("carState")) {
     scene.car_state = sm["carState"].getCarState();
@@ -168,7 +154,6 @@ static void update_sockets(UIState *s) {
     s->scene.brakeLights = scene.car_state.getBrakeLights();
     s->scene.parkingLightON = scene.car_state.getParkingLightON();
     s->scene.headlightON = scene.car_state.getHeadlightON();
-    s->scene.aEgo = scene.car_state.getAEgo();
   }
   if (sm.updated("radarState")) {
     std::optional<cereal::ModelDataV2::XYZTData::Reader> line;

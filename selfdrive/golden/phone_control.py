@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 #pylint: skip-file
 # flake8: noqa
+# mypy: ignore-errors
 import os
 import time
 #import math

@@ -171,7 +171,6 @@ def fingerprint(logcan, sendcan):
 
   cloudlog.warning("fingerprinted %s", car_fingerprint)
   put_nonblocking("CachedFingerprint", json.dumps([car_fingerprint, source, {int(key): value for key, value in finger[0].items()}]))
-  put_nonblocking('dp_car_detected', car_fingerprint)
   return car_fingerprint, finger, vin, car_fw, source
 
 def is_connected_to_internet(timeout=5):

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 #pylint: skip-file
+# flake8: noqa
 #from cereal import car
 #from common.params import Params
 import cereal.messaging as messaging
