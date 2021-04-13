@@ -754,6 +754,8 @@ static void ui_draw_vision(UIState *s) {
 static void ui_draw_background(UIState *s) {
   const NVGcolor color = bg_colors[s->status];
 
+  NVGcolor val_color = COLOR_WHITE;
+
   if( s->scene.brakePress ) val_color = COLOR_RED;
   else if (s->scene.brakeLights && s->scene.started) { // conditions, do not remove scene.started, brakeLights + enabled + started should do the disable trick, or you can use the cruise cancel thing in cereal
     glClearColor(get_alert_alpha(1.5), 0.0, 0.0, 1.0); // get_alert_alpha(1.0) increase this to speed up
