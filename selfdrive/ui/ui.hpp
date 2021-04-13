@@ -120,6 +120,17 @@ typedef struct UIScene {
   int recording_quality;
   bool recording;
   bool touched;
+  float gpsAccuracyUblox;
+  float altitudeUblox;
+  int cpuPerc;
+  float cpuTemp;
+  float angleSteers;
+  float angleSteersDes;
+  int batteryPercent;
+  bool batteryCharging;
+  char batteryStatus[64];
+  char ipAddr[20];
+  int fanSpeed;
 
   NetStatus athenaStatus;
 

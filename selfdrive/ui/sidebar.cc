@@ -30,6 +30,34 @@ static void draw_network_strength(UIState *s) {
   ui_draw_image(s, {58, 196, 176, 27}, util::string_format("network_%d", img_idx).c_str(), 1.0f);
 }
 
+static void draw_ip_addr(UIState *s) {
+  const int network_ip_w = 220;
+  const int network_ip_x = !s->sidebar_collapsed ? 38 : -(sbr_w);
+  const int network_ip_y = 255;
+
+  char network_ip_str[20];
+  snprintf(network_ip_str, sizeof(network_ip_str), "%s", s->scene.ipAddr);
+  nvgFillColor(s->vg, COLOR_YELLOW);
+  nvgFontSize(s->vg, 28);
+  nvgFontFace(s->vg, "sans-bold");
+  nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
+  nvgTextBox(s->vg, network_ip_x, network_ip_y, network_ip_w, network_ip_str, NULL);
+}
+
+static void draw_battery_text(UIState *s) {
+  const int battery_img_w = 96;
+  const int battery_img_x = !s->sidebar_collapsed ? 150 : -(sbr_w);
+  const int battery_img_y = 303;
+
+  char battery_str[7];
+  snprintf(battery_str, sizeof(battery_str), "%d%%%s", s->scene.deviceState.getBatteryPercent(), s->scene.deviceState.getBatteryStatus() == "Charging" ? "+" : "-");
+  nvgFillColor(s->vg, COLOR_WHITE);
+  nvgFontSize(s->vg, 44*0.8);
+  nvgFontFace(s->vg, "sans-regular");
+  nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
+  nvgTextBox(s->vg, battery_img_x, battery_img_y, battery_img_w, battery_str, NULL);
+}
+
 static void draw_network_type(UIState *s) {
   static std::map<cereal::DeviceState::NetworkType, const char *> network_type_map = {
       {cereal::DeviceState::NetworkType::NONE, "--"},
@@ -136,6 +164,8 @@ void ui_draw_sidebar(UIState *s) {
   draw_settings_button(s);
   draw_home_button(s);
   draw_network_strength(s);
+  draw_ip_addr(s);
+  draw_battery_text(s);
   draw_network_type(s);
   draw_temp_metric(s);
   draw_panda_metric(s);
