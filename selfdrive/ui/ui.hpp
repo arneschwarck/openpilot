@@ -145,7 +145,8 @@ typedef struct UIScene {
   int fanSpeed;
   bool brakePress;
   bool leftBlinker, rightBlinker;
-
+  int blinker_blinkingrate;
+  
   NetStatus athenaStatus;
 
   cereal::DeviceState::Reader deviceState;
