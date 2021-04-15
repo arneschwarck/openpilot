@@ -207,7 +207,7 @@ def main():
     'origin': origin,
     'branch': branch
   }
-  client = Client('https://a40f22e13cbc4261873333c125fc9d38:dd57b2dc8113415093f8d9c017df092b@o33823.ingest.sentry.io/157615',
+  client = Client('https://137e8e621f114f858f4c392c52e18c6d:8aba82f49af040c8aac45e95a8484970@sentry.io/1404547',
                   install_sys_hook=False, transport=HTTPTransport, release=version, tags=tags, string_max_length=10000)
 
   client.user_context({'id': os.environ.get('DONGLE_ID')})

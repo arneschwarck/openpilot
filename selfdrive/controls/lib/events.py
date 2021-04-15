@@ -232,9 +232,9 @@ EVENTS: Dict[int, Dict[str, Union[Alert, Callable[[Any, messaging.SubMaster, boo
   EventName.startupMaster: {
     ET.PERMANENT: Alert(
       "WARNING: This branch is not tested",
-      "Always keep hands on wheel and eyes on road",
+      "Do not forget to PRAY!",
       AlertStatus.userPrompt, AlertSize.mid,
-      Priority.LOWER, VisualAlert.none, AudibleAlert.none, 0., 0., 15.),
+      Priority.LOWER, VisualAlert.none, AudibleAlert.none, 0., 0., 6.),
   },
 
   EventName.startupNoControl: {
@@ -388,6 +388,26 @@ EVENTS: Dict[int, Dict[str, Union[Alert, Callable[[Any, messaging.SubMaster, boo
       Priority.HIGH, VisualAlert.steerRequired, AudibleAlert.chimeWarningRepeat, .1, .1, .1),
   },
 
+  EventName.preKeepHandsOnWheel: {
+    ET.WARNING: Alert(
+      "No hands on steering wheel detected",
+      "",
+      AlertStatus.userPrompt, AlertSize.small,
+      Priority.MID, VisualAlert.steerRequired, AudibleAlert.none, .0, .1, .1, alert_rate=0.75),
+  },
+
+  EventName.promptKeepHandsOnWheel: {
+    ET.WARNING: Alert(
+      "HANDS OFF STEERING WHEEL",
+      "Place hands on steering wheel",
+      AlertStatus.critical, AlertSize.mid,
+      Priority.MID, VisualAlert.steerRequired, AudibleAlert.chimeWarning2Repeat, .1, .1, .1, alert_rate=0.75),
+  },
+
+  EventName.keepHandsOnWheel: {
+    ET.IMMEDIATE_DISABLE: ImmediateDisableAlert("Driver kept hands off sterring wheel"),
+  },
+
   EventName.driverMonitorLowAcc: {
     ET.WARNING: Alert(
       "CHECK DRIVER FACE VISIBILITY",
@@ -466,6 +486,30 @@ EVENTS: Dict[int, Dict[str, Union[Alert, Callable[[Any, messaging.SubMaster, boo
 
   EventName.gpsMalfunction: {
     ET.PERMANENT: NormalPermanentAlert("GPS Malfunction", "Contact Support"),
+  },
+
+  EventName.speedLimitActive: {
+    ET.WARNING: Alert(
+      "Cruise set to speed limit",
+      "",
+      AlertStatus.normal, AlertSize.small,
+      Priority.LOW, VisualAlert.none, AudibleAlert.chimePrompt, 1., 0., 2.),
+  },
+
+  EventName.speedLimitDecrease: {
+    ET.WARNING: Alert(
+      "Decreasing speed to match new speed limit",
+      "",
+      AlertStatus.normal, AlertSize.small,
+      Priority.LOW, VisualAlert.none, AudibleAlert.chimePrompt, 1., 0., 2.),
+  },
+
+  EventName.speedLimitIncrease: {
+    ET.WARNING: Alert(
+      "Higher speed limit detected",
+      "Increasing vehicle speed after short delay",
+      AlertStatus.normal, AlertSize.mid,
+      Priority.LOW, VisualAlert.none, AudibleAlert.chimePrompt, 1., 0., 2.),
   },
 
   # ********** events that affect controls state transitions **********
@@ -741,6 +785,14 @@ EVENTS: Dict[int, Dict[str, Union[Alert, Callable[[Any, messaging.SubMaster, boo
       AlertStatus.normal, AlertSize.small,
       Priority.LOWER, VisualAlert.none, AudibleAlert.none, 0., 0., .2),
     ET.NO_ENTRY: NoEntryAlert("Cruise Fault: Restart the Car"),
+  },
+
+  EventName.longControlDisabled: {
+    ET.PERMANENT: Alert(
+      "Steer Assist Active",
+      "",
+      AlertStatus.normal, AlertSize.small,
+      Priority.LOWER, VisualAlert.none, AudibleAlert.none,.4, 2., 0.2),
   },
 
 }

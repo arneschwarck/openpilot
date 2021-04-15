@@ -11,6 +11,7 @@
 
 #include "common/util.h"
 #include "common/params.h"
+#include "common/touch.h"
 #include "common/timing.h"
 #include "common/swaglog.h"
 #include "common/watchdog.h"
@@ -63,8 +64,27 @@ void HomeWindow::mousePressEvent(QMouseEvent* e) {
     emit openSettings();
   }
 
+  // Toggle speed limit control enabled
+  if (ui_state->scene.controls_state.getSpeedLimit() > 0.0
+    && e->x() >= ui_state->scene.ui_speed_sgn_x - speed_sgn_touch_pad
+    && e->x() < ui_state->scene.ui_speed_sgn_x + 2 * speed_sgn_r + speed_sgn_touch_pad
+    && e->y() >= ui_state->scene.ui_speed_sgn_y - speed_sgn_touch_pad
+    && e->y() < ui_state->scene.ui_speed_sgn_y + 2 * speed_sgn_r + speed_sgn_touch_pad) {
+    // If touching the speed limit sign area when visible
+    ui_state->last_speed_limit_sign_tap = seconds_since_boot();
+    ui_state->speed_limit_control_enabled = !ui_state->speed_limit_control_enabled;
+    Params().putBool("SpeedLimitControl", true);
+  }
+
+  // dashcam REC
+  if (ui_state->scene.started && ui_state->sidebar_collapsed && rec_btn.ptInRect(e->x(), e->y())) {
+    ui_state->scene.recording = !ui_state->scene.recording;
+    ui_state->scene.touched = true;
+    return;
+  }
+
   // Handle sidebar collapsing
-  if (ui_state->scene.started && (e->x() >= ui_state->viz_rect.x - bdr_s)) {
+  else if (ui_state->scene.started && (e->x() >= ui_state->viz_rect.x - bdr_s)) {
     ui_state->sidebar_collapsed = !ui_state->sidebar_collapsed;
   }
 }
@@ -230,9 +250,9 @@ GLWindow::GLWindow(QWidget* parent) : brightness_filter(BACKLIGHT_OFFROAD, BACKL
 
   backlight_timer = new QTimer(this);
   QObject::connect(backlight_timer, SIGNAL(timeout()), this, SLOT(backlightUpdate()));
-
-  brightness_b = Params(true).get<float>("BRIGHTNESS_B").value_or(10.0);
-  brightness_m = Params(true).get<float>("BRIGHTNESS_M").value_or(0.1);
+// comma brightness
+  //brightness_b = Params(true).get<float>("BRIGHTNESS_B").value_or(10.0);
+  //brightness_m = Params(true).get<float>("BRIGHTNESS_M").value_or(0.1);
 }
 
 GLWindow::~GLWindow() {
@@ -260,17 +280,24 @@ void GLWindow::initializeGL() {
 }
 
 void GLWindow::backlightUpdate() {
-  // Update brightness
-  float clipped_brightness = std::min(100.0f, (ui_state.scene.light_sensor * brightness_m) + brightness_b);
+  // brightness
+  int brightness = BACKLIGHT_OFFROAD;
   if (!ui_state.scene.started) {
-    clipped_brightness = BACKLIGHT_OFFROAD;
+    brightness = BACKLIGHT_OFFROAD;
   }
 
-  int brightness = brightness_filter.update(clipped_brightness);
   if (!ui_state.awake) {
     brightness = 0;
     emit screen_shutoff();
   }
+
+  if (ui_state.scene.car_state.getHeadlightON()) {
+      brightness = 9.0;
+    } else if (ui_state.scene.car_state.getParkingLightON() && !ui_state.scene.car_state.getHeadlightON()) {
+      brightness = 50.0;
+    } else {
+      brightness = 100.0;
+    }
 
   if (brightness != last_brightness) {
     std::thread{Hardware::set_brightness, brightness}.detach();

@@ -10,9 +10,9 @@
 #include "common/util.h"
 
 #if defined(QCOM) || defined(QCOM2)
-const std::string LOG_ROOT = "/data/media/0/realdata";
+const std::string LOG_ROOT = "/data/media/0/ArnePilotdata";
 #else
-const std::string LOG_ROOT = util::getenv_default("HOME", "/.comma/media/0/realdata", "/data/media/0/realdata");
+const std::string LOG_ROOT = util::getenv_default("HOME", "/.comma/media/0/ArnePilotdata", "/data/media/0/ArnePilotdata");
 #endif
 
 #define LOGGER_MAX_HANDLES 16

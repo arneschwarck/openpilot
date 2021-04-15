@@ -2,6 +2,8 @@
 #include <iostream>
 #include <sstream>
 #include <cassert>
+#include <QAction>
+#include <QMenu>
 
 #ifndef QCOM
 #include "networking.hpp"
@@ -72,12 +74,6 @@ TogglesPanel::TogglesPanel(QWidget *parent) : QWidget(parent) {
                                   "Use wide angle camera for driving and ui. Only takes effect after reboot.",
                                   "../assets/offroad/icon_openpilot.png",
                                   this));
-  toggles.append(new ParamControl("EnableLteOnroad",
-                                  "Enable LTE while onroad",
-                                  "",
-                                  "../assets/offroad/icon_network.png",
-                                  this));
-
 #endif
 
   bool record_lock = Params().getBool("RecordFrontLock");
@@ -165,6 +161,19 @@ DevicePanel::DevicePanel(QWidget* parent) : QWidget(parent) {
     device_layout->addWidget(btn);
   }
 
+  // color correction
+
+  QMenu *colorc_menu = new QMenu();
+  colorc_menu->addAction("None", [=]() {Hardware::set_color_mode(0);});
+  colorc_menu->addAction("Deuteranomaly (red-green)", [=]() {Hardware::set_color_mode(1);});
+  colorc_menu->addAction("Protanomaly (red-green)", [=]() {Hardware::set_color_mode(2);});
+  colorc_menu->addAction("Tritanopia (blue-yello)", [=]() {Hardware::set_color_mode(3);});
+
+  QPushButton *set_colorc_btn = new QPushButton("Colour correction");
+  set_colorc_btn->setMenu(colorc_menu);
+  device_layout->addWidget(set_colorc_btn, 0, Qt::AlignBottom);
+  device_layout->addWidget(horizontal_line(), Qt::AlignBottom);
+
   // power buttons
   QHBoxLayout *power_layout = new QHBoxLayout();
   power_layout->setSpacing(30);
@@ -194,7 +203,7 @@ DevicePanel::DevicePanel(QWidget* parent) : QWidget(parent) {
       padding: 0;
       height: 120px;
       border-radius: 15px;
-      background-color: #393939;
+      background-color: #000000;
     }
   )");
 }
@@ -249,6 +258,21 @@ QWidget * network_panel(QWidget * parent) {
   layout->addWidget(new SshToggle());
   layout->addWidget(horizontal_line());
   layout->addWidget(new SshControl());
+  layout->addWidget(horizontal_line());
+
+  const char* gitpull = "/data/openpilot/scripts/gitpull.sh ''";
+  layout->addWidget(new ButtonControl("Git Pull", "new changes", "",
+                                      [=]() { std::system(gitpull); }));
+
+  layout->addWidget(horizontal_line());
+
+  const char* panda_flashing = "/data/openpilot/scripts/panda_flashing.sh ''";
+  layout->addWidget(new ButtonControl("Flash panda", "pressing this button will manully flash the panda.", "",
+                                      [=]() {
+                                        if (ConfirmationDialog::confirm("are you sure?")) {
+                                          std::system(panda_flashing);
+                                        }
+                                      }));
 
   layout->addStretch(1);
 
@@ -267,7 +291,7 @@ SettingsWindow::SettingsWindow(QWidget *parent) : QFrame(parent) {
   panel_widget = new QStackedWidget();
   panel_widget->setStyleSheet(R"(
     border-radius: 30px;
-    background-color: #292929;
+    background-color: #000000;
   )");
 
   // close button
@@ -277,7 +301,7 @@ SettingsWindow::SettingsWindow(QWidget *parent) : QFrame(parent) {
     font-weight: bold;
     border 1px grey solid;
     border-radius: 100px;
-    background-color: #292929;
+    background-color: #000000;
   )");
   close_btn->setFixedSize(200, 200);
   sidebar_layout->addSpacing(45);
@@ -360,4 +384,3 @@ void SettingsWindow::showEvent(QShowEvent *event){
   panel_widget->setCurrentIndex(0);
   nav_btns->buttons()[0]->setChecked(true);
 }
-

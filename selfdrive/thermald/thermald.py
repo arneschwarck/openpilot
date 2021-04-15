@@ -22,6 +22,13 @@ from selfdrive.pandad import get_expected_signature
 from selfdrive.swaglog import cloudlog
 from selfdrive.thermald.power_monitoring import PowerMonitoring
 from selfdrive.version import get_git_branch, terms_version, training_version
+from common.op_params import opParams
+
+import re
+import subprocess
+
+op_params = opParams()
+ArizonaMode = op_params.get('ArizonaMode')
 
 FW_SIGNATURE = get_expected_signature()
 
@@ -91,6 +98,9 @@ _TEMP_THRS_L = [42.5, 57.5, 72.5, 10000]
 _FAN_SPEEDS = [0, 16384, 32768, 65535]
 # max fan speed only allowed if battery is hot
 _BAT_TEMP_THRESHOLD = 45.
+if ArizonaMode:
+  _FAN_SPEEDS = [0, 65535, 65535, 65535]
+  _BAT_TEMP_THERSHOLD = 15.
 
 
 def handle_fan_eon(max_cpu_temp, bat_temp, fan_speed, ignition):
@@ -183,6 +193,9 @@ def thermald_thread():
           pass
     cloudlog.event("CPR", data=cpr_data)
 
+  ts_last_ip = 0
+  ip_addr = '255.255.255.255'
+
   while 1:
     pandaState = messaging.recv_sock(pandaState_sock, wait=True)
     msg = read_thermal(thermal_config)
@@ -248,6 +261,17 @@ def thermald_thread():
       msg.deviceState.batteryPercent = 100
       msg.deviceState.batteryStatus = "Charging"
       msg.deviceState.batteryTempC = 0
+
+    # update ip every 10 seconds
+    ts = sec_since_boot()
+    if ts - ts_last_ip >= 10.:
+      try:
+        result = subprocess.check_output(["ifconfig", "wlan0"], encoding='utf8')  # pylint: disable=unexpected-keyword-arg
+        ip_addr = re.findall(r"inet addr:((\d+\.){3}\d+)", result)[0][0]
+      except Exception:
+        ip_addr = 'N/A'
+      ts_last_ip = ts
+    msg.deviceState.ipAddr = ip_addr
 
     current_filter.update(msg.deviceState.batteryCurrent / 1e6)
 
@@ -329,9 +353,9 @@ def thermald_thread():
     startup_conditions["not_uninstalling"] = not params.get_bool("DoUninstall")
     startup_conditions["accepted_terms"] = params.get("HasAcceptedTerms") == terms_version
 
-    panda_signature = params.get("PandaFirmware")
-    startup_conditions["fw_version_match"] = (panda_signature is None) or (panda_signature == FW_SIGNATURE)   # don't show alert is no panda is connected (None)
-    set_offroad_alert_if_changed("Offroad_PandaFirmwareMismatch", (not startup_conditions["fw_version_match"]))
+    #panda_signature = params.get("PandaFirmware")
+    #startup_conditions["fw_version_match"] = (panda_signature is None) or (panda_signature == FW_SIGNATURE)   # don't show alert is no panda is connected (None)
+    #set_offroad_alert_if_changed("Offroad_PandaFirmwareMismatch", (not startup_conditions["fw_version_match"]))
 
     # with 2% left, we killall, otherwise the phone will take a long time to boot
     startup_conditions["free_space"] = msg.deviceState.freeSpacePercent > 2
@@ -349,7 +373,7 @@ def thermald_thread():
     if should_start != should_start_prev or (count == 0):
       params.put_bool("IsOffroad", not should_start)
       HARDWARE.set_power_save(not should_start)
-      if TICI and not params.get_bool("EnableLteOnroad"):
+      if TICI:
         fxn = "stop" if should_start else "start"
         os.system(f"sudo systemctl {fxn} --no-block lte")
 

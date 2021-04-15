@@ -174,6 +174,7 @@ class CarState(CarStateBase):
     self.cruise_setting = 0
     self.v_cruise_pcm_prev = 0
     self.cruise_mode = 0
+    self.pcm_acc_active = False
 
   def update(self, cp, cp_cam, cp_body):
     ret = car.CarState.new_message()
@@ -300,9 +301,16 @@ class CarState(CarStateBase):
       self.brake_switch_ts = cp.ts["POWERTRAIN_DATA"]['BRAKE_SWITCH']
 
     ret.brake = cp.vl["VSA_STATUS"]['USER_BRAKE']
-    ret.cruiseState.enabled = cp.vl["POWERTRAIN_DATA"]['ACC_STATUS'] != 0
     ret.cruiseState.available = bool(main_on)
     ret.cruiseState.nonAdaptive = self.cruise_mode != 0
+    if not self.pcm_acc_active and cp.vl["POWERTRAIN_DATA"]['ACC_STATUS'] != 0:
+      self.pcm_acc_active = True
+    if not ret.cruiseState.available:
+      self.pcm_acc_active = False
+    if self.pcm_acc_active:
+      ret.cruiseState.enabled = ret.cruiseState.available
+    else:
+      ret.cruiseState.enabled = cp.vl["POWERTRAIN_DATA"]['ACC_STATUS'] != 0
 
     # Gets rid of Pedal Grinding noise when brake is pressed at slow speeds for some models
     if self.CP.carFingerprint in (CAR.PILOT, CAR.PILOT_2019, CAR.RIDGELINE):

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os
+#import hashlib
 import math
 from cereal import car, log
 from common.numpy_fast import clip
@@ -83,6 +84,35 @@ class Controls:
     sounds_available = HARDWARE.get_sound_card_online()
 
     car_recognized = self.CP.carName != 'mock'
+
+  #
+  # WARNING
+  #
+  # By removing or modifying this code you accept all responsibility and/or liability
+  # related to the use or misuse of this code.
+  #
+  # WARNING
+  #
+
+    #panda_recognized = False
+    #panda_dongle_id = params.get('DongleId')
+    # If panda_dongle_id is None we may be running in docker/CI
+    #if panda_dongle_id is not None:
+      # if dongle is detected, verify the ID.
+      #panda_dongle_hash = hashlib.md5(panda_dongle_id).hexdigest()
+      #print("panda dongle hash: " + panda_dongle_hash)
+      #if panda_dongle_hash in \
+        #[
+          #arne put your hash in here. 'hash' #arne
+          #'1e1a47b244ec1f373f2f7622a0e87449'#brian
+          #'89e39241d3782b0a3893ecad61156e82'#kumar,
+          #'c489a77b24f636ccab80bbfe1818a957'#kuamr
+        #]:
+        #print("panda dongle recognized")
+
+    #if not panda_recognized:
+      #car_recognized = False
+
     # If stock camera is disconnected, we loaded car controls and it's not dashcam mode
     controller_available = self.CP.enableCamera and self.CI.CC is not None and not passive and not self.CP.dashcamOnly
     community_feature_disallowed = self.CP.communityFeature and not community_feature_toggle
@@ -380,6 +410,7 @@ class Controls:
 
     lat_plan = self.sm['lateralPlan']
     long_plan = self.sm['longitudinalPlan']
+    radarstate = self.sm['radarState']
 
     actuators = car.CarControl.Actuators.new_message()
 
@@ -400,7 +431,7 @@ class Controls:
     v_acc_sol = long_plan.vStart + dt * (a_acc_sol + long_plan.aStart) / 2.0
 
     # Gas/Brake PID loop
-    actuators.gas, actuators.brake = self.LoC.update(self.active, CS, v_acc_sol, long_plan.vTargetFuture, a_acc_sol, self.CP)
+    actuators.gas, actuators.brake = self.LoC.update(self.active, CS, v_acc_sol, long_plan.vTargetFuture, a_acc_sol, self.CP, self.sm, long_plan, radarstate)
 
     # Steering PID loop and lateral MPC
     actuators.steer, actuators.steeringAngleDeg, lac_log = self.LaC.update(self.active, CS, self.CP, self.VM, params, lat_plan)

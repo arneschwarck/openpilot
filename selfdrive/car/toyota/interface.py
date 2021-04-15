@@ -5,11 +5,20 @@ from selfdrive.car.toyota.values import Ecu, ECU_FINGERPRINT, CAR, TSS2_CAR, NO_
 from selfdrive.car import STD_CARGO_KG, scale_rot_inertia, scale_tire_stiffness, is_ecu_disconnected, gen_empty_fingerprint
 from selfdrive.swaglog import cloudlog
 from selfdrive.car.interfaces import CarInterfaceBase
+from common.op_params import opParams
+
+GearShifter = car.CarState.GearShifter
 
 EventName = car.CarEvent.EventName
 
+op_params = opParams()
+prius_pid = op_params.get('prius_pid')
 
 class CarInterface(CarInterfaceBase):
+  def __init__(self, CP, CarController, CarState):
+    super().__init__(CP, CarController, CarState)
+    self.init_cruise_speed = 0.
+
   @staticmethod
   def compute_gb(accel, speed):
     return float(accel) / CarControllerParams.ACCEL_SCALE
@@ -25,7 +34,7 @@ class CarInterface(CarInterfaceBase):
     ret.steerLimitTimer = 0.4
 
     # Improved longitudinal tune
-    if candidate in [CAR.COROLLA_TSS2, CAR.COROLLAH_TSS2, CAR.RAV4_TSS2, CAR.RAV4H_TSS2]:
+    if candidate in [CAR.COROLLA_TSS2, CAR.COROLLAH_TSS2, CAR.RAV4_TSS2, CAR.RAV4H_TSS2, CAR.PRIUS_TSS2]:
       ret.longitudinalTuning.deadzoneBP = [0., 8.05]
       ret.longitudinalTuning.deadzoneV = [.0, .14]
       ret.longitudinalTuning.kpBP = [0., 5., 20.]
@@ -44,7 +53,7 @@ class CarInterface(CarInterfaceBase):
       ret.longitudinalTuning.kpV = [3.6, 2.4, 1.5]
       ret.longitudinalTuning.kiV = [0.54, 0.36]
 
-    if candidate not in [CAR.PRIUS, CAR.RAV4, CAR.RAV4H]:  # These cars use LQR/INDI
+    if candidate not in [CAR.PRIUS, CAR.RAV4, CAR.RAV4H, CAR.PRIUS_TSS2]:  # These cars use LQR/INDI
       ret.lateralTuning.init('pid')
       ret.lateralTuning.pid.kiBP, ret.lateralTuning.pid.kpBP = [[0.], [0.]]
 
@@ -66,6 +75,30 @@ class CarInterface(CarInterfaceBase):
       ret.lateralTuning.indi.actuatorEffectivenessBP = [0.]
       ret.lateralTuning.indi.actuatorEffectivenessV = [1.0]
       ret.steerActuatorDelay = 0.3
+
+    elif candidate == CAR.PRIUS_TSS2:
+      stop_and_go = True
+      ret.safetyParam = 73
+      ret.wheelbase = 2.70002  # from toyota online sepc.
+      ret.steerRatio = 13.4   # True steerRation from older prius
+      tire_stiffness_factor = 0.6371   # hand-tune
+      ret.mass = 3115. * CV.LB_TO_KG + STD_CARGO_KG
+      if prius_pid:
+        ret.lateralTuning.init('pid')
+        ret.lateralTuning.pid.kiBP, ret.lateralTuning.pid.kpBP = [[0.], [0.]]
+        ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.35], [0.15]]
+        ret.lateralTuning.pid.kf = 0.00007818594
+      else:
+        ret.lateralTuning.init('indi')
+        ret.lateralTuning.indi.innerLoopGainBP = [0.]
+        ret.lateralTuning.indi.innerLoopGainV = [4.0]
+        ret.lateralTuning.indi.outerLoopGainBP = [0.]
+        ret.lateralTuning.indi.outerLoopGainV = [3.0]
+        ret.lateralTuning.indi.timeConstantBP = [0.]
+        ret.lateralTuning.indi.timeConstantV = [1.0]
+        ret.lateralTuning.indi.actuatorEffectivenessBP = [0.]
+        ret.lateralTuning.indi.actuatorEffectivenessV = [1.0]
+        ret.steerActuatorDelay = 0.35
 
     elif candidate in [CAR.RAV4, CAR.RAV4H]:
       stop_and_go = True if (candidate in CAR.RAV4H) else False
@@ -288,15 +321,75 @@ class CarInterface(CarInterfaceBase):
       ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.6], [0.1]]
       ret.lateralTuning.pid.kf = 0.00006
 
-    elif candidate == CAR.PRIUS_TSS2:
+    elif candidate == CAR.MIRAI:
       stop_and_go = True
       ret.safetyParam = 73
-      ret.wheelbase = 2.70002  # from toyota online sepc.
-      ret.steerRatio = 13.4   # True steerRation from older prius
-      tire_stiffness_factor = 0.6371   # hand-tune
-      ret.mass = 3115. * CV.LB_TO_KG + STD_CARGO_KG
-      ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.35], [0.15]]
-      ret.lateralTuning.pid.kf = 0.00007818594
+      ret.wheelbase = 2.91
+      ret.steerRatio = 14.8
+      tire_stiffness_factor = 0.8
+      ret.mass = 4300. * CV.LB_TO_KG + STD_CARGO_KG
+      ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.6], [0.1]]
+      ret.lateralTuning.pid.kf = 0.00006
+
+    elif candidate == CAR.MIRAI:
+      stop_and_go = True
+      ret.safetyParam = 73
+      ret.wheelbase = 2.91
+      ret.steerRatio = 14.8
+      tire_stiffness_factor = 0.8
+      ret.mass = 4300. * CV.LB_TO_KG + STD_CARGO_KG
+      ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.6], [0.1]]
+      ret.lateralTuning.pid.kf = 0.00006
+
+    elif candidate == CAR.MIRAI:
+      stop_and_go = True
+      ret.safetyParam = 73
+      ret.wheelbase = 2.91
+      ret.steerRatio = 14.8
+      tire_stiffness_factor = 0.8
+      ret.mass = 4300. * CV.LB_TO_KG + STD_CARGO_KG
+      ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.6], [0.1]]
+      ret.lateralTuning.pid.kf = 0.00006
+
+    elif candidate == CAR.MIRAI:
+      stop_and_go = True
+      ret.safetyParam = 73
+      ret.wheelbase = 2.91
+      ret.steerRatio = 14.8
+      tire_stiffness_factor = 0.8
+      ret.mass = 4300. * CV.LB_TO_KG + STD_CARGO_KG
+      ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.6], [0.1]]
+      ret.lateralTuning.pid.kf = 0.00006
+
+    elif candidate == CAR.MIRAI:
+      stop_and_go = True
+      ret.safetyParam = 73
+      ret.wheelbase = 2.91
+      ret.steerRatio = 14.8
+      tire_stiffness_factor = 0.8
+      ret.mass = 4300. * CV.LB_TO_KG + STD_CARGO_KG
+      ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.6], [0.1]]
+      ret.lateralTuning.pid.kf = 0.00006
+
+    elif candidate == CAR.MIRAI:
+      stop_and_go = True
+      ret.safetyParam = 73
+      ret.wheelbase = 2.91
+      ret.steerRatio = 14.8
+      tire_stiffness_factor = 0.8
+      ret.mass = 4300. * CV.LB_TO_KG + STD_CARGO_KG
+      ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.6], [0.1]]
+      ret.lateralTuning.pid.kf = 0.00006
+
+    elif candidate == CAR.MIRAI:
+      stop_and_go = True
+      ret.safetyParam = 73
+      ret.wheelbase = 2.91
+      ret.steerRatio = 14.8
+      tire_stiffness_factor = 0.8
+      ret.mass = 4300. * CV.LB_TO_KG + STD_CARGO_KG
+      ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.6], [0.1]]
+      ret.lateralTuning.pid.kf = 0.00006
 
     elif candidate == CAR.MIRAI:
       stop_and_go = True
@@ -355,13 +448,52 @@ class CarInterface(CarInterfaceBase):
     self.cp.update_strings(can_strings)
     self.cp_cam.update_strings(can_strings)
 
+    self.cruise_speed_override = True #TODO: add it to the op_edit or better yet setting.
+
     ret = self.CS.update(self.cp, self.cp_cam)
+
+    if ret.cruiseState.enabled and ret.cruiseState.speed < 12 and self.CP.openpilotLongitudinalControl:
+      if self.cruise_speed_override:
+        if self.init_cruise_speed == 0.:
+          ret.cruiseState.speed = self.init_cruise_speed = max(2, ret.vEgo)
+        else:
+          ret.cruiseState.speed = self.init_cruise_speed
+      else:
+        ret.cruiseState.speed = 2
+    else:
+      self.init_cruise_speed = 0.
 
     ret.canValid = self.cp.can_valid and self.cp_cam.can_valid
     ret.steeringRateLimited = self.CC.steer_rate_limited if self.CC is not None else False
+    ret.engineRPM = self.CS.engineRPM
+
+    # gear except P, R
+    extra_gears = [GearShifter.neutral, GearShifter.eco, GearShifter.manumatic, GearShifter.drive, GearShifter.sport, GearShifter.low, GearShifter.brake, GearShifter.unknown]
+
+    longControlDisabled = False
+    if not self.CS.out.cruiseState.enabled:
+      ret.cruiseState.enabled = self.CS.pcm_acc_active
+    else:
+      if self.keep_openpilot_engaged:
+        ret.cruiseState.enabled = bool(self.CS.main_on)
+      if not self.CS.pcm_acc_active:
+        longControlDisabled = True
+        ret.brakePressed = True
+        self.disengage_due_to_slow_speed = False
+    if ret.vEgo < 1 or not self.keep_openpilot_engaged:
+      ret.cruiseState.enabled = self.CS.pcm_acc_active
+      if self.CS.out.cruiseState.enabled and not self.CS.pcm_acc_active:
+        self.disengage_due_to_slow_speed = True
+    if self.disengage_due_to_slow_speed and ret.vEgo > 1 and ret.gearShifter != GearShifter.reverse:
+      self.disengage_due_to_slow_speed = False
+      ret.cruiseState.enabled = bool(self.CS.main_on)
 
     # events
-    events = self.create_common_events(ret)
+    events = self.create_common_events(ret, extra_gears)
+
+    #ArnePilot alwasys on.
+    if longControlDisabled:
+      events.add(EventName.longControlDisabled)
 
     if self.CS.low_speed_lockout and self.CP.openpilotLongitudinalControl:
       events.add(EventName.lowSpeedLockout)

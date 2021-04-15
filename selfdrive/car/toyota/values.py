@@ -12,8 +12,8 @@ class CarControllerParams:
 
   STEER_MAX = 1500
   STEER_DELTA_UP = 10       # 1.5s time to peak torque
-  STEER_DELTA_DOWN = 25     # always lower than 45 otherwise the Rav4 faults (Prius seems ok with 50)
-  STEER_ERROR_MAX = 350     # max delta between torque cmd and torque motor
+  STEER_DELTA_DOWN = 44     # always lower than 45 otherwise the Rav4 faults (Prius seems ok with 50)
+  STEER_ERROR_MAX = 500     # max delta between torque cmd and torque motor
 
 class CAR:
   PRIUS = "TOYOTA PRIUS 2017"
@@ -297,7 +297,7 @@ FINGERPRINTS = {
 }
 
 # Don't use theses fingerprints for fingerprinting, they are still needed for ECU detection
-IGNORED_FINGERPRINTS = [CAR.RAV4H_TSS2, CAR.HIGHLANDERH_TSS2, CAR.LEXUS_RXH_TSS2, CAR.PRIUS_TSS2,
+IGNORED_FINGERPRINTS = [CAR.RAV4H_TSS2, CAR.HIGHLANDERH_TSS2, CAR.LEXUS_RXH_TSS2,
                         CAR.LEXUS_NX, CAR.CAMRY_TSS2, CAR.CAMRYH_TSS2, CAR.LEXUS_ESH, CAR.MIRAI]
 
 FW_VERSIONS = {
@@ -400,6 +400,7 @@ FW_VERSIONS = {
       b'8646F0601200    ',
       b'8646F0601300    ',
       b'8646F0603400    ',
+      b'8821F0604100    ',
       b'8646F0605000    ',
       b'8646F0606000    ',
       b'8646F0606100    ',
@@ -607,6 +608,7 @@ FW_VERSIONS = {
   },
   CAR.COROLLA: {
     (Ecu.engine, 0x7e0, None): [
+      b'\x01896630E88000\x00\x00\x00\x00',
       b'\x0330ZC1200\x00\x00\x00\x00\x00\x00\x00\x0050212000\x00\x00\x00\x00\x00\x00\x00\x00895231203202\x00\x00\x00\x00',
       b'\x0230ZC2000\x00\x00\x00\x00\x00\x00\x00\x0050212000\x00\x00\x00\x00\x00\x00\x00\x00',
       b'\x0230ZC2100\x00\x00\x00\x00\x00\x00\x00\x0050212000\x00\x00\x00\x00\x00\x00\x00\x00',
@@ -636,6 +638,7 @@ FW_VERSIONS = {
     (Ecu.fwdCamera, 0x750, 0x6d): [
       b'8646F0201101\x00\x00\x00\x00',
       b'8646F0201200\x00\x00\x00\x00',
+      b'8646F0E01300\x00\x00\x00\x00',
     ],
   },
   CAR.COROLLA_TSS2: {
@@ -709,6 +712,7 @@ FW_VERSIONS = {
     (Ecu.engine, 0x700, None): [
       b'\x01896630ZJ1000\x00\x00\x00\x00',
       b'\x01896630ZU8000\x00\x00\x00\x00',
+      b'\x018966342M5000\x00\x00\x00\x00',
       b'\x02896630ZN8000\x00\x00\x00\x008966A4703000\x00\x00\x00\x00',
       b'\x02896630ZQ3000\x00\x00\x00\x008966A4703000\x00\x00\x00\x00',
       b'\x02896630ZR2000\x00\x00\x00\x008966A4703000\x00\x00\x00\x00',
@@ -975,6 +979,7 @@ FW_VERSIONS = {
       b'8821F4702300\x00\x00\x00\x00',
     ],
     (Ecu.fwdCamera, 0x750, 0x6d): [
+      b'8646F4201200\x00\x00\x00\x00',
       b'8646F4701300\x00\x00\x00\x00',
       b'8646F4702001\x00\x00\x00\x00',
       b'8646F4702100\x00\x00\x00\x00',
@@ -1068,6 +1073,7 @@ FW_VERSIONS = {
       b'\x018966342V3000\x00\x00\x00\x00',
       b'\x018966342V3100\x00\x00\x00\x00',
       b'\x018966342V3200\x00\x00\x00\x00',
+      b'\x018966342X5000\x00\x00\x00\x00',
       b'\x01896634A05000\x00\x00\x00\x00',
       b'\x01896634A19000\x00\x00\x00\x00',
       b'\x01896634A19100\x00\x00\x00\x00',

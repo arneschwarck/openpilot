@@ -6,6 +6,7 @@
 #include <QStackedWidget>
 #include <QTimer>
 #include <QVBoxLayout>
+#include <QPixmap>
 
 #include "QrCode.hpp"
 #include "api.hpp"
@@ -131,7 +132,15 @@ PrimeAdWidget::PrimeAdWidget(QWidget* parent) : QWidget(parent) {
   vlayout->setMargin(30);
   vlayout->setSpacing(15);
 
-  vlayout->addWidget(new QLabel("Upgrade now"), 1, Qt::AlignTop);
+  vlayout->addWidget(new QLabel("Easy Driving~"), 1, Qt::AlignCenter);
+
+  QPixmap logo("../assets/icon_prius.png");
+  QLabel *kumar = new QLabel();
+  kumar->setPixmap(logo.scaledToWidth(430, Qt::SmoothTransformation));
+  kumar->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
+  vlayout->addWidget(kumar, 0, Qt::AlignCenter);
+
+/*
 
   QLabel* description = new QLabel("Become a comma prime member in the comma connect app and get premium features!");
   description->setStyleSheet(R"(
@@ -147,7 +156,7 @@ PrimeAdWidget::PrimeAdWidget(QWidget* parent) : QWidget(parent) {
     feature->setStyleSheet(R"(font-size: 40px;)");
     vlayout->addWidget(feature, 0, Qt::AlignBottom);
   }
-
+*/
   setLayout(vlayout);
 }
 
