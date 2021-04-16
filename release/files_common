@@ -247,6 +247,7 @@ selfdrive/controls/lib/long_mpc_model.py
 
 selfdrive/controls/lib/cluster/*
 selfdrive/controls/lib/dynamic_follow
+selfdrive/controls/lib/dynamic_follow/auto_df_weights.npz
 
 selfdrive/controls/lib/lateral_mpc/lib_mpc_export/*
 selfdrive/controls/lib/lateral_mpc/.gitignore
