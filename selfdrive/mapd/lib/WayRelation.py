@@ -1,5 +1,4 @@
-from .geo import DIRECTION, distance_and_bearing, absoule_delta_with_direction, bearing_delta, bearing
-from common.numpy_fast import interp
+from .geo import DIRECTION, R
 from selfdrive.config import Conversions as CV
 import numpy as np
 import re
@@ -20,6 +19,19 @@ _COUNTRY_LIMITS_KPH = {
 }
 
 
+def distance_and_bearing_to_points(point, points):
+  """Calculate the distance and bearings (angle from true north clockwise) of the vectors between `point` and each
+  one of the entries in `points`. Both `point` and `points` elements are 2 element arrays containing a latitud,
+  longitude pair in radians.
+  """
+  delta = points - point
+  x = np.sin(delta[:, 1]) * np.cos(points[:, 0])
+  y = np.cos(point[0]) * np.sin(points[:, 0]) - (np.sin(point[0]) * np.cos(points[:, 0]) * np.cos(delta[:, 1]))
+  a = np.sin(delta[:, 0] / 2)**2 + np.cos(point[0]) * np.cos(points[:, 0]) * np.sin(delta[:, 1] / 2)**2
+  c = 2 * np.arctan2(np.sqrt(a), np.sqrt(1 - a))
+  return c * R, np.arctan2(x, y)
+
+
 class WayRelation():
   """A class that represent the relationship of an OSM way and a given `location` and `bearing` of a driving vehicle.
   """
@@ -27,6 +39,7 @@ class WayRelation():
     self.way = way
     self.reset_location_variables()
     self.direction = DIRECTION.NONE
+    self.distance_to_node_ahead = 0.
     self._speed_limit = None
 
     # Create a numpy array with nodes data to support calculations.
@@ -50,7 +63,7 @@ class WayRelation():
     self.active = False
     self.ahead_idx = None
     self.behind_idx = None
-    self._active_way_bearing = None
+    self._active_bearing_delta = None
 
   @property
   def id(self):
@@ -67,31 +80,54 @@ class WayRelation():
     if not self.is_location_in_bbox(location):
       return
 
-    # TODO: Do this with numpy. Calculate distance and bearing to all nodes and then process array to find
-    # best match if any.
-    for idx, node in enumerate(self.way.nodes):
-      distance_to_node, bearing_to_node = distance_and_bearing(location, (node.lat, node.lon))
-      delta, direction = absoule_delta_with_direction(bearing_delta(bearing, bearing_to_node))
-      if abs(delta) > interp(distance_to_node, _ACCEPTABLE_BEARING_DELTA_BP, _ACCEPTABLE_BEARING_DELTA_V):
-        continue
-      if direction == DIRECTION.AHEAD:
-        self.ahead_idx = idx
-        self.distance_to_node_ahead = distance_to_node
-        if self.behind_idx is not None:
-          break
-      elif direction == DIRECTION.BEHIND:
-        self.behind_idx = idx
-        if self.ahead_idx is not None:
-          break
-    # Validate
-    if self.ahead_idx is None or self.behind_idx is None or abs(self.ahead_idx - self.behind_idx) > 1:
-      self.reset_location_variables()
+    # Find where we are located in the way:
+    location = np.radians(np.array(location))
+    bearing = np.radians(bearing)
+
+    # - Get the distance and bearings from location to all nodes.
+    distances, bearings = distance_and_bearing_to_points(location, self._nodes_np)
+
+    # - Get absolute bearing delta to current driving bearing.
+    delta = np.abs(bearing - bearings)
+
+    # - Nodes are ahead if the cosine of the delta is positive
+    is_ahead = np.cos(delta) >= 0.
+
+    # - Possible locations on the way are those where adjacent nodes change from ahead to behind or viceversa.
+    possible_idxs = np.nonzero(np.diff(is_ahead))[0]
+
+    # - when no possible locations found, then the location is not in this way.
+    if len(possible_idxs) == 0:
       return
+
+    # - The smallest angle between bearing and the bearing of the way, is the sine of the delta.
+    # This value indicates how far are we from alignment with the way direction and will aid us in
+    # choosing a location when we have multiple candidates.
+    delta_abs = np.abs(np.sin(delta))
+
+    # - Get the deltas on nodes ahead and behind for the possible locations and pick the minimum as the delta
+    # to actual way bearing.
+    delta_to_way_bearings = np.min(np.row_stack((delta_abs[possible_idxs], delta_abs[possible_idxs + 1])), axis=0)
+
+    # - Get the index where the delta to way bearing is minimum. That is the chosen location.
+    min_delta_idx = possible_idxs[np.argmin(delta_to_way_bearings)]
+
+    # Populate location variables with result
+    if is_ahead[min_delta_idx]:
+      self.direction = DIRECTION.BACKWARD
+      self.ahead_idx = min_delta_idx
+      self.behind_idx = min_delta_idx + 1
+    else:
+      self.direction = DIRECTION.FORWARD
+      self.ahead_idx = min_delta_idx + 1
+      self.behind_idx = min_delta_idx
+
+    self._active_bearing_delta = np.amin(delta_to_way_bearings)
+    self.distance_to_node_ahead = distances[self.ahead_idx]
     self.active = True
     self.location = location
     self.bearing = bearing
     self._speed_limit = None
-    self.direction = DIRECTION.FORWARD if self.ahead_idx - self.behind_idx > 0 else DIRECTION.BACKWARD
 
   def update_direction_from_starting_node(self, start_node_id):
     self._speed_limit = None
@@ -159,25 +195,11 @@ class WayRelation():
     return self.way.tags.get("name", None)
 
   @property
-  def active_bearing(self):
-    """Returns the exact bearing of the portion of way we are currentluy located at.
-    """
-    if self._active_way_bearing is not None:
-      return self._active_way_bearing
-    if not self.active:
-      return None
-    ahead_node = self.way.nodes[self.ahead_idx]
-    behind_node = self.way.nodes[self.behind_idx]
-    self._active_way_bearing = bearing((behind_node.lat, behind_node.lon), (ahead_node.lat, ahead_node.lon))
-    return self._active_way_bearing
-
-  def active_bearing_delta(self, bearing):
-    """Returns the delta between the given bearing and the exact
+  def active_bearing_delta(self):
+    """Returns the delta between the current location bearing and the exact
        bearing of the portion of way we are currentluy located at.
     """
-    if self.active_bearing is None:
-      return None
-    return bearing_delta(bearing, self.active_bearing)
+    return self._active_bearing_delta
 
   @property
   def node_behind(self):
@@ -202,21 +224,6 @@ class WayRelation():
     """
     return self.way.nodes[0].id == node_id or self.way.nodes[-1].id == node_id
 
-  def bearing_on_edge(self, node_id):
-    """Calculates the bearing of the way relation on the edge node identified by `node_id`
-    """
-    if self.way.nodes[0].id == node_id:
-      point_a = (self.way.nodes[1].lat, self.way.nodes[1].lon)
-      point_b = (self.way.nodes[0].lat, self.way.nodes[0].lon)
-      return bearing(point_a, point_b)
-
-    if self.way.nodes[-1].id == node_id:
-      point_a = (self.way.nodes[-2].lat, self.way.nodes[-2].lon)
-      point_b = (self.way.nodes[-1].lat, self.way.nodes[-1].lon)
-      return bearing(point_a, point_b)
-
-    return 0.
-
   def next_wr(self, way_relations):
     """Returns a tuple with the next way relation (if any) based on `location` and `bearing` and
     the `way_relations` list excluding the found next way relation. (to help with recursion)
@@ -224,9 +231,8 @@ class WayRelation():
     if self.direction not in [DIRECTION.FORWARD, DIRECTION.BACKWARD]:
       return None, way_relations
 
-    edge_bearing = self.bearing_on_edge(self.last_node.id)
     possible_next_wr = list(filter(lambda wr: wr.id != self.id and wr.edge_on_node(self.last_node.id), way_relations))
-    possible_next_wr.sort(key=lambda wr: bearing_delta(edge_bearing, wr.bearing_on_edge(self.last_node.id) + 180.))
+    possible_next_wr.sort(key=lambda wr: wr.active_bearing_delta)
     possibles = len(possible_next_wr)
 
     if possibles == 0:

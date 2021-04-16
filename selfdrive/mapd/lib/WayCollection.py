@@ -23,7 +23,7 @@ class WayCollection():
     # From those matching (i.e. active), select the one with minimum bearing delta between
     # route segment and provided bearing
     active_way_relations = list(filter(lambda wr: wr.active, self.way_relations))
-    active_way_relations.sort(key=lambda wr: wr.active_bearing_delta(bearing))
+    active_way_relations.sort(key=lambda wr: wr.active_bearing_delta)
     if len(active_way_relations) == 0:
       return None
 
