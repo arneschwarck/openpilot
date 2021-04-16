@@ -1,4 +1,5 @@
-import math
+#pylint: skip-file
+# flake8: noqa
 import numpy as np
 import cereal.messaging as messaging
 from common.realtime import sec_since_boot
