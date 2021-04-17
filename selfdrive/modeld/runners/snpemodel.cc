@@ -139,6 +139,7 @@ void SNPEModel::execute(float *net_input_buf, int buf_size, bool trafficd) {
   if (Runtime == zdl::DlSystem::Runtime_t::GPU) {
 
     if (thneed == NULL) {
+      printf("thneed is NULL\n");
       bool ret = inputBuffer->setBufferAddress(net_input_buf);
       assert(ret == true);
       if (!snpe->execute(inputMap, outputMap)) {
@@ -175,8 +176,9 @@ void SNPEModel::execute(float *net_input_buf, int buf_size, bool trafficd) {
       }
       free(outputs_golden);
     } else {
+      printf("thneed not null, executing\n");
       if (trafficd) {
-        printf("thneed not null, executing\n");
+        printf("executing as trafficd\n");
         float *inputs[1] = {net_input_buf};
         thneed->execute(inputs, output);
       } else {
