@@ -176,6 +176,7 @@ void SNPEModel::execute(float *net_input_buf, int buf_size, bool trafficd) {
       free(outputs_golden);
     } else {
       if (trafficd) {
+        printf("thneed not null, executing\n");
         float *inputs[1] = {net_input_buf};
         thneed->execute(inputs, output);
       } else {
