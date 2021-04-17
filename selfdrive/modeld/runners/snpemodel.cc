@@ -134,7 +134,7 @@ std::unique_ptr<zdl::DlSystem::IUserBuffer> SNPEModel::addExtra(float *state, in
   return ret;
 }
 
-void SNPEModel::execute(float *net_input_buf, int buf_size) {
+void SNPEModel::execute(float *net_input_buf, int buf_size, bool trafficd) {
 #ifdef USE_THNEED
   if (Runtime == zdl::DlSystem::Runtime_t::GPU) {
     float *inputs[4] = {recurrent, trafficConvention, desire, net_input_buf};
@@ -169,7 +169,12 @@ void SNPEModel::execute(float *net_input_buf, int buf_size) {
       }
       free(outputs_golden);
     } else {
-      thneed->execute(inputs, output);
+      if (!trafficd) {
+        thneed->execute(inputs, output);
+      } else {
+        float *inputs[1] = {net_input_buf};
+        thneed->execute(inputs, output);
+      }
     }
   } else {
 #endif
