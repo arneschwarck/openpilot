@@ -161,17 +161,15 @@ int main(){
       if (buf == nullptr){
         continue;
       }
-      printf("vipc: %f\n", (millis_since_boot() - t) * msToSec);
-      t = millis_since_boot();
-
+      printf("vipc: %f\n", (millis_since_boot() - t));
 
       t = millis_since_boot();
       getFlatArray(buf, flatImageArray);  // writes float vector to flatImageArray
-      printf("flat array: %f\n", (millis_since_boot() - t) * msToSec);
+      printf("flat array: %f\n", (millis_since_boot() - t));
 
       t = millis_since_boot();
       model->execute(flatImageArray, cropped_size, true);  // true uses special logic for trafficd
-      printf("model execute: %f\n", (millis_since_boot() - t) * msToSec);
+      printf("model execute: %f\n", (millis_since_boot() - t));
 
 //      sendPrediction(output, pm);
       printf("rate keeping\n");
