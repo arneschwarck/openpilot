@@ -12,9 +12,9 @@ int main(int argc, char* argv[]) {
 
   if (is_trafficd) {
     printf("IS TRAFFIC MODEL!\n");
-    #define OUTPUT_SIZE 0x10000
+    const int OUTPUT_SIZE = 0x10000;
   } else {
-    #define OUTPUT_SIZE 3
+    const int OUTPUT_SIZE = 3;
   }
 
   float *output = (float*)calloc(OUTPUT_SIZE, sizeof(float));
