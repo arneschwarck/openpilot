@@ -132,8 +132,7 @@ int main(){
   cl_device_id device_id = cl_get_device_id(CL_DEVICE_TYPE_DEFAULT);
   cl_context context = CL_CHECK_ERR(clCreateContext(NULL, 1, &device_id, NULL, NULL, &err));
 
-  VisionIpcClient vipc_client = VisionIpcClient("camerad", VISION_STREAM_YUV_BACK, true, device_id, context);
-
+  VisionIpcClient vipc_client = VisionIpcClient("trafficd", VISION_STREAM_YUV_BACK, true, device_id, context);
 //
 //  while (!do_exit){
 //    if (!vipc_client.connect(false)){
