@@ -137,12 +137,6 @@ std::unique_ptr<zdl::DlSystem::IUserBuffer> SNPEModel::addExtra(float *state, in
 void SNPEModel::execute(float *net_input_buf, int buf_size, bool trafficd) {
 #ifdef USE_THNEED
   if (Runtime == zdl::DlSystem::Runtime_t::GPU) {
-    float *inputs;
-    if (trafficd) {
-      inputs = new float[1] {net_input_buf};
-    } else {
-      inputs = new float[4] {recurrent, trafficConvention, desire, net_input_buf};
-    }
 
     if (thneed == NULL) {
       bool ret = inputBuffer->setBufferAddress(net_input_buf);
@@ -163,7 +157,13 @@ void SNPEModel::execute(float *net_input_buf, int buf_size, bool trafficd) {
       memcpy(outputs_golden, output, output_size*sizeof(float));
       memset(output, 0, output_size*sizeof(float));
       memset(recurrent, 0, recurrent_size*sizeof(float));
-      thneed->execute(inputs, output);
+      if (trafficd) {
+        float *inputs[1] = {net_input_buf};
+        thneed->execute(inputs, output);
+      } else {
+        float *inputs[4] = {recurrent, trafficConvention, desire, net_input_buf};
+        thneed->execute(inputs, output);
+      }
 
       if (memcmp(output, outputs_golden, output_size*sizeof(float)) == 0) {
         printf("thneed selftest passed\n");
@@ -175,9 +175,14 @@ void SNPEModel::execute(float *net_input_buf, int buf_size, bool trafficd) {
       }
       free(outputs_golden);
     } else {
-      thneed->execute(inputs, output);
+      if (trafficd) {
+        float *inputs[1] = {net_input_buf};
+        thneed->execute(inputs, output);
+      } else {
+        float *inputs[4] = {recurrent, trafficConvention, desire, net_input_buf};
+        thneed->execute(inputs, output);
+      }
     }
-    delete[] inputs;
   } else {
 #endif
     bool ret = inputBuffer->setBufferAddress(net_input_buf);
