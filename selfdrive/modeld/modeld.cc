@@ -87,7 +87,7 @@ void run_model(ModelState &model, VisionIpcClient &vipc_client) {
 
     transform_lock.lock();
     mat3 model_transform = cur_transform;
-    const bool run_model_this_iter = live_calib_seen;
+    const bool run_model_this_iter = true;  // live_calib_seen;
     transform_lock.unlock();
 
     if (sm.update(0) > 0) {
