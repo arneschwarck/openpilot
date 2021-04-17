@@ -176,9 +176,14 @@ int main(){
       lastLoop = rateKeeper(millis_since_boot() - loopStart, lastLoop);
 
       if (debug_mode) {
-        cout << "idx 0: " << output[0] << endl;
+        float *test;
+        test = &output[0];
+        cout << "test 0: " << test[0] << endl;
+        cout << "test &0: " << &test[0] << endl;
+
+//        cout << "idx 0: " << output[0] << endl;
 //        cout << "idx 0, 0: " << output[0][0] << endl;
-        cout << "idx &0: " << &output[0] << endl;
+//        cout << "idx &0: " << &output[0] << endl;
 //        cout << "idx &0, 0: " << &output[0][0] << endl;
 //        int maxIdx = 0;
 //        for (int i = 1; i < numLabels; i++) if (output[i] > output[maxIdx]) maxIdx = i;
