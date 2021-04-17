@@ -40,14 +40,14 @@ const double msToSec = 1 / 1000.;  // multiply
 const double secToMs = 1000.;
 
 
-////void sendPrediction(float *output, PubMaster &pm) {
-////  MessageBuilder msg;
-////  auto traffic_lights = msg.initEvent().initTrafficModelRaw();
-////
-////  kj::ArrayPtr<const float> output_vs(&output[0], numLabels);
-////  traffic_lights.setPrediction(output_vs);
-////  pm.send("trafficModelRaw", msg);
-////}
+void sendPrediction(float *output, PubMaster &pm) {
+  MessageBuilder msg;
+  auto traffic_lights = msg.initEvent().initTrafficModelRaw();
+
+  kj::ArrayPtr<const float> output_vs(&output[0], numLabels);
+  traffic_lights.setPrediction(output_vs);
+  pm.send("trafficModelRaw", msg);
+}
 
 void sleepFor(double seconds) {
   util::sleep_for(seconds * secToMs);
@@ -163,7 +163,7 @@ int main(){
 
       model->execute(flatImageArray, cropped_size, true);  // true uses special logic for trafficd
 
-//      sendPrediction(output, pm);
+      sendPrediction(output, pm);
       printf("rate keeping\n");
       lastLoop = rateKeeper(millis_since_boot() - loopStart, lastLoop);
 
