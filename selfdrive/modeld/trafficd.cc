@@ -12,7 +12,7 @@
 #include "common/clutil.h"
 #include "common/util.h"
 
-#include "commonmodel.h"
+#include "models/commonmodel.h"
 #include "runners/run.h"
 #include "messaging.hpp"
 #include "thneed/thneed.h"
