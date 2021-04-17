@@ -27,11 +27,11 @@ int main(int argc, char* argv[]) {
   float traffic_convention[TRAFFIC_CONVENTION_LEN] = {0};
   float *input = (float*)calloc(1623930, sizeof(float));;
 
-  if (is_trafficd) {
-    mdl.addRecurrent(state, TEMPORAL_SIZE);
-    mdl.addDesire(desire, DESIRE_LEN);
-    mdl.addTrafficConvention(traffic_convention, TRAFFIC_CONVENTION_LEN);
-  }
+//  if (!is_trafficd) {
+  mdl.addRecurrent(state, TEMPORAL_SIZE);
+  mdl.addDesire(desire, DESIRE_LEN);
+  mdl.addTrafficConvention(traffic_convention, TRAFFIC_CONVENTION_LEN);
+//  }
 
   // first run
   printf("************** execute 1 **************\n");
