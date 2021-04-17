@@ -48,11 +48,11 @@ const double secToMs = 1000.;
 ////  traffic_lights.setPrediction(output_vs);
 ////  pm.send("trafficModelRaw", msg);
 ////}
-//
-//void sleepFor(double seconds) {
-//  util::sleep_for(seconds * secToMs);
-//}
-//
+
+void sleepFor(double seconds) {
+  util::sleep_for(seconds * secToMs);
+}
+
 //double rateKeeper(double loopTime, double lastLoop) {
 //  double toSleep;
 //  if (lastLoop < 0){  // don't sleep if last loop lagged
