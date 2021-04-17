@@ -71,11 +71,11 @@
 //  return toSleep;
 //}
 //
-//void set_do_exit(int sig) {
-//  std::cout << "trafficd - received signal: " << sig << std::endl;
-//  std::cout << "trafficd - shutting down!" << std::endl;
-//  do_exit = 1;
-//}
+void set_do_exit(int sig) {
+  std::cout << "trafficd - received signal: " << sig << std::endl;
+  std::cout << "trafficd - shutting down!" << std::endl;
+  do_exit = 1;
+}
 //
 //uint8_t clamp(int16_t value) {
 //  return value<0 ? 0 : (value>255 ? 255 : value);
@@ -117,15 +117,15 @@
 //}
 //
 int main(){
-//  signal(SIGINT, (sighandler_t)set_do_exit);
-//  signal(SIGTERM, (sighandler_t)set_do_exit);
+  signal(SIGINT, (sighandler_t)set_do_exit);
+  signal(SIGTERM, (sighandler_t)set_do_exit);
 
   printf("success!\n");
 
 //  PubMaster pm({"trafficModelRaw"});
 
-//  int err;
-//  float *output = (float*)calloc(numLabels, sizeof(float));
+  int err;
+  float *output = (float*)calloc(numLabels, sizeof(float));
 //  RunModel *model = new DefaultRunModel("../../models/traffic_model.dlc", output, numLabels, USE_GPU_RUNTIME);
 ////  std::make_unique<ThneedModel>("../../models/traffic_model.thneed", &s->output[0], output_size, USE_GPU_RUNTIME);
 //
