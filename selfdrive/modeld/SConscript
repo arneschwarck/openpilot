@@ -78,4 +78,5 @@ lenv.Program('_modeld', [
 
 lenv.Program('_trafficd', [
     "trafficd.cc",
+    "models/driving.cc",
   ]+common_model, LIBS=libs)
