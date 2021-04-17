@@ -154,11 +154,17 @@ void SNPEModel::execute(float *net_input_buf, int buf_size, bool trafficd) {
       printf("thneed cached\n");
 
       // doing self test
+      printf("output_size: %d\n", output_size);
       float *outputs_golden = (float *)malloc(output_size*sizeof(float));
+      printf("output_size: %d\n", output_size);
       memcpy(outputs_golden, output, output_size*sizeof(float));
+      printf("output_size: %d\n", output_size);
       memset(output, 0, output_size*sizeof(float));
+      printf("output_size: %d\n", output_size);
       memset(recurrent, 0, recurrent_size*sizeof(float));
+      printf("output_size: %d\n", output_size);
       thneed->execute(inputs, output);
+      printf("output_size: %d\n", output_size);
 
       if (memcmp(output, outputs_golden, output_size*sizeof(float)) == 0) {
         printf("thneed selftest passed\n");
