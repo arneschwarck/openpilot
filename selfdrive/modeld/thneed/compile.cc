@@ -21,7 +21,6 @@ int main(int argc, char* argv[]) {
   float *output = (float*)calloc(OUTPUT_SIZE, sizeof(float));
   SNPEModel mdl(argv[1], output, 0, USE_GPU_RUNTIME);
 
-
   float state[TEMPORAL_SIZE] = {0};
   float desire[DESIRE_LEN] = {0};
   float traffic_convention[TRAFFIC_CONVENTION_LEN] = {0};
