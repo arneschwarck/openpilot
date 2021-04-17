@@ -186,7 +186,7 @@ int main(){
     free(flatImageArray);
 
   }
-  free(output);
+//  free(output);
 //  delete model;
   std::cout << "trafficd is dead" << std::endl;
   return 0;
