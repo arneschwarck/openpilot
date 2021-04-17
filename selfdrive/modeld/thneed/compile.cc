@@ -24,7 +24,8 @@ int main(int argc, char* argv[]) {
   // first run
   printf("************** execute 1 **************\n");
   memset(output, 0, OUTPUT_SIZE * sizeof(float));
-  mdl.execute(input, 0);
+
+  mdl.execute(input, 0, strstr(argv[1], "traffic"));
 
   // save model
   bool save_binaries = (argc > 3) && (strcmp(argv[3], "--binary") == 0);
