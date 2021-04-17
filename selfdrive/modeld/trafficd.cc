@@ -176,10 +176,14 @@ int main(){
       lastLoop = rateKeeper(millis_since_boot() - loopStart, lastLoop);
 
       if (debug_mode) {
-        int maxIdx = 0;
-        for (int i = 1; i < numLabels; i++) if (output[i] > output[maxIdx]) maxIdx = i;
-        printf("Model prediction: %s (%f)\n", modelLabels[maxIdx].c_str(), 100.0 * output[maxIdx]);
-        std::cout << "Current frequency: " << 1 / ((millis_since_boot() - loopStart) * msToSec) << " Hz" << std::endl;
+        cout << "idx 0: " << output[0] << endl;
+        cout << "idx 0, 0: " << output[0][0] << endl;
+        cout << "idx &0: " << &output[0] << endl;
+        cout << "idx &0, 0: " << &output[0][0] << endl;
+//        int maxIdx = 0;
+//        for (int i = 1; i < numLabels; i++) if (output[i] > output[maxIdx]) maxIdx = i;
+//        printf("Model prediction: %s (%f)\n", modelLabels[maxIdx].c_str(), 100.0 * output[maxIdx]);
+//        std::cout << "Current frequency: " << 1 / ((millis_since_boot() - loopStart) * msToSec) << " Hz" << std::endl;
       }
     }
     printf("freeing memory\n");
