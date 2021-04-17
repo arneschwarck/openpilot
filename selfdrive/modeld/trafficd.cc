@@ -12,6 +12,7 @@
 #include "messaging.hpp"
 #include "runners/run.h"
 #include "common/clutil.h"
+#include "common/util.h"
 
 //#include <sched.h>
 
@@ -173,7 +174,6 @@ int main(){
     }
     printf("freeing memory\n");
     free(flatImageArray);
-    visionstream_destroy(&stream);
 
   }
   free(output);
