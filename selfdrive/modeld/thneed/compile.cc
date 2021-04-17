@@ -25,7 +25,7 @@ int main(int argc, char* argv[]) {
   float state[TEMPORAL_SIZE] = {0};
   float desire[DESIRE_LEN] = {0};
   float traffic_convention[TRAFFIC_CONVENTION_LEN] = {0};
-  float *input = (float*)calloc(1623930, sizeof(float));;
+  float *input = (float*)calloc(is_trafficd ? 1623930 : 0x1000000, sizeof(float));;
 
 //  if (!is_trafficd) {
   mdl.addRecurrent(state, TEMPORAL_SIZE);
