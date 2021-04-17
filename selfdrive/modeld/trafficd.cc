@@ -6,8 +6,8 @@
 #include <signal.h>
 #include <unistd.h>
 
-#include "common/visionbuf.h"
-#include "common/visionipc.h"
+#include "visionbuf.h"
+#include "visionipc_client.h"
 #include "common/timing.h"
 #include "messaging.hpp"
 #include "runners/run.h"
@@ -21,7 +21,7 @@ volatile sig_atomic_t do_exit = 0;
 const std::vector<std::string> modelLabels = {"SLOW", "GREEN", "NONE"};
 const int numLabels = modelLabels.size();
 const double modelRate = 1 / 4.;  // 3 Hz
-const bool debug_mode = false;
+const bool debug_mode = true;
 
 const int original_shape[3] = {874, 1164, 3};   // global constants
 //const int original_size = 874 * 1164 * 3;
@@ -35,14 +35,14 @@ const double msToSec = 1 / 1000.;  // multiply
 const double secToUs = 1e+6;
 
 
-void sendPrediction(float *output, PubMaster &pm) {
-  MessageBuilder msg;
-  auto traffic_lights = msg.initEvent().initTrafficModelRaw();
-
-  kj::ArrayPtr<const float> output_vs(&output[0], numLabels);
-  traffic_lights.setPrediction(output_vs);
-  pm.send("trafficModelRaw", msg);
-}
+//void sendPrediction(float *output, PubMaster &pm) {
+//  MessageBuilder msg;
+//  auto traffic_lights = msg.initEvent().initTrafficModelRaw();
+//
+//  kj::ArrayPtr<const float> output_vs(&output[0], numLabels);
+//  traffic_lights.setPrediction(output_vs);
+//  pm.send("trafficModelRaw", msg);
+//}
 
 void sleepFor(double sec) {
   usleep(sec * secToUs);
@@ -149,7 +149,7 @@ int main(){
       printf("executing model\n");
       model->execute(flatImageArray, cropped_size, true);  // true uses special logic for trafficd
 
-      sendPrediction(output, pm);
+//      sendPrediction(output, pm);
       printf("rate keeping\n");
       lastLoop = rateKeeper(millis_since_boot() - loopStart, lastLoop);
 
