@@ -161,7 +161,7 @@ int main(){
       if (buf == nullptr){
         continue;
       }
-      printf("vipc: %f", (millis_since_boot - t) * msToSec);
+      printf("vipc: %f", (millis_since_boot() - t) * msToSec);
       t = millis_since_boot();
 
 
