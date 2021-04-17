@@ -130,7 +130,7 @@ int main(){
 
   while (!do_exit){
     if (!vipc_client.connect(false)){
-      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+      util::sleep_for(100);
       continue;
     }
     break;
