@@ -11,6 +11,7 @@
 #include "common/timing.h"
 #include "messaging.hpp"
 #include "runners/run.h"
+#include "common/clutil.h"
 
 //#include <sched.h>
 
