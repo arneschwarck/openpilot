@@ -9,10 +9,13 @@
 #include "visionbuf.h"
 #include "visionipc_client.h"
 #include "common/timing.h"
-#include "messaging.hpp"
-#include "runners/run.h"
 #include "common/clutil.h"
 #include "common/util.h"
+
+#include "commonmodel.h"
+#include "runners/run.h"
+#include "messaging.hpp"
+#include "thneed/thneed.h"
 
 //#include <sched.h>
 
@@ -122,6 +125,7 @@ int main(){
   int err;
   float *output = (float*)calloc(numLabels, sizeof(float));
   RunModel *model = new DefaultRunModel("../../models/traffic_model.dlc", output, numLabels, USE_GPU_RUNTIME);
+//  std::make_unique<ThneedModel>("../../models/traffic_model.thneed", &s->output[0], output_size, USE_GPU_RUNTIME);
 
   cl_device_id device_id = cl_get_device_id(CL_DEVICE_TYPE_DEFAULT);
   cl_context context = CL_CHECK_ERR(clCreateContext(NULL, 1, &device_id, NULL, NULL, &err));
