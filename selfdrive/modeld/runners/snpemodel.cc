@@ -137,6 +137,7 @@ std::unique_ptr<zdl::DlSystem::IUserBuffer> SNPEModel::addExtra(float *state, in
 void SNPEModel::execute(float *net_input_buf, int buf_size, bool trafficd) {
 #ifdef USE_THNEED
   if (Runtime == zdl::DlSystem::Runtime_t::GPU) {
+    printf("using thneed and gpu\n");
     float *inputs[4] = {recurrent, trafficConvention, desire, net_input_buf};
     if (thneed == NULL) {
       bool ret = inputBuffer->setBufferAddress(net_input_buf);

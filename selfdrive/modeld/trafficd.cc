@@ -165,7 +165,7 @@ int main(){
       printf("getting flat array\n");
       getFlatArray(buf, flatImageArray);  // writes float vector to flatImageArray
       printf("executing model\n");
-//      model->execute(flatImageArray, cropped_size, true);  // true uses special logic for trafficd
+      model->execute(flatImageArray, cropped_size, true);  // true uses special logic for trafficd
 
 //      sendPrediction(output, pm);
       printf("rate keeping\n");
