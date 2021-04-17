@@ -138,8 +138,11 @@ void SNPEModel::execute(float *net_input_buf, int buf_size, bool trafficd) {
 #ifdef USE_THNEED
   if (Runtime == zdl::DlSystem::Runtime_t::GPU) {
     printf("using thneed and gpu\n");
-//    float *inputs[4] = {recurrent, trafficConvention, desire, net_input_buf};
-    float *inputs[1] = {net_input_buf};
+    if (!trafficd) {
+      float *inputs[1] = {net_input_buf};
+    } else {
+      float *inputs[4] = {recurrent, trafficConvention, desire, net_input_buf};
+    }
 
     if (thneed == NULL) {
       bool ret = inputBuffer->setBufferAddress(net_input_buf);
@@ -178,12 +181,7 @@ void SNPEModel::execute(float *net_input_buf, int buf_size, bool trafficd) {
       }
       free(outputs_golden);
     } else {
-      if (!trafficd) {
-        thneed->execute(inputs, output);
-      } else {
-        float *inputs[1] = {net_input_buf};
-        thneed->execute(inputs, output);
-      }
+      thneed->execute(inputs, output);
     }
   } else {
 #endif
