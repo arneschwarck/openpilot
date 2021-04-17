@@ -165,18 +165,18 @@ int main(){
       printf("getting flat array\n");
       getFlatArray(buf, flatImageArray);  // writes float vector to flatImageArray
       printf("executing model\n");
-      model->execute(flatImageArray, cropped_size, true);  // true uses special logic for trafficd
+//      model->execute(flatImageArray, cropped_size, true);  // true uses special logic for trafficd
 
 //      sendPrediction(output, pm);
       printf("rate keeping\n");
       lastLoop = rateKeeper(millis_since_boot() - loopStart, lastLoop);
 
-      if (debug_mode) {
-        int maxIdx = 0;
-        for (int i = 1; i < 3; i++) if (output[i] > output[maxIdx]) maxIdx = i;
-        printf("Model prediction: %s (%f)\n", modelLabels[maxIdx].c_str(), 100.0 * output[maxIdx]);
-        std::cout << "Current frequency: " << 1 / ((millis_since_boot() - loopStart) * msToSec) << " Hz" << std::endl;
-      }
+//      if (debug_mode) {
+//        int maxIdx = 0;
+//        for (int i = 1; i < 3; i++) if (output[i] > output[maxIdx]) maxIdx = i;
+//        printf("Model prediction: %s (%f)\n", modelLabels[maxIdx].c_str(), 100.0 * output[maxIdx]);
+//        std::cout << "Current frequency: " << 1 / ((millis_since_boot() - loopStart) * msToSec) << " Hz" << std::endl;
+//      }
     }
     printf("freeing memory\n");
     free(flatImageArray);
