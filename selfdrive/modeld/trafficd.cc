@@ -185,7 +185,6 @@ int main(){
 
   }
   free(output);
-//  delete model;
   std::cout << "trafficd is dead" << std::endl;
   return 0;
 }

@@ -12,7 +12,7 @@ int main(int argc, char* argv[]) {
 
   int OUTPUT_SIZE;
   if (is_trafficd) {
-    printf("IS TRAFFIC MODEL!\n");
+    printf("compiling thneed model for traffic_model.dlc\n");
     OUTPUT_SIZE = 3;
   } else {
     OUTPUT_SIZE = 0x10000;
@@ -27,11 +27,9 @@ int main(int argc, char* argv[]) {
   float traffic_convention[TRAFFIC_CONVENTION_LEN] = {0};
   float *input = (float*)calloc(is_trafficd ? 1623930 : 0x1000000, sizeof(float));;
 
-//  if (!is_trafficd) {
   mdl.addRecurrent(state, TEMPORAL_SIZE);
   mdl.addDesire(desire, DESIRE_LEN);
   mdl.addTrafficConvention(traffic_convention, TRAFFIC_CONVENTION_LEN);
-//  }
 
   // first run
   printf("************** execute 1 **************\n");
