@@ -177,9 +177,9 @@ int main(){
 
       if (debug_mode) {
         cout << "idx 0: " << output[0] << endl;
-        cout << "idx 0, 0: " << output[0][0] << endl;
+//        cout << "idx 0, 0: " << output[0][0] << endl;
         cout << "idx &0: " << &output[0] << endl;
-        cout << "idx &0, 0: " << &output[0][0] << endl;
+//        cout << "idx &0, 0: " << &output[0][0] << endl;
 //        int maxIdx = 0;
 //        for (int i = 1; i < numLabels; i++) if (output[i] > output[maxIdx]) maxIdx = i;
 //        printf("Model prediction: %s (%f)\n", modelLabels[maxIdx].c_str(), 100.0 * output[maxIdx]);
