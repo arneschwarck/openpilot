@@ -126,7 +126,7 @@ int main(){
 
   int err;
   float *output = (float*)calloc(numLabels, sizeof(float));
-//  RunModel *model = new DefaultRunModel("../../models/traffic_model.dlc", output, numLabels, USE_GPU_RUNTIME);
+  RunModel *model = new DefaultRunModel("../../models/traffic_model.dlc", output, numLabels, USE_GPU_RUNTIME);
 ////  std::make_unique<ThneedModel>("../../models/traffic_model.thneed", &s->output[0], output_size, USE_GPU_RUNTIME);
 
   cl_device_id device_id = cl_get_device_id(CL_DEVICE_TYPE_DEFAULT);
