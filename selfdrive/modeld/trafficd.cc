@@ -125,7 +125,8 @@ int main(){
 //  PubMaster pm({"trafficModelRaw"});
 
   int err;
-  float *output = (float*)calloc(numLabels, sizeof(float));
+//  float *output = (float*)calloc(numLabels, sizeof(float));
+  std::vector<float> output;
   RunModel *model = new DefaultRunModel("../../models/traffic_model.dlc", output, numLabels, USE_GPU_RUNTIME);
 ////  std::make_unique<ThneedModel>("../../models/traffic_model.thneed", &s->output[0], output_size, USE_GPU_RUNTIME);
 
@@ -173,7 +174,7 @@ int main(){
 
       if (debug_mode) {
         int maxIdx = 0;
-        for (int i = 1; i < 3; i++) if (output[i] > output[maxIdx]) maxIdx = i;
+        for (int i = 1; i < numLabels; i++) if (output[i] > output[maxIdx]) maxIdx = i;
         printf("Model prediction: %s (%f)\n", modelLabels[maxIdx].c_str(), 100.0 * output[maxIdx]);
         std::cout << "Current frequency: " << 1 / ((millis_since_boot() - loopStart) * msToSec) << " Hz" << std::endl;
       }
@@ -182,7 +183,6 @@ int main(){
     free(flatImageArray);
 
   }
-  free(output);
   delete model;
   std::cout << "trafficd is dead" << std::endl;
   return 0;
