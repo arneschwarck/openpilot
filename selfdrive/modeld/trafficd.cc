@@ -82,13 +82,8 @@ uint8_t clamp(int16_t value) {
 }
 
 static void getFlatArray(const VisionBuf* buf, float flatImageArray[]) {
-  // returns RGB if returnBGR is false
   const size_t width = original_shape[1];
   const size_t height = original_shape[0];
-
-//  uint8_t *y = (uint8_t*)buf->addr;
-//  uint8_t *u = y + (width * height);
-//  uint8_t *v = u + (width / 2) * (height / 2);
 
   const uint8_t *y = buf->y;
   const uint8_t *u = buf->u;
@@ -125,7 +120,10 @@ int main(){
   int err;
   float *output = (float*)calloc(numLabels, sizeof(float));
   std::unique_ptr<RunModel> model = std::make_unique<DefaultRunModel>("../../models/traffic_model.dlc", output, numLabels, USE_GPU_RUNTIME);
-//  std::unique_ptr<RunModel> model = std::make_unique<ThneedModel>("../../models/traffic_model.thneed", output, numLabels, USE_GPU_RUNTIME);
+
+  // todo: figure out why using the converted thneed model makes the prediction all zeros (and execution time goes from 27 to 0.001 ms)
+  // code in compile.cc and SConscript to convert the traffic model
+  // std::unique_ptr<RunModel> model = std::make_unique<ThneedModel>("../../models/traffic_model.thneed", output, numLabels, USE_GPU_RUNTIME);
 
   cl_device_id device_id = cl_get_device_id(CL_DEVICE_TYPE_DEFAULT);
   cl_context context = CL_CHECK_ERR(clCreateContext(NULL, 1, &device_id, NULL, NULL, &err));
@@ -153,21 +151,17 @@ int main(){
       printf("inside main loop\n");
       loopStart = millis_since_boot();
 
-      double t = millis_since_boot();
       VisionIpcBufExtra extra;
       VisionBuf *buf = vipc_client.recv(&extra);
       if (buf == nullptr){
         continue;
       }
-      printf("vipc: %f\n", (millis_since_boot() - t));
 
-      t = millis_since_boot();
+//      double t = millis_since_boot();
       getFlatArray(buf, flatImageArray);  // writes float vector to flatImageArray
-      printf("flat array: %f\n", (millis_since_boot() - t));
+//      printf("yuv2bgr: %f\n", (millis_since_boot() - t));
 
-      t = millis_since_boot();
       model->execute(flatImageArray, cropped_size, true);  // true uses special logic for trafficd
-      printf("model execute: %f\n", (millis_since_boot() - t));
 
 //      sendPrediction(output, pm);
       printf("rate keeping\n");
