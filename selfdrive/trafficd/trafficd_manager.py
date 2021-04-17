@@ -13,7 +13,7 @@ class Traffic:
     self.sm = messaging.SubMaster(['trafficModelRaw'])
 
     self.labels = ['SLOW', 'GREEN', 'NONE']
-    self.model_rate = 1 / 4.
+    self.model_rate = 1 / 5.
     self.recurrent_length = 1.  # in seconds, how far back to factor into current prediction
     self.min_preds = int(round(self.recurrent_length / self.model_rate))
     self.last_pred_weight = 5.  # places nx weight on most recent prediction
