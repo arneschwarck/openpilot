@@ -76,14 +76,18 @@ uint8_t clamp(int16_t value) {
   return value<0 ? 0 : (value>255 ? 255 : value);
 }
 
-static void getFlatArray(const VIPCBuf* buf, float flatImageArray[]) {
+static void getFlatArray(const VisionBuf* buf, float flatImageArray[]) {
   // returns RGB if returnBGR is false
   const size_t width = original_shape[1];
   const size_t height = original_shape[0];
 
-  uint8_t *y = (uint8_t*)buf->addr;
-  uint8_t *u = y + (width * height);
-  uint8_t *v = u + (width / 2) * (height / 2);
+//  uint8_t *y = (uint8_t*)buf->addr;
+//  uint8_t *u = y + (width * height);
+//  uint8_t *v = u + (width / 2) * (height / 2);
+
+  const uint8_t *y = buf->y;
+  const uint8_t *u = buf->u;
+  const uint8_t *v = buf->v;
 
   int b, g, r;
   int idx = 0;
