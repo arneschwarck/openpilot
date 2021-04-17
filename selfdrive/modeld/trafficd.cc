@@ -123,11 +123,11 @@ int main(){
 //  PubMaster pm({"trafficModelRaw"});
 
   int err;
-//  float *output = (float*)calloc(numLabels, sizeof(float));
-  std::vector<float> output;
-  output.resize(numLabels);
+  float *output = (float*)calloc(numLabels, sizeof(float));
+//  std::vector<float> output;
+//  output.resize(numLabels);
 //  RunModel *model = new DefaultRunModel("../../models/traffic_model.dlc", output, numLabels, USE_GPU_RUNTIME);
-  std::unique_ptr<RunModel> model = std::make_unique<ThneedModel>("../../models/traffic_model.thneed", &output[0], numLabels, USE_GPU_RUNTIME);
+  std::unique_ptr<RunModel> model = std::make_unique<ThneedModel>("../../models/traffic_model.thneed", output, numLabels, USE_GPU_RUNTIME);
 
   cl_device_id device_id = cl_get_device_id(CL_DEVICE_TYPE_DEFAULT);
   cl_context context = CL_CHECK_ERR(clCreateContext(NULL, 1, &device_id, NULL, NULL, &err));
@@ -176,12 +176,12 @@ int main(){
       lastLoop = rateKeeper(millis_since_boot() - loopStart, lastLoop);
 
       if (debug_mode) {
-        float *test;
-        test = &output[0];
-        cout << "test 0: " << test[0] << endl;
-        cout << "test &0: " << &test[0] << endl;
+//        float *test;
+//        test = &output[0];
+//        cout << "test 0: " << test[0] << endl;
+//        cout << "test &0: " << &test[0] << endl;
 
-//        cout << "idx 0: " << output[0] << endl;
+        cout << "idx 0: " << output[0] << endl;
 //        cout << "idx 0, 0: " << output[0][0] << endl;
 //        cout << "idx &0: " << &output[0] << endl;
 //        cout << "idx &0, 0: " << &output[0][0] << endl;
