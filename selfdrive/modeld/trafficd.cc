@@ -115,7 +115,7 @@ int main(){
   signal(SIGINT, (sighandler_t)set_do_exit);
   signal(SIGTERM, (sighandler_t)set_do_exit);
 
-//  PubMaster pm({"trafficModelRaw"});
+  PubMaster pm({"trafficModelRaw"});
 
   int err;
   float *output = (float*)calloc(numLabels, sizeof(float));
