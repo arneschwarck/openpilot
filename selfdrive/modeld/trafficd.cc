@@ -47,7 +47,7 @@ const double secToMs = 1000.;
 //}
 
 void sleepFor(double seconds) {
-  std::sleep_for(seconds * secToMs);
+  util::sleep_for(seconds * secToMs);
 }
 
 double rateKeeper(double loopTime, double lastLoop) {
