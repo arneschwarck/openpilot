@@ -123,7 +123,8 @@ int main(){
 //  PubMaster pm({"trafficModelRaw"});
 
   int err;
-  float *output = (float*)calloc(numLabels, sizeof(float));
+//  float *output = (float*)calloc(numLabels, sizeof(float));
+  std::vector<float> output;
 //  RunModel *model = new DefaultRunModel("../../models/traffic_model.dlc", output, numLabels, USE_GPU_RUNTIME);
   std::unique_ptr<RunModel> model = std::make_unique<ThneedModel>("../../models/traffic_model.thneed", output[0], numLabels, USE_GPU_RUNTIME);
 
