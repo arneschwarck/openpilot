@@ -169,7 +169,7 @@ int main(){
 
 //      sendPrediction(output, pm);
       printf("rate keeping\n");
-      lastLoop = rateKeeper(millis_since_boot() - loopStart, lastLoop);
+//      lastLoop = rateKeeper(millis_since_boot() - loopStart, lastLoop);
 
       if (debug_mode) {
         int maxIdx = 0;
