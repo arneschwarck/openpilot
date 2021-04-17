@@ -155,17 +155,24 @@ int main(){
       printf("inside main loop\n");
       loopStart = millis_since_boot();
 
+      double t = millis_since_boot();
       VisionIpcBufExtra extra;
       VisionBuf *buf = vipc_client.recv(&extra);
       if (buf == nullptr){
         continue;
       }
+      printf("vipc: %f", (millis_since_boot - t) * msToSec);
+      t = millis_since_boot();
 
 
       printf("getting flat array\n");
+      t = millis_since_boot();
       getFlatArray(buf, flatImageArray);  // writes float vector to flatImageArray
+      printf("flat array: %f", (millis_since_boot - t) * msToSec);
       printf("executing model\n");
+      t = millis_since_boot();
       model->execute(flatImageArray, cropped_size, true);  // true uses special logic for trafficd
+      printf("model execute: %f", (millis_since_boot - t) * msToSec);
 
 //      sendPrediction(output, pm);
       printf("rate keeping\n");
