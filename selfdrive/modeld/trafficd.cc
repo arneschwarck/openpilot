@@ -133,15 +133,15 @@ int main(){
   cl_context context = CL_CHECK_ERR(clCreateContext(NULL, 1, &device_id, NULL, NULL, &err));
 
   VisionIpcClient vipc_client = VisionIpcClient("trafficd", VISION_STREAM_YUV_BACK, true, device_id, context);
-//
-//  while (!do_exit){
-//    if (!vipc_client.connect(false)){
-//      sleepFor(0.1);
-//      continue;
-//    }
-//    break;
-//  }
-//  printf("visionipc client connected!\n");
+
+  while (!do_exit){
+    if (!vipc_client.connect(false)){
+      sleepFor(0.1);
+      continue;
+    }
+    break;
+  }
+  printf("visionipc client connected!\n");
 //
 //  while (!do_exit){  // keep traffic running in case we can't get a frame (mimicking modeld)
 //    printf("running trafficd\n");
