@@ -10,7 +10,7 @@
 int main(int argc, char* argv[]) {
   const bool is_trafficd = strstr(argv[1], "traffic");
 
-  if (trafficd) {
+  if (is_trafficd) {
     printf("IS TRAFFIC MODEL!\n");
     #define OUTPUT_SIZE 0x10000
   } else {
