@@ -117,16 +117,23 @@ int main(){
   float *output = (float*)calloc(numLabels, sizeof(float));
   RunModel *model = new DefaultRunModel("../../models/traffic_model.dlc", output, numLabels, USE_GPU_RUNTIME);
 
-  VisionStream stream;
-  while (!do_exit){  // keep traffic running in case we can't get a frame (mimicking modeld)
-    printf("running trafficd\n");
-    VisionStreamBufs buf_info;
-    err = visionstream_init(&stream, VISION_STREAM_YUV, true, &buf_info);
-    if (err) {
-      printf("trafficd: visionstream fail\n");
-      usleep(500000);
+  cl_device_id device_id = cl_get_device_id(CL_DEVICE_TYPE_DEFAULT);
+  cl_context context = CL_CHECK_ERR(clCreateContext(NULL, 1, &device_id, NULL, NULL, &err));
+
+  VisionIpcClient vipc_client = VisionIpcClient("trafficd", VISION_STREAM_YUV_BACK, true, device_id, context);
+
+  while (!do_exit){
+    if (!vipc_client.connect(false)){
+      std::this_thread::sleep_for(std::chrono::milliseconds(100));
       continue;
     }
+    break;
+  }
+  printf("visionipc client connected!\n");
+
+  while (!do_exit){  // keep traffic running in case we can't get a frame (mimicking modeld)
+    printf("running trafficd\n");
+    VisionBuf *b = &vipc_client.buffers[0];
 
     double loopStart;
     double lastLoop = 0;
@@ -135,15 +142,14 @@ int main(){
     while (!do_exit) {
       printf("inside main loop\n");
       loopStart = millis_since_boot();
-      printf("creating vipc buf\n");
-      VIPCBuf* buf;
-      VIPCBufExtra extra;
-      printf("vision stream get\n");
-      buf = visionstream_get(&stream, &extra);
-      if (buf == NULL) {
-        printf("trafficd: visionstream get failed\n");
-        break;
+
+      VisionIpcBufExtra extra;
+      VisionBuf *buf = vipc_client.recv(&extra);
+      if (buf == nullptr){
+        continue;
       }
+
+
       printf("getting flat array\n");
       getFlatArray(buf, flatImageArray);  // writes float vector to flatImageArray
       printf("executing model\n");
