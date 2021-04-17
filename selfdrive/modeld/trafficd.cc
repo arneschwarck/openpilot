@@ -1,21 +1,18 @@
 #pragma clang diagnostic ignored "-Wexceptions"
 #pragma clang diagnostic ignored "-Wunused"
-#include <array>
 #include <stdio.h>
 #include <stdlib.h>
-#include <signal.h>
-#include <unistd.h>
+#include <mutex>
+#include <eigen3/Eigen/Dense>
 
-#include "visionbuf.h"
 #include "visionipc_client.h"
-#include "common/timing.h"
+#include "common/swaglog.h"
 #include "common/clutil.h"
 #include "common/util.h"
+#include "common/params.h"
 
-#include "models/commonmodel.h"
-#include "runners/run.h"
+#include "models/driving.h"
 #include "messaging.hpp"
-#include "thneed/thneed.h"
 
 //#include <sched.h>
 
@@ -133,6 +130,7 @@ int main(){
   cl_context context = CL_CHECK_ERR(clCreateContext(NULL, 1, &device_id, NULL, NULL, &err));
 
   VisionIpcClient vipc_client = VisionIpcClient("camerad", VISION_STREAM_YUV_BACK, true, device_id, context);
+
 //
 //  while (!do_exit){
 //    if (!vipc_client.connect(false)){
