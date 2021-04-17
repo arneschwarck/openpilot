@@ -78,4 +78,4 @@ lenv.Program('_modeld', [
 
 lenv.Program('_trafficd', [
     "trafficd.cc",
-  ]+common, LIBS=libs)
+  ]+common_model, LIBS=libs)
