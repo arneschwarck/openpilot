@@ -34,7 +34,7 @@ const int horizontal_crop = 175;
 const int top_crop = 0;
 const int hood_crop = 209;
 const double msToSec = 1 / 1000.;  // multiply
-const double secToUs = 1e+6;
+const double secToMs = 1000.;
 
 
 //void sendPrediction(float *output, PubMaster &pm) {
@@ -46,8 +46,8 @@ const double secToUs = 1e+6;
 //  pm.send("trafficModelRaw", msg);
 //}
 
-void sleepFor(double sec) {
-  usleep(sec * secToUs);
+void sleepFor(double seconds) {
+  std::sleep_for(seconds * secToMs);
 }
 
 double rateKeeper(double loopTime, double lastLoop) {
@@ -130,7 +130,7 @@ int main(){
 
   while (!do_exit){
     if (!vipc_client.connect(false)){
-      util::sleep_for(100);
+      sleepFor(0.1);
       continue;
     }
     break;
