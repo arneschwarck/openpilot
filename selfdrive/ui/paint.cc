@@ -110,7 +110,7 @@ static void draw_lead(UIState *s, int idx) {
   float sz = std::clamp((25 * 30) / (d_rel / 3 + 30), 15.0f, 30.0f) * s->zoom;
   x = std::clamp(x, 0.f, s->viz_rect.right() - sz / 2);
   y = std::fmin(s->viz_rect.bottom() - sz * .6, y);
-  draw_chevron(s, x, y, sz, nvgRGBA(23, 134, 68, 241, fillAlpha), COLOR_BLACK);
+  draw_chevron(s, x, y, sz, nvgRGBA(23, 134, 68, fillAlpha), COLOR_BLACK);
 }
 
 static void ui_draw_line(UIState *s, const line_vertices_data &vd, NVGcolor *color, NVGpaint *paint) {
