@@ -110,7 +110,7 @@ static void draw_lead(UIState *s, int idx) {
   float sz = std::clamp((25 * 30) / (d_rel / 3 + 30), 15.0f, 30.0f) * s->zoom;
   x = std::clamp(x, 0.f, s->viz_rect.right() - sz / 2);
   y = std::fmin(s->viz_rect.bottom() - sz * .6, y);
-  draw_chevron(s, x, y, sz, nvgRGBA(23, 134, 68, fillAlpha), COLOR_BLACK);
+  draw_chevron(s, x, y, sz, nvgRGBA(0, 0, 0, fillAlpha), COLOR_WHITE);
 }
 
 static void ui_draw_line(UIState *s, const line_vertices_data &vd, NVGcolor *color, NVGpaint *paint) {
@@ -285,7 +285,7 @@ static void ui_draw_vision_speed(UIState *s) {
       nvgLineTo(s->vg, viz_blinker_x - (viz_add*offset) - (viz_blinker_w/2), s->viz_rect.y + (header_h/2.1));
       nvgLineTo(s->vg, viz_blinker_x - (viz_add*offset)                    , s->viz_rect.y + (header_h/1.4));
       nvgClosePath(s->vg);
-      nvgFillColor(s->vg, COLOR_GREEN (180 * alpha));
+      nvgFillColor(s->vg, COLOR_GREEN_ALPHA(180 * alpha));
       nvgFill(s->vg);
     }
     if(s->scene.rightBlinker) {
@@ -294,7 +294,7 @@ static void ui_draw_vision_speed(UIState *s) {
       nvgLineTo(s->vg, viz_blinker_x + (viz_add*offset) + (viz_blinker_w*1.5), s->viz_rect.y + (header_h/2.1));
       nvgLineTo(s->vg, viz_blinker_x + (viz_add*offset) + viz_blinker_w      , s->viz_rect.y + (header_h/1.4));
       nvgClosePath(s->vg);
-      nvgFillColor(s->vg, COLOR_GREEN(180 * alpha));
+      nvgFillColor(s->vg, COLOR_GREEN_ALPHA(180 * alpha));
       nvgFill(s->vg);
     }
   }
