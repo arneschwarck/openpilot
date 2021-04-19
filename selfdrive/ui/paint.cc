@@ -285,7 +285,7 @@ static void ui_draw_vision_speed(UIState *s) {
       nvgLineTo(s->vg, viz_blinker_x - (viz_add*offset) - (viz_blinker_w/2), s->viz_rect.y + (header_h/2.1));
       nvgLineTo(s->vg, viz_blinker_x - (viz_add*offset)                    , s->viz_rect.y + (header_h/1.4));
       nvgClosePath(s->vg);
-      nvgFillColor(s->vg, COLOR_WARNING_ALPHA(180 * alpha));
+      nvgFillColor(s->vg, COLOR_GREEN (180 * alpha));
       nvgFill(s->vg);
     }
     if(s->scene.rightBlinker) {
@@ -294,7 +294,7 @@ static void ui_draw_vision_speed(UIState *s) {
       nvgLineTo(s->vg, viz_blinker_x + (viz_add*offset) + (viz_blinker_w*1.5), s->viz_rect.y + (header_h/2.1));
       nvgLineTo(s->vg, viz_blinker_x + (viz_add*offset) + viz_blinker_w      , s->viz_rect.y + (header_h/1.4));
       nvgClosePath(s->vg);
-      nvgFillColor(s->vg, COLOR_GREEN_ALPHA(180 * alpha));
+      nvgFillColor(s->vg, COLOR_GREEN(180 * alpha));
       nvgFill(s->vg);
     }
   }
