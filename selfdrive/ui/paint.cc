@@ -459,10 +459,10 @@ static void bb_ui_draw_measures_left(UIState *s, int bb_x, int bb_y, int bb_w ) 
     float batteryTemp = scene->deviceState.getBatteryTempC();
     std::string bat_temp_val = std::to_string(int(batteryTemp)) + "°C";
     if(batteryTemp > 40.f) {
-      val_color = nvgRGBA(255, 188, 3, 200);
+      val_color = COLOR_YELLOW_ALPHA(200);
     }
     if(batteryTemp > 50.f) {
-      val_color = nvgRGBA(255, 0, 0, 200);
+      val_color = COLOR_RED_ALPHA(200);
     }
     // temp is alway in C * 1000
     //snprintf(val_str, sizeof(val_str), "%.0fC", batteryTemp);
@@ -477,7 +477,7 @@ static void bb_ui_draw_measures_left(UIState *s, int bb_x, int bb_y, int bb_w ) 
   if (true) {
     char val_str[16];
     char uom_str[6];
-    NVGcolor val_color = nvgRGBA(255, 255, 255, 200); // white when brake lights are off
+    NVGcolor val_color = COLOR_BLACK_ALPHA(200); // white when brake lights are off
     snprintf(val_str, sizeof(val_str), "%.2f", (s->scene.aEgo));
     snprintf(uom_str, sizeof(uom_str), "");
     bb_h +=bb_ui_draw_measure(s,  val_str, uom_str, "m/s²",
@@ -589,10 +589,10 @@ static void bb_ui_draw_measures_right(UIState *s, int bb_x, int bb_y, int bb_w )
       //show Orange if negative speed (approaching)
       //show Orange if negative speed faster than 5mph (approaching fast)
       if((int)(scene->lead_data[0].getVRel()) < 0) {
-        val_color = nvgRGBA(255, 188, 3, 200);
+        val_color = COLOR_YELLOW_ALPHA(200);
       }
       if((int)(scene->lead_data[0].getVRel()) < -5) {
-        val_color = nvgRGBA(255, 0, 0, 200);
+        val_color = COLOR_GREEN_ALPHA(200);
       }
       // lead car relative speed is always in meters
       if (s->scene.is_metric) {
@@ -673,7 +673,7 @@ static void bb_ui_draw_measures_right(UIState *s, int bb_x, int bb_y, int bb_w )
   if (true) {
     char val_str[16];
     char uom_str[4];
-    NVGcolor val_color = nvgRGBA(255, 255, 255, 200);
+    NVGcolor val_color = COLOR_WHITE_ALPHA(200);
     if(s->scene.engineRPM == 0) {
       snprintf(val_str, sizeof(val_str), "OFF");
     }
@@ -715,7 +715,7 @@ static void ui_draw_vision_header(UIState *s) {
   NVGpaint gradient = nvgLinearGradient(s->vg, s->viz_rect.x,
                         s->viz_rect.y+(header_h-(header_h/2.5)),
                         s->viz_rect.x, s->viz_rect.y+header_h,
-                        nvgRGBAf(0,0,0,0.45), nvgRGBAf(0,0,0,0));
+                       COLOR_BLACK_ALPHA(.45), COLOR_BLACK_ALPHA(0));
 
   ui_fill_rect(s->vg, {s->viz_rect.x, s->viz_rect.y, s->viz_rect.w, header_h}, gradient);
 
@@ -755,7 +755,7 @@ static void ui_draw_vision_alert(UIState *s) {
 
   ui_fill_rect(s->vg, rect, color);
   ui_fill_rect(s->vg, rect, nvgLinearGradient(s->vg, rect.x, rect.y, rect.x, rect.bottom(),
-                                            nvgRGBAf(0.0, 0.0, 0.0, 0.05), nvgRGBAf(0.0, 0.0, 0.0, 0.35)));
+                                            COLOR_BLACK_ALPHA(0.05), COLOR_BLACK_ALPHA(0.35));
 
   nvgFillColor(s->vg, COLOR_WHITE);
   nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_BASELINE);
