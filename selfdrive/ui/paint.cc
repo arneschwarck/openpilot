@@ -755,7 +755,7 @@ static void ui_draw_vision_alert(UIState *s) {
 
   ui_fill_rect(s->vg, rect, color);
   ui_fill_rect(s->vg, rect, nvgLinearGradient(s->vg, rect.x, rect.y, rect.x, rect.bottom(),
-                                            COLOR_BLACK_ALPHA(0.05), COLOR_BLACK_ALPHA(0.35));
+                                            COLOR_BLACK_ALPHA(0.05), COLOR_BLACK_ALPHA(0.35)));
 
   nvgFillColor(s->vg, COLOR_WHITE);
   nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_BASELINE);
