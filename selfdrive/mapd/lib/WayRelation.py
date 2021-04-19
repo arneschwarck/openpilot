@@ -1,5 +1,6 @@
 from .geo import DIRECTION, R
 from selfdrive.config import Conversions as CV
+from datetime import datetime
 import numpy as np
 import re
 
@@ -18,6 +19,18 @@ _COUNTRY_LIMITS_KPH = {
     }
 }
 
+_WD = {
+    'Mo': 0,
+    'Tu': 1,
+    'We': 2,
+    'Th': 3,
+    'Fr': 4,
+    'Sa': 5,
+    'Su': 6
+}
+
+_ALL_WD = _WD.values()
+
 
 def distance_and_bearing_to_points(point, points):
   """Calculate the distance and bearings (angle from true north clockwise) of the vectors between `point` and each
@@ -30,6 +43,96 @@ def distance_and_bearing_to_points(point, points):
   a = np.sin(delta[:, 0] / 2)**2 + np.cos(point[0]) * np.cos(points[:, 0]) * np.sin(delta[:, 1] / 2)**2
   c = 2 * np.arctan2(np.sqrt(a), np.sqrt(1 - a))
   return c * R, np.arctan2(x, y)
+
+
+def is_osm_time_condition_active(condition_string):
+  """
+  Will indicate if a time condition for a restriction as described
+  @ https://wiki.openstreetmap.org/wiki/Conditional_restrictions
+  is active for the current date and time of day.
+  """
+  now = datetime.now().astimezone()
+  today = now.date()
+  week_days = []
+
+  # Look for days of week matched and validate if today matches criteria.
+  dr = re.findall(r'(Mo|Tu|We|Th|Fr|Sa|Su[-,\s]*?)', condition_string)
+
+  if len(dr) == 1:
+    week_days = [_WD[dr[0]]]
+  # If two or more matches condider it a range of days between 1st and 2nd element.
+  elif len(dr) > 1:
+    week_days = list(range(_WD[dr[0]], _WD[dr[1]] + 1))
+
+  # If valid week days list is not empy and today day is not in the list, then the time-date range is not active.
+  if len(week_days) > 0 and now.weekday() not in week_days:
+    return False
+
+  # Look for time ranges on the day. No time range, means all day
+  tr = re.findall(r'([0-9]{1,2}:[0-9]{2})\s*?-\s*?([0-9]{1,2}:[0-9]{2})', condition_string)
+
+  # if no time range but there were week days set, consider it active during the whole day
+  if len(tr) == 0:
+    return len(dr) > 0
+
+  # Search among time ranges matched, one where now time belongs too. If found range is active.
+  for times_tup in tr:
+    times = list(map(lambda tt: datetime.
+                 combine(today, datetime.strptime(tt, '%H:%M').time().replace(tzinfo=now.tzinfo)), times_tup))
+    if now >= times[0] and now <= times[1]:
+      return True
+
+  return False
+
+
+def speed_limit_for_osm_tag_limit_string(limit_string):
+  # https://wiki.openstreetmap.org/wiki/Key:maxspeed
+  if limit_string is None:
+    # When limit is set to 0. is considered not existing.
+    return 0.
+
+  # Look for matches of speed by default in kph, or in mph when explicitly noted.
+  v = re.match(r'^\s*([0-9]{1,3})\s*?(mph)?\s*$', limit_string)
+  if v is not None:
+    conv = CV.MPH_TO_MS if v[2] is not None and v[2] == "mph" else CV.KPH_TO_MS
+    limit = conv * float(v[1])
+
+  else:
+    # Look for matches of speed with country implicit values.
+    v = re.match(r'^\s*([A-Z]{2}):([a-z_]+):?([0-9]{1,3})?(\s+)?(mph)?\s*', limit_string)
+
+    if v is not None:
+      if v[2] == "zone" and v[3] is not None:
+        conv = CV.MPH_TO_MS if v[5] is not None and v[5] == "mph" else CV.KPH_TO_MS
+        limit = conv * float(v[3])
+      elif v[1] in _COUNTRY_LIMITS_KPH and v[2] in _COUNTRY_LIMITS_KPH[v[1]]:
+        limit = _COUNTRY_LIMITS_KPH[v[1]][v[2]] * CV.KPH_TO_MS
+
+  return limit
+
+
+def conditional_speed_limit_for_osm_tag_limit_string(limit_string):
+  if limit_string is None:
+    # When limit is set to 0. is considered not existing.
+    return 0.
+
+  # Look for matches of the `<restriction-value> @ (<condition>)` format
+  v = re.match(r'^(.*)@\s*\((.*)\).*$', limit_string)
+  if v is None:
+    return 0.  # No valid format match
+
+  value = speed_limit_for_osm_tag_limit_string(v[1])
+  if value == 0.:
+    return 0.  # Invalid speed limit value
+
+  # Look for date-time conditions separated by semicolon
+  v = re.findall(r'(?:;|^)([^;]*)', v[2])
+  for datetime_condition in v:
+    if is_osm_time_condition_active(datetime_condition):
+      return value
+
+  # If we get here, no current date-time conditon is active.
+  return 0.
 
 
 class WayRelation():
@@ -153,35 +256,26 @@ class WayRelation():
     if self._speed_limit is not None:
       return self._speed_limit
 
-    # Get string from corresponding tag
-    limit_string = self.way.tags.get("maxspeed")
+    # Get string from corresponding tag, consider conditional limits first.
+    limit_string = self.way.tags.get("maxspeed:conditional")
     if limit_string is None:
       if self.direction == DIRECTION.FORWARD:
-        limit_string = self.way.tags.get("maxspeed:forward")
+        limit_string = self.way.tags.get("maxspeed:forward:conditional")
       elif self.direction == DIRECTION.BACKWARD:
-        limit_string = self.way.tags.get("maxspeed:backward")
+        limit_string = self.way.tags.get("maxspeed:backward:conditional")
 
-    # When limit is set to 0. is considered not existing. Use 0. as default value.
-    limit = 0.
+    limit = conditional_speed_limit_for_osm_tag_limit_string(limit_string)
 
-    # https://wiki.openstreetmap.org/wiki/Key:maxspeed
-    if limit_string is not None:
-      # Look for matches of speed by default in kph, or in mph when explicitly noted.
-      v = re.match(r'^\s*([0-9]{1,3})\s*?(mph)?\s*$', limit_string)
-      if v is not None:
-        conv = CV.MPH_TO_MS if v[2] is not None and v[2] == "mph" else CV.KPH_TO_MS
-        limit = conv * float(v[1])
+    # When no conditional limit set, attempt to get from regular speed limit tags.
+    if limit == 0.:
+      limit_string = self.way.tags.get("maxspeed")
+      if limit_string is None:
+        if self.direction == DIRECTION.FORWARD:
+          limit_string = self.way.tags.get("maxspeed:forward")
+        elif self.direction == DIRECTION.BACKWARD:
+          limit_string = self.way.tags.get("maxspeed:backward")
 
-      else:
-        # Look for matches of speed with country implicit values.
-        v = re.match(r'^\s*([A-Z]{2}):([a-z_]+):?([0-9]{1,3})?(\s+)?(mph)?\s*', limit_string)
-
-        if v is not None:
-          if v[2] == "zone" and v[3] is not None:
-            conv = CV.MPH_TO_MS if v[5] is not None and v[5] == "mph" else CV.KPH_TO_MS
-            limit = conv * float(v[3])
-          elif v[1] in _COUNTRY_LIMITS_KPH and v[2] in _COUNTRY_LIMITS_KPH[v[1]]:
-            limit = _COUNTRY_LIMITS_KPH[v[1]][v[2]] * CV.KPH_TO_MS
+      limit = speed_limit_for_osm_tag_limit_string(limit_string)
 
     self._speed_limit = limit
     return self._speed_limit
