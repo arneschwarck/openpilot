@@ -103,9 +103,9 @@ class CarInterface(CarInterfaceBase):
         ret.lateralTuning.indi.actuatorEffectivenessV = [15, 15]
 
     elif candidate in [CAR.RAV4, CAR.RAV4H]:
-      stop_and_go = True if (candidate in CAR.RAV4H) else False
+      stop_and_go = True
       ret.safetyParam = 73
-      ret.wheelbase = 2.65
+      ret.wheelbase = 2.68986
       ret.steerRatio = 16.88   # 14.5 is spec end-to-end
       tire_stiffness_factor = 0.5533
       ret.mass = 3650. * CV.LB_TO_KG + STD_CARGO_KG  # mean between normal and hybrid
