@@ -51,13 +51,13 @@ class CarState(CarStateBase):
     ##################################
     # for cruise lower speed to pcm #
     #################################
-    self.cruise_speed = 0.
-    if self.CP.carFingerprint in TSS2_CAR:
-      self.pcm_min_speed = 27.0/3.6
-    elif self.CP.carFingerprint == CAR.RAV4:
-      self.pcm_min_speed = 44.0/3.6
-    else:
-      self.pcm_min_speed = 41/3.6
+    #self.cruise_speed = 0.
+    #if self.CP.carFingerprint in TSS2_CAR:
+      #elf.pcm_min_speed = 27.0/3.6
+    #elif self.CP.carFingerprint == CAR.RAV4:
+      #self.pcm_min_speed = 44.0/3.6
+    #else:
+      #self.pcm_min_speed = 41/3.6
 
 
 
@@ -246,13 +246,13 @@ class CarState(CarStateBase):
       ## low speed enage from dp ##
       #############################
 
-    if (ret.cruiseState.speed - self.pcm_min_speed )< 0.2 and bool(cp.vl["PCM_CRUISE"]['CRUISE_ACTIVE']):
-      if self.cruise_speed == 0.:
-        ret.cruiseState.speed = self.dp_cruise_speed = max(5.0,ret.vEgo)
-      else:
-        ret.cruiseState.speed = self.dp_cruise_speed
-    else:
-      self.cruise_speed = 0.
+    #if (ret.cruiseState.speed - self.pcm_min_speed )< 0.2 and bool(cp.vl["PCM_CRUISE"]['CRUISE_ACTIVE']):
+      #if self.cruise_speed == 0.:
+        #ret.cruiseState.speed = self.dp_cruise_speed = max(5.0,ret.vEgo)
+      #else:
+        #ret.cruiseState.speed = self.dp_cruise_speed
+    #else:
+      #self.cruise_speed = 0.
 
     self._update_traffic_signals(cp_cam)
     ret.cruiseState.speedLimit = self._calculate_speed_limit()
