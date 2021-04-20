@@ -142,7 +142,7 @@ def fingerprint(logcan, sendcan):
       finger[0] = {int(key): value for key, value in cached_fingerprint[2].items()}
       source = car.CarParams.FingerprintSource.can
       exact_match = True
-      return (str(cached_fingerprint[0]), finger, vin, car_fw, exact_match, cached_fingerprint[1])
+      return (str(cached_fingerprint[0]), finger, vin, car_fw, cached_fingerprint[1], exact_match)
 
   while not done:
     a = get_one_can(logcan)
