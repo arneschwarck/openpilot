@@ -11,7 +11,8 @@ import selfdrive.crash as crash
 #from common.basedir import BASEDIR
 from common.params import Params
 from common.text_window import TextWindow
-from selfdrive.hardware import HARDWARE
+from selfdrive.boardd.set_time import set_time
+from selfdrive.hardware import HARDWARE, TICI
 from selfdrive.manager.helpers import unblock_stdout
 from selfdrive.manager.process import ensure_running
 from selfdrive.manager.process_config import managed_processes
@@ -21,6 +22,10 @@ from selfdrive.version import dirty, version
 
 
 def manager_init():
+
+  # update system time from panda
+  set_time(cloudlog)
+
   params = Params()
   params.manager_start()
 
@@ -29,12 +34,18 @@ def manager_init():
     ("HandsOnWheelMonitoring", "0"),
     ("HasAcceptedTerms", "0"),
     ("IsUploadRawEnabled", "1"),
+    ("HasAcceptedTerms", "0"),
     ("LastUpdateTime", datetime.datetime.utcnow().isoformat().encode('utf8')),
     ("MaxDecelerationForTurns", "-3.0"),
     ("OpenpilotEnabledToggle", "1"),
     ("SpeedLimitControl", "1"),
     ("SpeedLimitPercOffset", "10.0"),
   ]
+
+  ]
+
+  if TICI:
+    default_params.append(("IsUploadRawEnabled", "1"))
 
   if params.get_bool("RecordFrontLock"):
     params.put_bool("RecordFront", True)

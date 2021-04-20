@@ -279,7 +279,7 @@ static void ui_draw_vision_speed(UIState *s) {
     if (progress < 0.25) alpha = progress / 0.25;
     if (progress > 0.75) alpha = 1.0 - ((progress - 0.75) / 0.25);
 
-    if(s->scene.leftBlinker) {      
+    if(s->scene.leftBlinker) {
       nvgBeginPath(s->vg);
       nvgMoveTo(s->vg, viz_blinker_x - (viz_add*offset)                    , s->viz_rect.y + (header_h/4.2));
       nvgLineTo(s->vg, viz_blinker_x - (viz_add*offset) - (viz_blinker_w/2), s->viz_rect.y + (header_h/2.1));
