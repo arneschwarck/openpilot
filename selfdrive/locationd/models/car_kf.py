@@ -155,8 +155,7 @@ class CarKalman(KalmanFilter):
     x_init[States.ANGLE_OFFSET] = angle_offset
 
     # init filter
-    global_var_names = [x.name for x in self.global_vars]  # pylint: disable=no-member
-    self.filter = EKF_sym(generated_dir, self.name, self.Q, self.initial_x, self.P_initial, dim_state, dim_state_err, global_vars=global_var_names, logger=cloudlog)
+    self.filter = EKF_sym(generated_dir, self.name, self.Q, self.initial_x, self.P_initial, dim_state, dim_state_err, global_vars=self.global_vars, logger=cloudlog)
 
 
 if __name__ == "__main__":
