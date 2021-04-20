@@ -42,8 +42,6 @@ def manager_init():
     ("SpeedLimitPercOffset", "10.0"),
   ]
 
-  ]
-
   if TICI:
     default_params.append(("IsUploadRawEnabled", "1"))
 
