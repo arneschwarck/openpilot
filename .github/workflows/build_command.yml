@@ -1,0 +1,29 @@
+name: Build Command
+on:
+  repository_dispatch:
+    types: [build-command]
+jobs:
+  build_ci:
+    name: build ci
+    runs-on: ubuntu-20.04
+    timeout-minutes: 50
+    env:
+      BRANCH: "${{ github.event.client_payload.pull_request.head.ref }}-ci"
+      TARGET_DIR: tmp_op_ci
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+          lfs: true
+          ref: ${{ github.event.client_payload.pull_request.head.ref }}
+      - name: Prepare release files
+        run: |
+          chmod +x release/build_release_ci.sh
+          ./release/build_release_ci.sh
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.REPO_PAT }}
+          branch: ${{ env.BRANCH }}
+          directory: ${{ env.TARGET_DIR }}
+          force: true
