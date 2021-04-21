@@ -201,6 +201,12 @@ jobs:
         else
           echo 'WAIT_REF=${{ github.head_ref }}' >> $GITHUB_ENV
         fi
+    - name: Wait For Build Release
+      uses: lewagon/wait-on-check-action@v0.2
+      with:
+        ref: ${{ env.WAIT_REF }}
+        check-name: 'build release'
+        wait-interval: 60
     - name: Wait For Static Analysis
       uses: lewagon/wait-on-check-action@v0.2
       with:
@@ -213,27 +219,21 @@ jobs:
         ref: ${{ env.WAIT_REF }}
         check-name: 'valgrind'
         wait-interval: 60
-    - name: Wait For Build Release
-      uses: lewagon/wait-on-check-action@v0.2
-      with:
-        ref: ${{ env.WAIT_REF }}
-        check-name: 'build release'
-        wait-interval: 60
     - name: Wait For Unit Tests
       uses: lewagon/wait-on-check-action@v0.2
       with:
         ref: ${{ env.WAIT_REF }}
         check-name: 'unit tests'
         wait-interval: 60
-    - name: Wait For Car Models Tests
-      uses: lewagon/wait-on-check-action@v0.2
-      with:
-        ref: ${{ env.WAIT_REF }}
-        check-name: 'car models'
-        wait-interval: 60
     - name: Wait For Longitudinal Tests
       uses: lewagon/wait-on-check-action@v0.2
       with:
         ref: ${{ env.WAIT_REF }}
         check-name: 'longitudinal'
+        wait-interval: 60
+    - name: Wait For Car Models Tests
+      uses: lewagon/wait-on-check-action@v0.2
+      with:
+        ref: ${{ env.WAIT_REF }}
+        check-name: 'car models'
         wait-interval: 60
