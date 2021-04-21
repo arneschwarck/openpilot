@@ -1,3 +1,4 @@
+# mypy: ignore-errors
 class LeadData:
   v_lead = None
   x_lead = None
