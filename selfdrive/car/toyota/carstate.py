@@ -45,7 +45,6 @@ class CarState(CarStateBase):
     self.v_cruise_pcmactivated = False
     self.v_cruise_pcmlast = 0
     self.setspeedoffset = 34
-    self.setspeedcounter = 0
     self._init_traffic_signals()
 
     ##################################
