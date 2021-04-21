@@ -3,7 +3,7 @@
 # Script that sets various environmental variables for the rest of the CI pipeline.
 # Common vars used to make bigger, exported env vars.
 # EDIT THESE VARS HERE if you're a fork maintainer.
-REPO_OWNER="commaai"
+REPO_OWNER="arneschwarck"
 REPO_NAME="openpilot"
 REPO="$REPO_OWNER/$REPO_NAME"
 REGISTRY_BASE="ghcr.io"
