@@ -24,7 +24,7 @@ class dfManager:
     self.cur_user_profile = self.op_params.get('dynamic_follow_mod')
     if not isinstance(self.cur_user_profile, str) or self.cur_user_profile not in self.df_profiles.to_idx:
       self.cur_user_profile = self.df_profiles.default  # relaxed
-      self.op_params.put('dynamic_follow_mod', self.df_profiles.to_profile[self.cur_user_profile])'
+      self.op_params.put('dynamic_follow_mod', self.df_profiles.to_profile[self.cur_user_profile])
     else:
       self.cur_user_profile = self.df_profiles.to_idx[self.cur_user_profile]
     self.last_user_profile = self.cur_user_profile
