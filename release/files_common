@@ -19,6 +19,8 @@ common/gpio.py
 common/realtime.py
 common/clock.pyx
 common/colors.py
+common/data_collector.py
+common/is_shane.py
 common/timeout.py
 common/ffi_wrapper.py
 common/file_helpers.py
@@ -92,7 +94,6 @@ selfdrive/boardd/panda.cc
 selfdrive/boardd/panda.h
 selfdrive/boardd/pigeon.cc
 selfdrive/boardd/pigeon.h
-selfdrive/boardd/set_time.py
 
 selfdrive/car/__init__.py
 selfdrive/car/car_helpers.py
@@ -243,6 +244,8 @@ selfdrive/controls/lib/long_mpc.py
 selfdrive/controls/lib/long_mpc_model.py
 
 selfdrive/controls/lib/cluster/*
+selfdrive/controls/lib/dynamic_follow
+selfdrive/controls/lib/dynamic_follow/auto_df_weights.npz
 
 selfdrive/controls/lib/lateral_mpc/lib_mpc_export/*
 selfdrive/controls/lib/lateral_mpc/.gitignore
