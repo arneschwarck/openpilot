@@ -6,7 +6,6 @@ from selfdrive.controls.lib.drive_helpers import MPC_COST_LONG
 from common.op_params import opParams
 from common.numpy_fast import interp, clip, mean
 from selfdrive.config import Conversions as CV
-from cereal.messaging import SubMaster
 
 from selfdrive.controls.lib.dynamic_follow.auto_df import predict
 from selfdrive.controls.lib.dynamic_follow.df_manager import dfManager
