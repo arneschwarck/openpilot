@@ -354,6 +354,8 @@ class DynamicFollow:
 
   def _get_live_params(self):
     self.global_df_mod = self.op_params.get('global_df_mod')
+    if not self.global_df_mod:
+      self.global_df_mod = 1.
     if self.global_df_mod != 1.:
       self.global_df_mod = clip(self.global_df_mod, 0.85, 1.5)
 
