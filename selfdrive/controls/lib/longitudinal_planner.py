@@ -185,7 +185,7 @@ class Planner():
     self.mpc1.update(sm['carState'], lead_1)
     self.mpc2.update(sm['carState'], lead_2)
 
-    self.choose_solution(v_cruise_setpoint, enabled, lead_1, lead_2, sm['carState'].steeringAngle)
+    self.choose_solution(v_cruise_setpoint, enabled, lead_1, lead_2, sm['carState'].steeringAngleDeg)
 
     # determine fcw
     if self.mpc1.new_lead:
