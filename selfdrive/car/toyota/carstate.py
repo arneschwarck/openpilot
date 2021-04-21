@@ -49,8 +49,8 @@ class CarState(CarStateBase):
     self.setspeedcounter = 0
     self.distance = 0
     self.read_distance_lines = 0
-
-    self.pm = messaging.PubMaster(['dynamicFollowButton'])
+    if not travis:
+      self.pm = messaging.PubMaster(['dynamicFollowButton'])
 
     self._init_traffic_signals()
 
