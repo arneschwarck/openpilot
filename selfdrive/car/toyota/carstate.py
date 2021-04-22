@@ -8,8 +8,8 @@ from selfdrive.car.interfaces import CarStateBase
 from opendbc.can.parser import CANParser
 from selfdrive.config import Conversions as CV
 from selfdrive.car.toyota.values import CAR, DBC, STEER_THRESHOLD, TSS2_CAR, NO_STOP_TIMER_CAR
-from common.travis_checker import travis
 from common.op_params import opParams
+from common.travis_checker import travis
 
 op_params = opParams()
 set_speed_offset = op_params.get('set_speed_offset')
@@ -49,8 +49,7 @@ class CarState(CarStateBase):
     self.setspeedcounter = 0
     self.distance = 0
     self.read_distance_lines = 0
-    if not travis:
-      self.pm = messaging.PubMaster(['dynamicFollowButton'])
+    self.pm = messaging.PubMaster(['dynamicFollowButton'])
 
     self._init_traffic_signals()
 
