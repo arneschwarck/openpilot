@@ -9,6 +9,7 @@
 #include <QPainter>
 #include "spinner.hpp"
 #include "qt_window.hpp"
+#include "selfdrive/hardware/hw.h"
 
 TrackWidget::TrackWidget(QWidget *parent) : QOpenGLWidget(parent) {
   setFixedSize(spinner_size);
