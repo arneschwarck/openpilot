@@ -108,7 +108,7 @@ class MapD():
 
     # Do not attempt to update the route if the car is going close to a full stop, as the bearing can start
     # jumping and creating unnecesary loosing of the route. Since the route update timestamp has been updated
-    # a new liveMapData message will be published with the current values (which is desirable)
+    # a new liveMapDataDEPRECATED message will be published with the current values (which is desirable)
     if sm['carState'].vEgo < FULL_STOP_MAX_SPEED:
       _debug('Mapd *****: Route Not updated as car has Stopped ********')
       return

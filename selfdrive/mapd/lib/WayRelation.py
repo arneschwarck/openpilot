@@ -135,6 +135,27 @@ def conditional_speed_limit_for_osm_tag_limit_string(limit_string):
   return 0.
 
 
+def bearing_to_points(point, points):
+  """Calculate the bearings (angle from true north clockwise) of the vectors between `point` and each
+  one of the entries in `points`. Both `point` and `points` elements are 2 element arrays containing a latitud,
+  longitude pair in radians.
+  """
+  delta = points - point
+  x = np.sin(delta[:, 1]) * np.cos(points[:, 0])
+  y = np.cos(point[0]) * np.sin(points[:, 0]) - (np.sin(point[0]) * np.cos(points[:, 0]) * np.cos(delta[:, 1]))
+  return np.arctan2(x, y)
+
+
+def distance_to_points(point, points):
+  """Calculate the distance of the vectors between `point` and each one of the entries in `points`.
+  Both `point` and `points` elements are 2 element arrays containing a latitud, longitude pair in radians.
+  """
+  delta = points - point
+  a = np.sin(delta[:, 0] / 2)**2 + np.cos(point[0]) * np.cos(points[:, 0]) * np.sin(delta[:, 1] / 2)**2
+  c = 2 * np.arctan2(np.sqrt(a), np.sqrt(1 - a))
+  return c * R
+
+
 class WayRelation():
   """A class that represent the relationship of an OSM way and a given `location` and `bearing` of a driving vehicle.
   """
@@ -184,14 +205,15 @@ class WayRelation():
       return
 
     # Find where we are located in the way:
-    location = np.radians(np.array(location))
-    bearing = np.radians(bearing)
+    location_rad = np.radians(np.array(location))
+    bearing_rad = np.radians(bearing)
 
     # - Get the distance and bearings from location to all nodes.
-    distances, bearings = distance_and_bearing_to_points(location, self._nodes_np)
+    bearings = bearing_to_points(location_rad, self._nodes_np)
+    distances = distance_to_points(location_rad, self._nodes_np)
 
     # - Get absolute bearing delta to current driving bearing.
-    delta = np.abs(bearing - bearings)
+    delta = np.abs(bearing_rad - bearings)
 
     # - Nodes are ahead if the cosine of the delta is positive
     is_ahead = np.cos(delta) >= 0.
@@ -318,6 +340,17 @@ class WayRelation():
     """
     return self.way.nodes[0].id == node_id or self.way.nodes[-1].id == node_id
 
+  def node_before_edge_coordinates(self, node_id):
+    """Returns the coordinates of the node before the edge node identifeid with `node_id`
+    """
+    if self.way.nodes[0].id == node_id:
+      return np.array([self.way.nodes[1].lat, self.way.nodes[1].lon], dtype=float)
+
+    if self.way.nodes[-1].id == node_id:
+      return np.array([self.way.nodes[-2].lat, self.way.nodes[-2].lon], dtype=float)
+
+    return np.array([0., 0.])
+
   def next_wr(self, way_relations):
     """Returns a tuple with the next way relation (if any) based on `location` and `bearing` and
     the `way_relations` list excluding the found next way relation. (to help with recursion)
@@ -325,8 +358,20 @@ class WayRelation():
     if self.direction not in [DIRECTION.FORWARD, DIRECTION.BACKWARD]:
       return None, way_relations
 
+    def continuation_factor(next_wr):
+      """Indicates how much the `next_wr` looks like a straight continuation of the current one.
+      A min value of `0` indicates the `next_wr` continues with the exact same bearing as current.
+      A max value of `2` indicates the `next_wr` continues in the complete oposite direction to current.
+      """
+      ref_point = np.array([self.last_node.lat, self.last_node.lon], dtype=float)
+      adjacent_points = np.row_stack((self.node_before_edge_coordinates(self.last_node.id),
+                                      next_wr.node_before_edge_coordinates(self.last_node.id)))
+      bearings = bearing_to_points(np.radians(ref_point), np.radians(adjacent_points))
+      delta = np.diff(bearings)[0]
+      return np.cos(delta) + 1
+
     possible_next_wr = list(filter(lambda wr: wr.id != self.id and wr.edge_on_node(self.last_node.id), way_relations))
-    possible_next_wr.sort(key=lambda wr: wr.active_bearing_delta)
+    possible_next_wr.sort(key=lambda wr: continuation_factor(wr))
     possibles = len(possible_next_wr)
 
     if possibles == 0:
