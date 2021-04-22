@@ -83,7 +83,8 @@ else:
     u_tag.append(username)
   if len(u_tag) > 0:
     error_tags['username'] = ''.join(u_tag)
-
+  for k, v in error_tags.items():
+    sentry_sdk.set_tag(k, v)
   def capture_exception(*args, **kwargs):
     exc_info = sys.exc_info()
     if not exc_info[0] is capnp.lib.capnp.KjException:
