@@ -2,7 +2,6 @@ import math
 #from math import floor
 from cereal import car
 from common.numpy_fast import mean
-import cereal.messaging as messaging
 from opendbc.can.can_define import CANDefine
 from selfdrive.car.interfaces import CarStateBase
 from opendbc.can.parser import CANParser
@@ -10,7 +9,8 @@ from selfdrive.config import Conversions as CV
 from selfdrive.car.toyota.values import CAR, DBC, STEER_THRESHOLD, TSS2_CAR, NO_STOP_TIMER_CAR
 from common.op_params import opParams
 from common.travis_checker import travis
-
+if not travis:
+  import cereal.messaging as messaging
 op_params = opParams()
 set_speed_offset = op_params.get('set_speed_offset')
 
@@ -49,7 +49,8 @@ class CarState(CarStateBase):
     self.setspeedcounter = 0
     self.distance = 0
     self.read_distance_lines = 0
-    self.pm = messaging.PubMaster(['dynamicFollowButton'])
+    if not travis:
+      self.pm = messaging.PubMaster(['dynamicFollowButton'])
 
     self._init_traffic_signals()
 
@@ -113,9 +114,10 @@ class CarState(CarStateBase):
 
     if self.read_distance_lines != cp.vl["PCM_CRUISE_SM"]['DISTANCE_LINES']:
       self.read_distance_lines = cp.vl["PCM_CRUISE_SM"]['DISTANCE_LINES']
-      msg_df = messaging.new_message('dynamicFollowButton')
-      msg_df.dynamicFollowButton.status = max(self.read_distance_lines - 1, 0)
-      self.pm.send('dynamicFollowButton', msg_df)
+      if not travis:
+        msg_df = messaging.new_message('dynamicFollowButton')
+        msg_df.dynamicFollowButton.status = max(self.read_distance_lines - 1, 0)
+        self.pm.send('dynamicFollowButton', msg_df)
 
     ret.leftBlinker = cp.vl["STEERING_LEVERS"]['TURN_SIGNALS'] == 1
     ret.rightBlinker = cp.vl["STEERING_LEVERS"]['TURN_SIGNALS'] == 2
