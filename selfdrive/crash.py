@@ -9,7 +9,6 @@ from selfdrive.version import version, dirty, origin, branch
 
 from selfdrive.hardware import PC
 from selfdrive.swaglog import cloudlog
-from selfdrive.version import version
 
 def save_exception(exc_text):
   i = 0
