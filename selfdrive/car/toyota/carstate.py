@@ -7,9 +7,10 @@ from selfdrive.car.interfaces import CarStateBase
 from opendbc.can.parser import CANParser
 from selfdrive.config import Conversions as CV
 from selfdrive.car.toyota.values import CAR, DBC, STEER_THRESHOLD, TSS2_CAR, NO_STOP_TIMER_CAR
-from common.travis_checker import travis
 from common.op_params import opParams
-
+from common.travis_checker import travis
+if not travis:
+  import cereal.messaging as messaging
 op_params = opParams()
 set_speed_offset = op_params.get('set_speed_offset')
 
@@ -45,6 +46,12 @@ class CarState(CarStateBase):
     self.v_cruise_pcmactivated = False
     self.v_cruise_pcmlast = 0
     self.setspeedoffset = 34
+    self.setspeedcounter = 0
+    self.distance = 0
+    self.read_distance_lines = 0
+    if not travis:
+      self.pm = messaging.PubMaster(['dynamicFollowButton'])
+
     self._init_traffic_signals()
 
     ##################################
@@ -104,6 +111,14 @@ class CarState(CarStateBase):
 
     can_gear = int(cp.vl["GEAR_PACKET"]['GEAR'])
     ret.gearShifter = self.parse_gear_shifter(self.shifter_values.get(can_gear, None))
+
+    if self.read_distance_lines != cp.vl["PCM_CRUISE_SM"]['DISTANCE_LINES']:
+      self.read_distance_lines = cp.vl["PCM_CRUISE_SM"]['DISTANCE_LINES']
+      if not travis:
+        msg_df = messaging.new_message('dynamicFollowButton')
+        msg_df.dynamicFollowButton.status = max(self.read_distance_lines - 1, 0)
+        self.pm.send('dynamicFollowButton', msg_df)
+
     ret.leftBlinker = cp.vl["STEERING_LEVERS"]['TURN_SIGNALS'] == 1
     ret.rightBlinker = cp.vl["STEERING_LEVERS"]['TURN_SIGNALS'] == 2
 
@@ -236,6 +251,8 @@ class CarState(CarStateBase):
     ret.espDisabled = cp.vl["ESP_CONTROL"]['TC_DISABLED'] != 0
     # 2 is standby, 10 is active. TODO: check that everything else is really a faulty state
     self.steer_state = cp.vl["EPS_STATUS"]['LKA_STATE']
+
+    self.distance = cp_cam.vl["ACC_CONTROL"]['DISTANCE']
 
     if self.CP.carFingerprint in TSS2_CAR:
       ret.leftBlindspot = (cp.vl["BSM"]['L_ADJACENT'] == 1) or (cp.vl["BSM"]['L_APPROACHING'] == 1)
@@ -370,6 +387,7 @@ class CarState(CarStateBase):
       ("PARKING_LIGHT", "LIGHT_STALK", 0),
       ("LOW_BEAM", "LIGHT_STALK", 0),
       ("AUTO_HIGH_BEAM", "LIGHT_STALK", 0),
+      ("DISTANCE_LINES", "PCM_CRUISE_SM", 0),
     ]
 
     checks = [
@@ -414,7 +432,8 @@ class CarState(CarStateBase):
 
     signals = [
       ("FORCE", "PRE_COLLISION", 0),
-      ("PRECOLLISION_ACTIVE", "PRE_COLLISION", 0)
+      ("PRECOLLISION_ACTIVE", "PRE_COLLISION", 0),
+      ("DISTANCE", "ACC_CONTROL", 0),
     ]
 
     # Include traffic singal signals.
