@@ -97,11 +97,11 @@ else:
 
   def capture_warning(warning_string):
     bind_user(id=dongle_id, ip_address=ip, username=username)
-    sentry_sdk.captureMessage(warning_string, level='warning')
+    sentry_sdk.capture_message(warning_string, level='warning')
 
   def capture_info(info_string):
     bind_user(id=dongle_id, ip_address=ip, username=username)
-    sentry_sdk.captureMessage(info_string, level='info')
+    sentry_sdk.capture_message(info_string, level='info')
 
   def bind_extra(**kwargs):
     for k, v in kwargs.items():
