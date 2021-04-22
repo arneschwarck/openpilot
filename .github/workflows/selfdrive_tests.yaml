@@ -188,3 +188,52 @@ jobs:
                         coverage combine"
     - name: Upload coverage to Codecov
       run: bash <(curl -s https://codecov.io/bash) -v -F test_car_models
+
+  wait_for_selfdrive:
+    name: wait for selfdrive
+    runs-on: ubuntu-20.04
+    timeout-minutes: 60
+    steps:
+    - name: Setup Env Vars
+      run: |
+        if [[ $GITHUB_EVENT_NAME = 'push' ]]; then
+          echo 'WAIT_REF=${{ github.sha }}' >> $GITHUB_ENV
+        else
+          echo 'WAIT_REF=${{ github.head_ref }}' >> $GITHUB_ENV
+        fi
+    - name: Wait For Build Release
+      uses: lewagon/wait-on-check-action@v0.2
+      with:
+        ref: ${{ env.WAIT_REF }}
+        check-name: 'build release'
+        wait-interval: 60
+    - name: Wait For Static Analysis
+      uses: lewagon/wait-on-check-action@v0.2
+      with:
+        ref: ${{ env.WAIT_REF }}
+        check-name: 'static analysis'
+        wait-interval: 60
+    - name: Wait For Valgrind
+      uses: lewagon/wait-on-check-action@v0.2
+      with:
+        ref: ${{ env.WAIT_REF }}
+        check-name: 'valgrind'
+        wait-interval: 60
+    - name: Wait For Unit Tests
+      uses: lewagon/wait-on-check-action@v0.2
+      with:
+        ref: ${{ env.WAIT_REF }}
+        check-name: 'unit tests'
+        wait-interval: 60
+    - name: Wait For Longitudinal Tests
+      uses: lewagon/wait-on-check-action@v0.2
+      with:
+        ref: ${{ env.WAIT_REF }}
+        check-name: 'longitudinal'
+        wait-interval: 60
+    - name: Wait For Car Models Tests
+      uses: lewagon/wait-on-check-action@v0.2
+      with:
+        ref: ${{ env.WAIT_REF }}
+        check-name: 'car models'
+        wait-interval: 60

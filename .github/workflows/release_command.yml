@@ -1,0 +1,54 @@
+name: Release Command
+on:
+  repository_dispatch:
+    types: [release-command]
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    #if: ${{ PR.mergeble }}
+    env:
+      PR_BASE: ${{ github.event.client_payload.pull_request.base.sha }}
+      PR_HEAD: ${{ github.event.client_payload.pull_request.head.sha }}
+      PR_NUMBER: ${{ github.event.client_payload.pull_request.number }}
+      PR_TITLE: ${{ github.event.client_payload.pull_request.title }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+          fetch-depth: 0
+      - name: Cherry pick commits
+        run: |
+          git config --global user.email "$GITBOT_EMAIL"
+          git config --global user.name "$GITHUB_ACTOR"
+          git log --cherry --format="%h" "$PR_BASE".."$PR_HEAD" | git cherry-pick --stdin -X theirs --allow-empty --keep-redundant-commits
+      - name: Create PR
+        id: cpr
+        uses: peter-evans/create-pull-request@v3
+        with:
+          token: ${{ secrets.REPO_PAT }}
+          #commit-message: 'release(#"$PR_NUMBER"): "$PR_TITLE"'
+          branch: r2-release-${{ github.event.client_payload.pull_request.number }}
+          title: Release -- ${{ github.event.client_payload.pull_request.title }}
+          body: Applying commits from \#${{ github.event.client_payload.pull_request.number }}
+      - name: Merge Release
+        uses: actions/github-script@v3
+        id: mr
+        with:
+          script: |
+            return await github.pulls.merge({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: ${{ steps.cpr.outputs.pull-request-number }}
+            })
+
+      - name: Merge PR
+        uses: actions/github-script@v3
+        id: mp
+        if: ${{ fromJson(steps.mr.outputs.result).data.merged }}
+        with:
+          script: |
+            return await github.pulls.merge({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.client_payload.pull_request.number
+            })

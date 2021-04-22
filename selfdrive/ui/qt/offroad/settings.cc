@@ -51,11 +51,15 @@ TogglesPanel::TogglesPanel(QWidget *parent) : QWidget(parent) {
                                   "Use features from the open source community that are not maintained or supported by comma.ai and have not been confirmed to meet the standard safety model. These features include community supported cars and community supported hardware. Be extra cautious when using these features",
                                   "../assets/offroad/icon_shell.png",
                                   this));
+
+#ifndef QCOM2
   toggles.append(new ParamControl("IsUploadRawEnabled",
                                  "Upload Raw Logs",
                                  "Upload full logs and full resolution video by default while on WiFi. If not enabled, individual logs can be marked for upload at my.comma.ai/useradmin.",
                                  "../assets/offroad/icon_network.png",
                                  this));
+#endif
+
   ParamControl *record_toggle = new ParamControl("RecordFront",
                                                  "Record and Upload Driver Camera",
                                                 "Upload data from the driver facing camera and help improve the driver monitoring algorithm.",
@@ -74,6 +78,12 @@ TogglesPanel::TogglesPanel(QWidget *parent) : QWidget(parent) {
                                   "Use wide angle camera for driving and ui. Only takes effect after reboot.",
                                   "../assets/offroad/icon_openpilot.png",
                                   this));
+  toggles.append(new ParamControl("EnableLteOnroad",
+                                  "Enable LTE while onroad",
+                                  "",
+                                  "../assets/offroad/icon_network.png",
+                                  this));
+
 #endif
 
   bool record_lock = Params().getBool("RecordFrontLock");
@@ -160,7 +170,6 @@ DevicePanel::DevicePanel(QWidget* parent) : QWidget(parent) {
     QObject::connect(parent, SIGNAL(offroadTransition(bool)), btn, SLOT(setEnabled(bool)));
     device_layout->addWidget(btn);
   }
-
   // color correction
 
   QMenu *colorc_menu = new QMenu();
