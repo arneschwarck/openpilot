@@ -2,6 +2,10 @@
 import os
 import sys
 import capnp
+import requests
+from cereal import car
+from common.params import Params
+from selfdrive.version import version, dirty, origin, branch
 
 from selfdrive.hardware import PC
 from selfdrive.swaglog import cloudlog
