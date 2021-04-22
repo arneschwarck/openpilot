@@ -18,11 +18,11 @@ TrackWidget::TrackWidget(QWidget *parent) : QOpenGLWidget(parent) {
   comma_img = QPixmap("../assets/img_spinner_comma.png").scaled(spinner_size, Qt::KeepAspectRatio, Qt::SmoothTransformation);
 
   // pre-compute all the track imgs. make this a gif instead?
-  QTransform transform;
-  QPixmap track_img = QPixmap("../assets/img_spinner_track.png").scaled(spinner_size, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-  for (auto &img : track_imgs) {
-    img = track_img.transformed(transform.rotate(360/spinner_fps), Qt::SmoothTransformation);
-  }
+  //QTransform transform;
+  //QPixmap track_img = QPixmap("../assets/img_spinner_track.png").scaled(spinner_size, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+  //for (auto &img : track_imgs) {
+    //img = track_img.transformed(transform.rotate(360/spinner_fps), Qt::SmoothTransformation);
+  //}
 
   m_anim.setDuration(1000);
   m_anim.setStartValue(0);
