@@ -26,7 +26,7 @@ volatile sig_atomic_t do_exit = 0;
 const std::vector<std::string> modelLabels = {"SLOW", "GREEN", "NONE"};
 const int numLabels = modelLabels.size();
 const double modelRate = 1 / 5.;  // 5 Hz
-const bool debug_mode = true;
+const bool debug_mode = false;
 
 const int original_shape[3] = {874, 1164, 3};   // global constants
 //const int original_size = 874 * 1164 * 3;
@@ -137,7 +137,6 @@ int main(){
     }
     break;
   }
-  printf("visionipc client connected!\n");
 
   while (!do_exit){  // keep traffic running in case we can't get a frame (mimicking modeld)
     printf("running trafficd\n");
@@ -146,9 +145,7 @@ int main(){
     double loopStart;
     double lastLoop = 0;
     float* flatImageArray = new float[cropped_size];
-    printf("outside main loop\n");
     while (!do_exit) {
-      printf("inside main loop\n");
       loopStart = millis_since_boot();
 
       VisionIpcBufExtra extra;
@@ -164,7 +161,6 @@ int main(){
       model->execute(flatImageArray, cropped_size, true);  // true uses special logic for trafficd
 
       sendPrediction(output, pm);
-      printf("rate keeping\n");
       lastLoop = rateKeeper(millis_since_boot() - loopStart, lastLoop);
 
       if (debug_mode) {
@@ -174,7 +170,6 @@ int main(){
         std::cout << "Current frequency: " << 1 / ((millis_since_boot() - loopStart) * msToSec) << " Hz" << std::endl;
       }
     }
-    printf("freeing memory\n");
     free(flatImageArray);
 
   }
