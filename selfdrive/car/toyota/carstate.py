@@ -13,6 +13,7 @@ if not travis:
   import cereal.messaging as messaging
 op_params = opParams()
 set_speed_offset = op_params.get('set_speed_offset')
+physical_buttons_DF = op_params.get('physical_buttons_DF')
 
 _TRAFFIC_SINGAL_MAP = {
 # more info regarding this can be found under rsa.
@@ -112,7 +113,7 @@ class CarState(CarStateBase):
     can_gear = int(cp.vl["GEAR_PACKET"]['GEAR'])
     ret.gearShifter = self.parse_gear_shifter(self.shifter_values.get(can_gear, None))
 
-    if self.read_distance_lines != cp.vl["PCM_CRUISE_SM"]['DISTANCE_LINES']:
+    if self.read_distance_lines != cp.vl["PCM_CRUISE_SM"]['DISTANCE_LINES'] and physical_buttons_DF:
       self.read_distance_lines = cp.vl["PCM_CRUISE_SM"]['DISTANCE_LINES']
       if not travis:
         msg_df = messaging.new_message('dynamicFollowButton')

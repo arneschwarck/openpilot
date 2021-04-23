@@ -103,7 +103,7 @@ class opParams:
                         #'osm': Param(True, bool, 'Whether to use OSM for drives'),
                         'prius_pid': Param(False, bool, 'This enables the PID lateral controller with new a experimental derivative tune\nFalse: stock INDI, True: TSS2-tuned PID'),
                         #'physical_buttons_AP': Param(False, bool, 'This enables the physical buttons to control sport and eco, some cars do not have buttons'),
-                        #'physical_buttons_DF': Param(False, bool, 'This enables the physical buttons to control following distance, TSS1 works with new SDSU FW'),
+                        'physical_buttons_DF': Param(False, bool, 'This enables the physical buttons to control following distance, TSS1 works with new SDSU FW'),
                         #'physical_buttons_LKAS': Param(False, bool, 'This enables the physical buttons to control LKAS. TSS1 only this may break if used on TSS2 vechicle'),
                         #'rolling_stop': Param(False, bool, 'If you do not want stop signs to go down to 0 kph enable this for 9kph slow down'),
                         #'rsa_max_speed': Param(24.5, VT.number, 'Speed limit to ignore RSA in m/s'),
