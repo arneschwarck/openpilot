@@ -9,10 +9,9 @@
 #include <QPainter>
 #include "spinner.hpp"
 #include "qt_window.hpp"
+#include "selfdrive/hardware/hw.h"
 
-// TrackWidget
-
-TrackWidget::TrackWidget(QWidget *parent) {
+TrackWidget::TrackWidget(QWidget *parent) : QOpenGLWidget(parent) {
   setFixedSize(spinner_size);
   setAutoFillBackground(false);
 
@@ -22,7 +21,7 @@ TrackWidget::TrackWidget(QWidget *parent) {
   //QTransform transform;
   //QPixmap track_img = QPixmap("../assets/img_spinner_track.png").scaled(spinner_size, Qt::KeepAspectRatio, Qt::SmoothTransformation);
   //for (auto &img : track_imgs) {
-    //mg = track_img.transformed(transform.rotate(360/spinner_fps), Qt::SmoothTransformation);
+    //img = track_img.transformed(transform.rotate(360/spinner_fps), Qt::SmoothTransformation);
   //}
 
   m_anim.setDuration(1000);
@@ -56,7 +55,7 @@ Spinner::Spinner(QWidget *parent) {
   main_layout->setSpacing(0);
   main_layout->setMargin(200);
 
-  main_layout->addWidget(new TrackWidget(), 0, 0, Qt::AlignHCenter | Qt::AlignVCenter);
+  main_layout->addWidget(new TrackWidget(this), 0, 0, Qt::AlignHCenter | Qt::AlignVCenter);
 
   text = new QLabel();
   text->setVisible(false);
@@ -113,6 +112,16 @@ void Spinner::update(int n) {
 }
 
 int main(int argc, char *argv[]) {
+  QSurfaceFormat fmt;
+#ifdef __APPLE__
+  fmt.setVersion(3, 2);
+  fmt.setProfile(QSurfaceFormat::OpenGLContextProfile::CoreProfile);
+  fmt.setRenderableType(QSurfaceFormat::OpenGL);
+#else
+  fmt.setRenderableType(QSurfaceFormat::OpenGLES);
+#endif
+  QSurfaceFormat::setDefaultFormat(fmt);
+
   QApplication a(argc, argv);
   Spinner spinner;
   setMainWindow(&spinner);

@@ -1,17 +1,14 @@
 """Install exception handler for process crash."""
 import os
 import sys
-import threading
 import capnp
 import requests
-import traceback
 from cereal import car
 from common.params import Params
 from selfdrive.version import version, dirty, origin, branch
 
 from selfdrive.hardware import PC
 from selfdrive.swaglog import cloudlog
-
 
 def save_exception(exc_text):
   i = 0
@@ -34,11 +31,9 @@ if os.getenv("NOLOG") or os.getenv("NOCRASH") or PC:
   def bind_extra(**kwargs):
     pass
 
-  def install():
-    pass
 else:
-  from raven import Client
-  from raven.transport.http import HTTPTransport
+  import sentry_sdk
+  from sentry_sdk.integrations.threading import ThreadingIntegration
   from common.op_params import opParams
   from datetime import datetime
 
@@ -87,59 +82,30 @@ else:
     u_tag.append(username)
   if len(u_tag) > 0:
     error_tags['username'] = ''.join(u_tag)
-
-  client = Client('https://137e8e621f114f858f4c392c52e18c6d:8aba82f49af040c8aac45e95a8484970@sentry.io/1404547',
-                  install_sys_hook=False, transport=HTTPTransport, release=version, tags=error_tags)
-
+  for k, v in error_tags.items():
+    sentry_sdk.set_tag(k, v)
   def capture_exception(*args, **kwargs):
-    save_exception(traceback.format_exc())
     exc_info = sys.exc_info()
     if not exc_info[0] is capnp.lib.capnp.KjException:
-      client.captureException(*args, **kwargs)
+      sentry_sdk.capture_exception(*args, **kwargs)
+      sentry_sdk.flush()  # https://github.com/getsentry/sentry-python/issues/291
     cloudlog.error("crash", exc_info=kwargs.get('exc_info', 1))
 
   def bind_user(**kwargs):
-    client.user_context(kwargs)
+    sentry_sdk.set_user(kwargs)
 
   def capture_warning(warning_string):
     bind_user(id=dongle_id, ip_address=ip, username=username)
-    client.captureMessage(warning_string, level='warning')
+    sentry_sdk.capture_message(warning_string, level='warning')
 
   def capture_info(info_string):
     bind_user(id=dongle_id, ip_address=ip, username=username)
-    client.captureMessage(info_string, level='info')
+    sentry_sdk.capture_message(info_string, level='info')
 
   def bind_extra(**kwargs):
-    client.extra_context(kwargs)
+    for k, v in kwargs.items():
+      sentry_sdk.set_tag(k, v)
 
-  def install():
-    """
-    Workaround for `sys.excepthook` thread bug from:
-    http://bugs.python.org/issue1230540
-    Call once from the main thread before creating any threads.
-    Source: https://stackoverflow.com/a/31622038
-    """
-    # installs a sys.excepthook
-    __excepthook__ = sys.excepthook
-
-    def handle_exception(*exc_info):
-      if exc_info[0] not in (KeyboardInterrupt, SystemExit):
-        capture_exception()
-      __excepthook__(*exc_info)
-    sys.excepthook = handle_exception
-
-    init_original = threading.Thread.__init__
-
-    def init(self, *args, **kwargs):
-      init_original(self, *args, **kwargs)
-      run_original = self.run
-
-      def run_with_except_hook(*args2, **kwargs2):
-        try:
-          run_original(*args2, **kwargs2)
-        except Exception:
-          sys.excepthook(*sys.exc_info())
-
-      self.run = run_with_except_hook
-
-    threading.Thread.__init__ = init
+  sentry_sdk.init("https://137e8e621f114f858f4c392c52e18c6d:8aba82f49af040c8aac45e95a8484970@sentry.io/1404547",
+                  default_integrations=False, integrations=[ThreadingIntegration(propagate_hub=True)],
+                  release=version)

@@ -11,16 +11,21 @@ import selfdrive.crash as crash
 #from common.basedir import BASEDIR
 from common.params import Params
 from common.text_window import TextWindow
-from selfdrive.hardware import HARDWARE
+from selfdrive.boardd.set_time import set_time
+from selfdrive.hardware import HARDWARE, TICI
 from selfdrive.manager.helpers import unblock_stdout
 from selfdrive.manager.process import ensure_running
 from selfdrive.manager.process_config import managed_processes
 from selfdrive.registration import register
 from selfdrive.swaglog import cloudlog, add_file_handler
-from selfdrive.version import dirty, version
+from selfdrive.version import dirty, version, origin, branch, commit
 
 
 def manager_init():
+
+  # update system time from panda
+  set_time(cloudlog)
+
   params = Params()
   params.manager_start()
 
@@ -29,12 +34,16 @@ def manager_init():
     ("HandsOnWheelMonitoring", "0"),
     ("HasAcceptedTerms", "0"),
     ("IsUploadRawEnabled", "1"),
+    ("HasAcceptedTerms", "0"),
     ("LastUpdateTime", datetime.datetime.utcnow().isoformat().encode('utf8')),
     ("MaxDecelerationForTurns", "-3.0"),
     ("OpenpilotEnabledToggle", "1"),
     ("SpeedLimitControl", "1"),
     ("SpeedLimitPercOffset", "10.0"),
   ]
+
+  if TICI:
+    default_params.append(("IsUploadRawEnabled", "1"))
 
   if params.get_bool("RecordFrontLock"):
     params.put_bool("RecordFront", True)
@@ -82,7 +91,8 @@ def manager_init():
   cloudlog.bind_global(dongle_id=dongle_id, version=version, dirty=dirty,
                        device=HARDWARE.get_device_type())
   crash.bind_user(id=dongle_id)
-  crash.bind_extra(version=version, dirty=dirty, device=HARDWARE.get_device_type())
+  crash.bind_extra(dirty=dirty, origin=origin, branch=branch, commit=commit,
+                   device=HARDWARE.get_device_type())
 
 
 def manager_prepare():

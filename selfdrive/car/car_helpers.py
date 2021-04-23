@@ -21,7 +21,7 @@ EventName = car.CarEvent.EventName
 
 use_car_caching = opParams().get('use_car_caching')
 
-def get_startup_event(car_recognized, controller_available):
+def get_startup_event(car_recognized, controller_available, fuzzy_fingerprint):
   if comma_remote and tested_branch:
     event = EventName.startup
   else:
@@ -31,6 +31,8 @@ def get_startup_event(car_recognized, controller_available):
     event = EventName.startupNoCar
   elif car_recognized and not controller_available:
     event = EventName.startupNoControl
+  elif car_recognized and fuzzy_fingerprint:
+    event = EventName.startupFuzzyFingerprint
   return event
 
 
@@ -117,10 +119,10 @@ def fingerprint(logcan, sendcan):
       _, vin = get_vin(logcan, sendcan, bus)
       car_fw = get_fw_versions(logcan, sendcan, bus)
 
-    fw_candidates = match_fw_to_car(car_fw)
+    exact_fw_match, fw_candidates = match_fw_to_car(car_fw)
   else:
     vin = VIN_UNKNOWN
-    fw_candidates, car_fw = set(), []
+    exact_fw_match, fw_candidates, car_fw = True, set(), []
 
   cloudlog.warning("VIN %s", vin)
   Params().put("CarVin", vin)
@@ -139,7 +141,8 @@ def fingerprint(logcan, sendcan):
     else:
       finger[0] = {int(key): value for key, value in cached_fingerprint[2].items()}
       source = car.CarParams.FingerprintSource.can
-      return (str(cached_fingerprint[0]), finger, vin, car_fw, cached_fingerprint[1])
+      exact_match = True
+      return (str(cached_fingerprint[0]), finger, vin, car_fw, cached_fingerprint[1], exact_match)
 
   while not done:
     a = get_one_can(logcan)
@@ -168,18 +171,20 @@ def fingerprint(logcan, sendcan):
           car_fingerprint = candidate_cars[b][0]
 
     # bail if no cars left or we've been waiting for more than 2s
-    failed = all(len(cc) == 0 for cc in candidate_cars.values()) or frame > 200
+    failed = (all(len(cc) == 0 for cc in candidate_cars.values()) and frame > frame_fingerprint) or frame > 200
     succeeded = car_fingerprint is not None
     done = failed or succeeded
 
     frame += 1
 
+  exact_match = True
   source = car.CarParams.FingerprintSource.can
 
   # If FW query returns exactly 1 candidate, use it
   if len(fw_candidates) == 1:
     car_fingerprint = list(fw_candidates)[0]
     source = car.CarParams.FingerprintSource.fw
+    exact_match = exact_fw_match
 
   if fixed_fingerprint:
     car_fingerprint = fixed_fingerprint
@@ -187,7 +192,7 @@ def fingerprint(logcan, sendcan):
 
   cloudlog.warning("fingerprinted %s", car_fingerprint)
   put_nonblocking("CachedFingerprint", json.dumps([car_fingerprint, source, {int(key): value for key, value in finger[0].items()}]))
-  return car_fingerprint, finger, vin, car_fw, source
+  return car_fingerprint, finger, vin, car_fw, source, exact_match
 
 def is_connected_to_internet(timeout=5):
     try:
@@ -210,7 +215,7 @@ def crash_log2(fingerprints, fw):
       break
 
 def get_car(logcan, sendcan):
-  candidate, fingerprints, vin, car_fw, source = fingerprint(logcan, sendcan)
+  candidate, fingerprints, vin, car_fw, source, exact_match = fingerprint(logcan, sendcan)
 
   if candidate is None:
     cloudlog.warning("car doesn't match any fingerprints: %r", fingerprints)
@@ -229,5 +234,6 @@ def get_car(logcan, sendcan):
   car_params.carVin = vin
   car_params.carFw = car_fw
   car_params.fingerprintSource = source
+  car_params.fuzzyFingerprint = not exact_match
 
   return CarInterface(car_params, CarController, CarState), car_params

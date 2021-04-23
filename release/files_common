@@ -19,6 +19,8 @@ common/gpio.py
 common/realtime.py
 common/clock.pyx
 common/colors.py
+common/data_collector.py
+common/is_shane.py
 common/timeout.py
 common/ffi_wrapper.py
 common/file_helpers.py
@@ -243,6 +245,8 @@ selfdrive/controls/lib/long_mpc.py
 selfdrive/controls/lib/long_mpc_model.py
 
 selfdrive/controls/lib/cluster/*
+selfdrive/controls/lib/dynamic_follow
+selfdrive/controls/lib/dynamic_follow/auto_df_weights.npz
 
 selfdrive/controls/lib/lateral_mpc/lib_mpc_export/*
 selfdrive/controls/lib/lateral_mpc/.gitignore
@@ -295,12 +299,15 @@ selfdrive/locationd/generated/ubx.h
 selfdrive/locationd/generated/gps.cpp
 selfdrive/locationd/generated/gps.h
 
-selfdrive/locationd/locationd.py
+selfdrive/locationd/locationd.h
+selfdrive/locationd/locationd.cc
 selfdrive/locationd/paramsd.py
 selfdrive/locationd/models/.gitignore
 selfdrive/locationd/models/live_kf.py
 selfdrive/locationd/models/car_kf.py
 selfdrive/locationd/models/constants.py
+selfdrive/locationd/models/live_kf.h
+selfdrive/locationd/models/live_kf.cc
 
 selfdrive/locationd/calibrationd.py
 

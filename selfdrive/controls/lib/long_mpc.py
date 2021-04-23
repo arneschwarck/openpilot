@@ -7,6 +7,9 @@ from common.realtime import sec_since_boot
 from selfdrive.controls.lib.radar_helpers import _LEAD_ACCEL_TAU
 from selfdrive.controls.lib.longitudinal_mpc import libmpc_py
 from selfdrive.controls.lib.drive_helpers import MPC_COST_LONG
+from common.travis_checker import travis
+if not travis:
+  from selfdrive.controls.lib.dynamic_follow import DynamicFollow
 
 LOG_MPC = os.environ.get('LOG_MPC', False)
 
@@ -14,7 +17,8 @@ LOG_MPC = os.environ.get('LOG_MPC', False)
 class LongitudinalMpc():
   def __init__(self, mpc_id):
     self.mpc_id = mpc_id
-
+    if not travis:
+      self.dynamic_follow = DynamicFollow(mpc_id)
     self.setup_mpc()
     self.v_mpc = 0.0
     self.v_mpc_future = 0.0
@@ -79,12 +83,15 @@ class LongitudinalMpc():
       if not self.prev_lead_status or abs(x_lead - self.prev_lead_x) > 2.5:
         self.libmpc.init_with_simulation(self.v_mpc, x_lead, v_lead, a_lead, self.a_lead_tau)
         self.new_lead = True
-
+      if not travis:
+        self.dynamic_follow.update_lead(v_lead, a_lead, x_lead, lead.status, self.new_lead)
       self.prev_lead_status = True
       self.prev_lead_x = x_lead
       self.cur_state[0].x_l = x_lead
       self.cur_state[0].v_l = v_lead
     else:
+      if not travis:
+        self.dynamic_follow.update_lead(new_lead=self.new_lead)
       self.prev_lead_status = False
       # Fake a fast lead car, so mpc keeps running
       self.cur_state[0].x_l = 50.0
@@ -96,6 +103,8 @@ class LongitudinalMpc():
 
     # Calculate mpc
     t = sec_since_boot()
+    if not travis:
+      TR = self.dynamic_follow.update(CS, self.libmpc)  # update dynamic follow
     self.n_its = self.libmpc.run_mpc(self.cur_state, self.mpc_solution, self.a_lead_tau, a_lead, TR)
     self.duration = int((sec_since_boot() - t) * 1e9)
 
