@@ -8,14 +8,23 @@
 
 // TODO: This should probably use SNPE directly.
 int main(int argc, char* argv[]) {
-  #define OUTPUT_SIZE 0x10000
+  const bool is_trafficd = strstr(argv[1], "traffic");
+
+  int OUTPUT_SIZE;
+  if (is_trafficd) {
+    printf("compiling thneed model for traffic_model.dlc\n");
+    OUTPUT_SIZE = 3;
+  } else {
+    OUTPUT_SIZE = 0x10000;
+  }
+
   float *output = (float*)calloc(OUTPUT_SIZE, sizeof(float));
   SNPEModel mdl(argv[1], output, 0, USE_GPU_RUNTIME);
 
   float state[TEMPORAL_SIZE] = {0};
   float desire[DESIRE_LEN] = {0};
   float traffic_convention[TRAFFIC_CONVENTION_LEN] = {0};
-  float *input = (float*)calloc(0x1000000, sizeof(float));;
+  float *input = (float*)calloc(is_trafficd ? 1623930 : 0x1000000, sizeof(float));;
 
   mdl.addRecurrent(state, TEMPORAL_SIZE);
   mdl.addDesire(desire, DESIRE_LEN);
@@ -24,7 +33,8 @@ int main(int argc, char* argv[]) {
   // first run
   printf("************** execute 1 **************\n");
   memset(output, 0, OUTPUT_SIZE * sizeof(float));
-  mdl.execute(input, 0);
+
+  mdl.execute(input, 0, is_trafficd);
 
   // save model
   bool save_binaries = (argc > 3) && (strcmp(argv[3], "--binary") == 0);

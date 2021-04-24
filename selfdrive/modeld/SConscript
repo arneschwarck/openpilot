@@ -66,6 +66,14 @@ if arch == "aarch64" or arch == "larch64":
   cenv = Environment(ENV={'LD_LIBRARY_PATH': f"{lib_paths}:{lenv['ENV']['LD_LIBRARY_PATH']}"})
   cenv.Command("../../models/supercombo.thneed", ["../../models/supercombo.dlc", compiler], cmd)
 
+# if arch == "aarch64" or arch == "larch64":
+#   compiler = lenv.Program('thneed/compile', ["thneed/compile.cc" ]+common_model, LIBS=libs)
+#   cmd = f"cd {Dir('.').abspath} && {compiler[0].abspath} ../../models/traffic_model.dlc ../../models/traffic_model.thneed --binary"
+#
+#   lib_paths = ':'.join([Dir(p).abspath for p in lenv["LIBPATH"]])
+#   cenv = Environment(ENV={'LD_LIBRARY_PATH': f"{lib_paths}:{lenv['ENV']['LD_LIBRARY_PATH']}"})
+#   cenv.Command("../../models/traffic_model.thneed", ["../../models/traffic_model.dlc", compiler], cmd)
+
 lenv.Program('_dmonitoringmodeld', [
     "dmonitoringmodeld.cc",
     "models/dmonitoring.cc",
@@ -76,3 +84,7 @@ lenv.Program('_modeld', [
     "models/driving.cc",
   ]+common_model, LIBS=libs)
 
+lenv.Program('_trafficd', [
+    "trafficd.cc",
+    "models/driving.cc",
+  ]+common_model, LIBS=libs)
