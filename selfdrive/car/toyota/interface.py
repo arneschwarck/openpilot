@@ -88,8 +88,12 @@ class CarInterface(CarInterfaceBase):
       if prius_pid:
         ret.lateralTuning.init('pid')
         ret.lateralTuning.pid.kiBP, ret.lateralTuning.pid.kpBP, ret.lateralTuning.pid.kfBP = [[0.], [0.], [0.]]
-        ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.6], [0.1]]
-        ret.lateralTuning.pid.kf = [0.00006]
+        ret.lateralTuning.pid.kpBP = [8, 13, 18, 23, 40]
+        ret.lateralTuning.pid.kiBP = [8, 13, 18, 23, 40]
+        ret.lateralTuning.pid.kfBP = [8, 18, 23, 40]
+        ret.lateralTuning.pid.kpV = [0.6, 0.3, 0.1, 0.01, 0.001]
+        ret.lateralTuning.pid.kiV = [0.075, 0.0375, 0.01, 0.001, 0.0001]
+        ret.lateralTuning.pid.kfV = [0.000153263811757641, 0.000153263811757641, 0.00007818954, 0.00005909477, 0.00004]
       else:
         ret.lateralTuning.init('indi')
         ret.steerActuatorDelay = 0
@@ -262,12 +266,12 @@ class CarInterface(CarInterfaceBase):
       ret.steerRatio = 13.9
       tire_stiffness_factor = 0.444  # not optimized yet
       ret.mass = 3060. * CV.LB_TO_KG + STD_CARGO_KG
-      ret.lateralTuning.pid.kiBP = [20, 25, 40]
-      ret.lateralTuning.pid.kiV =  [0.1, 0.05, 0.01]
-      ret.lateralTuning.pid.kpBP = [20, 25, 40]
-      ret.lateralTuning.pid.kpV =  [0.6, 0.3, 0.2]
-      ret.lateralTuning.pid.kpBP = [0.]
-      ret.lateralTuning.pid.kfV =  [0.00007818594]
+      ret.lateralTuning.pid.kpBP = [8, 13, 18, 23, 40]
+      ret.lateralTuning.pid.kiBP = [8, 13, 18, 23, 40]
+      ret.lateralTuning.pid.kfBP = [8, 18, 23, 40]
+      ret.lateralTuning.pid.kpV = [0.6, 0.3, 0.1, 0.01, 0.001]
+      ret.lateralTuning.pid.kiV = [0.075, 0.0375, 0.01, 0.001, 0.0001]
+      ret.lateralTuning.pid.kfV = [0.000153263811757641, 0.000153263811757641, 0.00007818954, 0.00005909477, 0.00004]
 
     elif candidate in [CAR.LEXUS_ES_TSS2, CAR.LEXUS_ESH_TSS2]:
       stop_and_go = True
