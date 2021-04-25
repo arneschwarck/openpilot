@@ -107,7 +107,7 @@ class opParams:
                         #'physical_buttons_LKAS': Param(False, bool, 'This enables the physical buttons to control LKAS. TSS1 only this may break if used on TSS2 vechicle'),
                         #'rolling_stop': Param(False, bool, 'If you do not want stop signs to go down to 0 kph enable this for 9kph slow down'),
                         #'rsa_max_speed': Param(24.5, VT.number, 'Speed limit to ignore RSA in m/s'),
-                        'set_speed_offset': Param(False, bool, 'Whether to use Set Speed offset from release4, enables low set speed and jump by 5 kph. False is on'),
+                        #'set_speed_offset': Param(False, bool, 'Whether to use Set Speed offset from release4, enables low set speed and jump by 5 kph. False is on'),
                         #'smart_speed': Param(True, bool, 'Whether to use Smart Speed for drives above smart_speed_max_vego'),
                         #'smart_speed_max_vego': Param(26.8, VT.number, 'Speed limit to ignore Smartspeed in m/s'),
                         #'spairrowtuning': Param(False, bool, 'INDI Tuning for Corolla Tss2'),
