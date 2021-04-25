@@ -161,13 +161,13 @@ class PIDController:
 
       # Update when changing i will move the control away from the limits
       # or when i will move towards the sign of the error
-      if ((error >= 0 and (control <= self.pos_limit or i < 0.0)) or \
+      if ((error >= 0 and (control <= self.pos_limit or i < 0.0)) or
           (error <= 0 and (control >= self.neg_limit or i > 0.0))) and \
          not freeze_integrator:
         self.id = i
 
       if len(self.errors) >= -self.error_idx:  # if there's enough history
-        if abs(setpoint - self.last_setpoint) / self.i_rate < self.max_accel_d:  # and if cruising with minimal setpoint change
+        if abs(setpoint - self.last_setpoint) / self.i_rate < self.max_accel_d:  # and if cruising with minimal setpoint change # noqa:E502
           last_error = self.errors[self.error_idx]
           # only multiply i_rate if we're adding to self.i
           d = self.k_d * ((error - last_error) / self.d_rate) * self.i_rate
