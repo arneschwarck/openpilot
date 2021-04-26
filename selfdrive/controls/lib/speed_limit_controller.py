@@ -83,7 +83,7 @@ class SpeedLimitResolver():
 
   def _get_from_map_data(self):
     # Ignore if no live map data
-    sock = 'liveMapDataDEPRECATED'
+    sock = 'liveMapData'
     if self._sm.logMonoTime[sock] is None:
       self._results[SpeedLimitResolver.Key.map_data] = 0.
       _debug('SL: No map data for speed limit')
@@ -95,7 +95,7 @@ class SpeedLimitResolver():
     next_speed_limit = map_data.speedLimitAhead if map_data.speedLimitAheadValid else 0.
 
     # Calculate the age of the gps fix. Ignore if too old.
-    gps_fix_age = time.time() - map_data.lastGps.timestamp * 1e-3
+    gps_fix_age = time.time() - map_data.lastGpsTimestamp * 1e-3
     if gps_fix_age > _MAX_MAP_DATA_AGE:
       self._results[SpeedLimitResolver.Key.map_data] = 0.
       _debug(f'SL: Ignoring map data as is too old. Age: {gps_fix_age}')
@@ -163,14 +163,13 @@ class SpeedLimitResolver():
 
 
 class SpeedLimitController():
-  def __init__(self, CP):
+  def __init__(self):
     self._params = Params()
     self._resolver = SpeedLimitResolver()
     self._last_params_update = 0.0
     self._is_metric = self._params.get("IsMetric", encoding='utf8') == "1"
     self._is_enabled = self._params.get("SpeedLimitControl", encoding='utf8') == "1"
     self._speed_limit_perc_offset = float(self._params.get("SpeedLimitPercOffset"))
-    self._CP = CP
     self._op_enabled = False
     self._active_jerk_limits = [0.0, 0.0]
     self._active_accel_limits = [0.0, 0.0]
