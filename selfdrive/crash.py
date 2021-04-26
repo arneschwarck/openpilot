@@ -3,6 +3,7 @@ import os
 import sys
 import capnp
 import requests
+import traceback
 from cereal import car
 from common.params import Params
 from selfdrive.version import version, dirty, origin, branch
@@ -77,7 +78,9 @@ if len(u_tag) > 0:
   error_tags['username'] = ''.join(u_tag)
 for k, v in error_tags.items():
   sentry_sdk.set_tag(k, v)
+
 def capture_exception(*args, **kwargs):
+  save_exception(traceback.format_exc())
   exc_info = sys.exc_info()
   if not exc_info[0] is capnp.lib.capnp.KjException:
     sentry_sdk.capture_exception(*args, **kwargs)
