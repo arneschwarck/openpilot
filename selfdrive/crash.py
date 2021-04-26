@@ -54,10 +54,15 @@ else:
   alca_min_speed = op_params.get('alca_min_speed')
   alca_nudge_required = op_params.get('alca_nudge_required')
   ArizonaMode = op_params.get('ArizonaMode')
+  dynamic_follow_mod = op_params.get('dynamic_follow_mod')
   dynamic_gas_mod = op_params.get('dynamic_gas_mod')
+  global_df_mod = op_params.get('global_df_mod')
   keep_openpilot_engaged = op_params.get('keep_openpilot_engaged')
-  set_speed_offset = op_params.get('set_speed_offset')
+  min_TR = op_params.get('min_TR')
+  physical_buttons_DF = op_params.get('physical_buttons_DF')
+  prius_pid = op_params.get('prius_pid')
   username = op_params.get('username')
+  use_car_caching = op_params.get('use_car_caching')
   #uniqueID = op_params.get('uniqueID')
   try:
     dongle_id = params.get("DongleId").decode('utf8')
@@ -68,10 +73,11 @@ else:
   except Exception:
     ip = "255.255.255.255"
   error_tags = {'dirty': dirty, 'dongle_id': dongle_id, 'branch': branch, 'remote': origin,
-                'awareness_factor': awareness_factor, 'alca_min_speed': alca_min_speed,
-                'alca_nudge_required': alca_nudge_required, 'ArizonaMode': ArizonaMode,
-                'dynamic_gas_mod': dynamic_gas_mod, 'keep_openpilot_engaged': keep_openpilot_engaged,
-                'set_speed_offset': set_speed_offset, 'fingerprintedAs': candidate}
+                'awareness_factor': awareness_factor, 'alca_min_speed': alca_min_speed, 'alca_nudge_required': alca_nudge_required,
+                'ArizonaMode': ArizonaMode, 'dynamic_follow_mod': dynamic_follow_mod, 'dynamic_gas_mod': dynamic_gas_mod,
+                'global_df_mod': global_df_mod, 'keep_openpilot_engaged': keep_openpilot_engaged, 'min_TR': min_TR,
+                'physical_buttons_DF': physical_buttons_DF, 'prius_pid': prius_pid, 'use_car_caching': use_car_caching,
+                'username': username, 'fingerprintedAs': candidate}
   if username is None or not isinstance(username, str):
     username = 'undefined'
     #error_tags['uniqueID'] = uniqueID
