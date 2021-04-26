@@ -8,25 +8,11 @@ from common.params import Params
 from selfdrive.version import version, dirty, origin, branch
 
 from selfdrive.swaglog import cloudlog
-from selfdrive.version import version
 
 import sentry_sdk
 from sentry_sdk.integrations.threading import ThreadingIntegration
 from common.op_params import opParams
 from datetime import datetime
-
-i = 0
-log_file = '{}/{}'.format(CRASHES_DIR, datetime.now().strftime('%Y-%m-%d--%H-%M-%S.%f.log')[:-3])
-if os.path.exists(log_file):
-  while os.path.exists(log_file + str(i)):
-    i += 1
-  log_file += str(i)
-with open(log_file, 'w') as f:
-  f.write(exc_text)
-print('Logged current crash to {}'.format(log_file))
-
-ret = car.CarParams.new_message()
-candidate = ret.carFingerprint
 
 COMMUNITY_DIR = '/data/community'
 CRASHES_DIR = '{}/crashes'.format(COMMUNITY_DIR)
@@ -35,6 +21,20 @@ if not os.path.exists(COMMUNITY_DIR):
   os.mkdir(COMMUNITY_DIR)
 if not os.path.exists(CRASHES_DIR):
   os.mkdir(CRASHES_DIR)
+
+def save_exception(exc_text):
+  i = 0
+  log_file = '{}/{}'.format(CRASHES_DIR, datetime.now().strftime('%Y-%m-%d--%H-%M-%S.%f.log')[:-3])
+  if os.path.exists(log_file):
+    while os.path.exists(log_file + str(i)):
+      i += 1
+    log_file += str(i)
+  with open(log_file, 'w') as f:
+    f.write(exc_text)
+  print('Logged current crash to {}'.format(log_file))
+
+ret = car.CarParams.new_message()
+candidate = ret.carFingerprint
 
 params = Params()
 op_params = opParams()
