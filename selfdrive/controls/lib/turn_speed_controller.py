@@ -86,12 +86,12 @@ class TurnSpeedController():
   def _get_limit_from_map_data(self, sm):
     # Ignore if no live map data
     sock = 'liveMapData'
-    if self._sm.logMonoTime[sock] is None:
+    if sm.logMonoTime[sock] is None:
       _debug('TS: No map data for speed limit')
       return 0.
 
     # Load limits from map_data
-    map_data = self._sm[sock]
+    map_data = sm[sock]
     speed_limit = 0.
 
     # Calculate the age of the gps fix. Ignore if too old.

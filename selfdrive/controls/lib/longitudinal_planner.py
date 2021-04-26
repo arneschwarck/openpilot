@@ -76,7 +76,7 @@ class Planner():
     self.mpc2 = LongitudinalMpc(2)
     if not travis:
       self.turn_controller = TurnController(CP)
-      self.speed_limit_controller = SpeedLimitController(cp)
+      self.speed_limit_controller = SpeedLimitController()
       self.turn_speed_controller = TurnSpeedController()
 
     self.v_acc_start = 0.0
@@ -284,11 +284,6 @@ class Planner():
       longitudinalPlan.turnSpeedControlState = self.turn_speed_controller.state
       longitudinalPlan.turnSpeed = float(self.turn_speed_controller.speed_limit)
 
-      longitudinalPlan.speedLimitControlState = self.speed_limit_controller.state
-      longitudinalPlan.speedLimit = float(self.speed_limit_controller.speed_limit)
-
-      longitudinalPlan.turnControllerState = self.turn_controller.state
-      longitudinalPlan.turnAcc = float(self.turn_controller.a_turn)
       longitudinalPlan.speedLimitControlState = self.speed_limit_controller.state
       longitudinalPlan.speedLimit = float(self.speed_limit_controller.speed_limit)
     longitudinalPlan.eventsDEPRECATED = self.events.to_msg()
