@@ -342,12 +342,14 @@ class CarState(CarStateBase):
 
     checks = [
       ("GEAR_PACKET", 1),
+      ("PCM_CRUISE_SM", 1),
       ("LIGHT_STALK", 1),
       ("STEERING_LEVERS", 0.15),
       ("SEATS_DOORS", 3),
       ("ESP_CONTROL", 3),
       ("EPS_STATUS", 25),
       ("BRAKE_MODULE", 40),
+      ("ENGINE_RPM", 41),
       ("GAS_PEDAL", 33),
       ("WHEEL_SPEEDS", 80),
       ("STEER_ANGLE_SENSOR", 80),
@@ -409,6 +411,8 @@ class CarState(CarStateBase):
     # use steering message to check if panda is connected to frc
     checks = [
       ("STEERING_LKA", 42),
+      ("RSA1", 1),
+      ("RSA2", 1),
       ("PRE_COLLISION", 0), # TODO: figure out why freq is inconsistent
     ]
 
