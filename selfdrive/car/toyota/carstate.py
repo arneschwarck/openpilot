@@ -413,6 +413,7 @@ class CarState(CarStateBase):
       ("STEERING_LKA", 42),
       ("RSA1", 1),
       ("RSA2", 1),
+      ("ACC_CONTROL", 33),
       ("PRE_COLLISION", 0), # TODO: figure out why freq is inconsistent
     ]
 
