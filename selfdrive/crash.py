@@ -14,15 +14,14 @@ from sentry_sdk.integrations.threading import ThreadingIntegration
 from common.op_params import opParams
 from datetime import datetime
 
-COMMUNITY_DIR = '/data/community'
-CRASHES_DIR = '{}/crashes'.format(COMMUNITY_DIR)
-
-if not os.path.exists(COMMUNITY_DIR):
-  os.mkdir(COMMUNITY_DIR)
-if not os.path.exists(CRASHES_DIR):
-  os.mkdir(CRASHES_DIR)
-
 def save_exception(exc_text):
+  COMMUNITY_DIR = '/data/community'
+  CRASHES_DIR = '{}/crashes'.format(COMMUNITY_DIR)
+
+  if not os.path.exists(COMMUNITY_DIR):
+    os.mkdir(COMMUNITY_DIR)
+  if not os.path.exists(CRASHES_DIR):
+    os.mkdir(CRASHES_DIR)
   i = 0
   log_file = '{}/{}'.format(CRASHES_DIR, datetime.now().strftime('%Y-%m-%d--%H-%M-%S.%f.log')[:-3])
   if os.path.exists(log_file):
