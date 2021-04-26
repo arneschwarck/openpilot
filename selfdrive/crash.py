@@ -1,5 +1,4 @@
 """Install exception handler for process crash."""
-import os
 import sys
 import capnp
 import requests
@@ -7,8 +6,13 @@ from cereal import car
 from common.params import Params
 from selfdrive.version import version, dirty, origin, branch
 
-from selfdrive.hardware import PC
 from selfdrive.swaglog import cloudlog
+from selfdrive.version import version
+
+import sentry_sdk
+from sentry_sdk.integrations.threading import ThreadingIntegration
+from common.op_params import opParams
+from datetime import datetime
 
 def save_exception(exc_text):
   i = 0
@@ -20,22 +24,6 @@ def save_exception(exc_text):
   with open(log_file, 'w') as f:
     f.write(exc_text)
   print('Logged current crash to {}'.format(log_file))
-
-if os.getenv("NOLOG") or os.getenv("NOCRASH") or PC:
-  def capture_exception(*args, **kwargs):
-    pass
-
-  def bind_user(**kwargs):
-    pass
-
-  def bind_extra(**kwargs):
-    pass
-
-else:
-  import sentry_sdk
-  from sentry_sdk.integrations.threading import ThreadingIntegration
-  from common.op_params import opParams
-  from datetime import datetime
 
   ret = car.CarParams.new_message()
   candidate = ret.carFingerprint

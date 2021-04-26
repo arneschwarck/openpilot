@@ -7,6 +7,7 @@
 #include <QGridLayout>
 #include <QApplication>
 #include <QPainter>
+
 #include "spinner.hpp"
 #include "qt_window.hpp"
 #include "selfdrive/hardware/hw.h"
@@ -121,6 +122,9 @@ int main(int argc, char *argv[]) {
   fmt.setRenderableType(QSurfaceFormat::OpenGLES);
 #endif
   QSurfaceFormat::setDefaultFormat(fmt);
+
+  Hardware::set_display_power(true);
+  Hardware::set_brightness(65);
 
   QApplication a(argc, argv);
   Spinner spinner;
