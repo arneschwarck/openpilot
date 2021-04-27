@@ -88,25 +88,20 @@ class CarInterface(CarInterfaceBase):
       if prius_pid:
         ret.lateralTuning.init('pid')
         ret.lateralTuning.pid.kiBP, ret.lateralTuning.pid.kpBP, ret.lateralTuning.pid.kfBP = [[0.], [0.], [0.]]
-        ret.lateralTuning.pid.kpBP = [8, 13, 18, 23, 40]
-        ret.lateralTuning.pid.kiBP = [8, 13, 18, 23, 40]
-        ret.lateralTuning.pid.kfBP = [8, 18, 23, 40]
-        ret.lateralTuning.pid.kpV = [0.6, 0.3, 0.1, 0.01, 0.001]
-        ret.lateralTuning.pid.kiV = [0.075, 0.0375, 0.01, 0.001, 0.0001]
-        ret.lateralTuning.pid.kfV = [0.000153263811757641, 0.000153263811757641, 0.00007818954, 0.00005909477, 0.00004]
+        ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.6], [0.1]]
+        ret.lateralTuning.pid.kfV = [0.00007818594]
       else:
         ret.lateralTuning.init('indi')
-        ret.steerActuatorDelay = 0
-        ret.steerLimitTimer = 5
         ret.steerRateCost = 0.5
-        ret.lateralTuning.indi.innerLoopGainBP = [5.5, 8.3, 11.1, 13.9, 25]
-        ret.lateralTuning.indi.innerLoopGainV = [15, 15, 15, 15, 15]
-        ret.lateralTuning.indi.outerLoopGainBP = [5.5, 8.3, 11.1, 13.9, 16.7, 19.4, 22.2, 25, 30, 36]
-        ret.lateralTuning.indi.outerLoopGainV = [2.95, 4.75, 6.55, 8.35, 10.15, 11.95, 13.75, 14.99, 16, 17]
-        ret.lateralTuning.indi.timeConstantBP = [5.5, 8.3, 11.1, 13.9, 16.7, 19.4, 22.2, 30.09, 30.1, 33.32, 33.33]
-        ret.lateralTuning.indi.timeConstantV = [0.38, 0.47, 0.56, 0.68, 0.80, 4, 4, 4, 7.0, 7.0, 8.0]
-        ret.lateralTuning.indi.actuatorEffectivenessBP = [5.5, 25]
-        ret.lateralTuning.indi.actuatorEffectivenessV = [15, 15]
+        ret.lateralTuning.indi.innerLoopGainBP = [0.]
+        ret.lateralTuning.indi.innerLoopGainV = [4.0]
+        ret.lateralTuning.indi.outerLoopGainBP = [0.]
+        ret.lateralTuning.indi.outerLoopGainV = [3.0]
+        ret.lateralTuning.indi.timeConstantBP = [0.]
+        ret.lateralTuning.indi.timeConstantV = [0.1]
+        ret.lateralTuning.indi.actuatorEffectivenessBP = [0.]
+        ret.lateralTuning.indi.actuatorEffectivenessV = [1.0]
+        ret.steerActuatorDelay = 0.3
 
     elif candidate in [CAR.RAV4, CAR.RAV4H]:
       stop_and_go = True if (candidate in CAR.RAV4H) else False
@@ -266,12 +261,8 @@ class CarInterface(CarInterfaceBase):
       ret.steerRatio = 13.9
       tire_stiffness_factor = 0.444  # not optimized yet
       ret.mass = 3060. * CV.LB_TO_KG + STD_CARGO_KG
-      ret.lateralTuning.pid.kpBP = [8, 13, 18, 23, 40]
-      ret.lateralTuning.pid.kiBP = [8, 13, 18, 23, 40]
-      ret.lateralTuning.pid.kfBP = [8, 18, 23, 40]
-      ret.lateralTuning.pid.kpV = [0.6, 0.3, 0.1, 0.01, 0.001]
-      ret.lateralTuning.pid.kiV = [0.075, 0.0375, 0.01, 0.001, 0.0001]
-      ret.lateralTuning.pid.kfV = [0.000153263811757641, 0.000153263811757641, 0.00007818954, 0.00005909477, 0.00004]
+      ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.6], [0.1]]
+      ret.lateralTuning.pid.kfV = [0.00007818594]
 
     elif candidate in [CAR.LEXUS_ES_TSS2, CAR.LEXUS_ESH_TSS2]:
       stop_and_go = True
