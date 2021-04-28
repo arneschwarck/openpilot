@@ -303,7 +303,8 @@ QWidget * network_panel(QWidget * parent) {
   return w;
 }
 
-QWidget * ArneTogglesPanel() {
+// ArnePilot
+QWidget * ArnePilot_panel() {
   QVBoxLayout *toggles_list = new QVBoxLayout();
   //toggles_list->setMargin(50);
 
@@ -354,7 +355,7 @@ SettingsWindow::SettingsWindow(QWidget *parent) : QFrame(parent) {
     {"Network", network_panel(this)},
     {"Toggles", new TogglesPanel(this)},
     {"Developer", new DeveloperPanel()},
-    {"ArnePilot", new ArneTogglesPanel(this)},
+    {"ArnePilot", ArnePilot_panel()},
   };
 
   sidebar_layout->addSpacing(45);
