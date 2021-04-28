@@ -22,8 +22,8 @@ _ENTERING_SMOOTH_DECEL = -0.3  # Smooth decel when entering curve without oversh
 _LEAVING_ACC = 0.0  # Allowed acceleration when leaving the turn.
 
 _EVAL_STEP = 5.  # evaluate curvature every 5mts
-_EVAL_START = 0.  # start evaluating 0 mts ahead
-_EVAL_LENGHT = 195.  # evaluate curvature for 130mts
+_EVAL_START = 20.  # start evaluating 0 mts ahead
+_EVAL_LENGHT = 150.  # evaluate curvature for 150mts
 _EVAL_RANGE = np.arange(_EVAL_START, _EVAL_LENGHT, _EVAL_STEP)
 
 _MAX_JERK_ACC_INCREASE = 0.5  # Maximum jerk allowed when increasing acceleration.
