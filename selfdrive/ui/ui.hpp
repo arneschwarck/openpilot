@@ -177,6 +177,7 @@ typedef struct UIScene {
   bool speed_limit_control_enabled;
   float speed_limit_perc_offset;
   double last_speed_limit_sign_tap;
+  bool dev_bbui;
 } UIScene;
 
 typedef struct UIState {

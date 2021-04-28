@@ -303,6 +303,24 @@ QWidget * network_panel(QWidget * parent) {
   return w;
 }
 
+QWidget * ArneTogglesPanel() {
+  QVBoxLayout *toggles_list = new QVBoxLayout();
+  //toggles_list->setMargin(50);
+
+  toggles_list->addWidget(new ParamControl("DevBBUI",
+                                            "Developer UI",
+                                            "Show usefull information. such as steerin angle, radar distance, accelection, rpm, etc. list goes on and on.",
+                                            "../assets/offroad/icon_shell.png"
+                                              ));
+
+  toggles_list->addWidget(horizontal_line());
+
+
+  QWidget *widget = new QWidget;
+  widget->setLayout(toggles_list);
+  return widget;
+}
+
 SettingsWindow::SettingsWindow(QWidget *parent) : QFrame(parent) {
   // setup two main layouts
   QVBoxLayout *sidebar_layout = new QVBoxLayout();
@@ -336,6 +354,7 @@ SettingsWindow::SettingsWindow(QWidget *parent) : QFrame(parent) {
     {"Network", network_panel(this)},
     {"Toggles", new TogglesPanel(this)},
     {"Developer", new DeveloperPanel()},
+    {"ArnePilot", new ArneTogglesPanel(this)},
   };
 
   sidebar_layout->addSpacing(45);

@@ -29,6 +29,7 @@ keys = {
   b"EnableLteOnroad": [TxType.PERSISTENT],
   b"EndToEndToggle": [TxType.PERSISTENT],
   b"CompletedTrainingVersion": [TxType.PERSISTENT],
+  b"DevBBUI": [TxType.PERSISTENT],
   b"DisablePowerDown": [TxType.PERSISTENT],
   b"DisableUpdates": [TxType.PERSISTENT],
   b"EnableWideCamera": [TxType.PERSISTENT],
