@@ -88,7 +88,7 @@ class CarInterface(CarInterfaceBase):
       if prius_pid:
         ret.lateralTuning.init('pid')
         ret.lateralTuning.pid.kiBP, ret.lateralTuning.pid.kpBP, ret.lateralTuning.pid.kfBP = [[0.], [0.], [0.]]
-        ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.35, 0.18], [0.03, 0.1]]
+        ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.38], [0.1]]
         ret.lateralTuning.pid.kfV = [0.00007818594]
       else:
         ret.lateralTuning.init('indi')
