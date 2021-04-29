@@ -10,9 +10,10 @@ from selfdrive.controls.lib.events import Events
 _LON_MPC_STEP = 0.2  # Time stemp of longitudinal control (5 Hz)
 _WAIT_TIME_LIMIT_RISE = 2.0  # Waiting time before raising the speed limit.
 
-_MIN_ADAPTING_BRAKE_ACC = -1.5  # Minimum acceleration allowed when adapting to lower speed limit.
-_MIN_ADAPTING_BRAKE_JERK = -1.0  # Minimum jerk allowed when adapting to lower speed limit.
-_SPEED_OFFSET_TH = -3.0  # m/s Maximum offset between speed limit and current speed for adapting state.
+_MIN_ADAPTING_BRAKE_ACC = -1.  # Minimum acceleration allowed when adapting to lower speed limit.
+_MIN_ADAPTING_BRAKE_JERK = -0.5  # Minimum jerk allowed when adapting to lower speed limit.
+_SPEED_OFFSET_TH = -1.  # m/s Maximum offset between speed limit and current speed for adapting state.
+
 _LIMIT_ADAPT_TIME_PER_MS = 1.8  # Ideal adapt time(s) to lower speed limit. i.e. braking for every m/s of speed delta.
 _MIN_LIMIT_ADAPT_TIME = 5.  # s, Minimum time to provide for adapting logic.
 
@@ -55,52 +56,75 @@ class SpeedLimitResolver():
     map_data_priority = 3
     combined = 4
 
-  def __init__(self, v_ref, current_speed_limit, sm, policy=Policy.map_data_priority):
+  def __init__(self, policy=Policy.map_data_priority):
     self._results = {}
-    self._v_ref = v_ref  # Reference speed for calculation of time to next speed limit in map data.
-    self._current_speed_limit = current_speed_limit
-    self._sm = sm
+    self._v_ego = 0.
+    self._current_speed_limit = 0.
     self._policy = policy
+    self._next_speed_limit_prev = 0.
     self.speed_limit = 0.
 
-  def resolve(self):
+  def resolve(self, v_ego, current_speed_limit, sm):
+    self._v_ego = v_ego
+    self._current_speed_limit = current_speed_limit
+    self._sm = sm
+
     self._get_from_car_state()
     self._get_from_map_data()
     self._consolidate()
+
+    return self.speed_limit
 
   def _get_from_car_state(self):
     self._results[SpeedLimitResolver.Key.car_state] = self._sm['carState'].cruiseState.speedLimit
 
   def _get_from_map_data(self):
-    self._results[SpeedLimitResolver.Key.map_data] = 0.
-
     # Ignore if no live map data
     sock = 'liveMapDataDEPRECATED'
     if self._sm.logMonoTime[sock] is None:
+      self._results[SpeedLimitResolver.Key.map_data] = 0.
       _debug('SL: No map data for speed limit')
       return
 
     # Load limits from map_data
     map_data = self._sm[sock]
-    speed_limit = map_data.speedLimit if map_data.speedLimitValid else 0.0
+    speed_limit = map_data.speedLimit if map_data.speedLimitValid else 0.
+    next_speed_limit = map_data.speedLimitAhead if map_data.speedLimitAheadValid else 0.
 
     # Calculate the age of the gps fix. Ignore if too old.
     gps_fix_age = time.time() - map_data.lastGps.timestamp * 1e-3
     if gps_fix_age > _MAX_MAP_DATA_AGE:
+      self._results[SpeedLimitResolver.Key.map_data] = 0.
       _debug(f'SL: Ignoring map data as is too old. Age: {gps_fix_age}')
       return
 
-    # Estimate the time left to reach new speed limit ahead (if any) and use it if we are close
-    # enough while traveling when the speed limit is being reduced or set for the first time.
-    if map_data.speedLimitAheadValid and self._v_ref > 0:
-      next_speed_limit = map_data.speedLimitAhead
-      if self._current_speed_limit == 0 or next_speed_limit <= self._current_speed_limit:
-        next_speed_limit_time = (map_data.speedLimitAheadDistance / self._v_ref) - gps_fix_age
-        if next_speed_limit_time <= max(_LIMIT_ADAPT_TIME_PER_MS * (self._v_ref - next_speed_limit),
-                                        _MIN_LIMIT_ADAPT_TIME):
-          speed_limit = next_speed_limit
+    # When we have no ahead speed limit to consider or it is greater than current speed limit
+    # or car has stopped, then provide current value and reset tracking.
+    if next_speed_limit == 0. or self._v_ego == 0. or next_speed_limit > self._current_speed_limit:
+      self._results[SpeedLimitResolver.Key.map_data] = speed_limit
+      self._next_speed_limit_prev = 0.
+      return
 
-    # Populate results
+    # When we have a next_speed_limit value that has not changed from a provided next speed limit value
+    # in previous resolutions, we keep providing it.
+    if next_speed_limit == self._next_speed_limit_prev:
+      self._results[SpeedLimitResolver.Key.map_data] = next_speed_limit
+      return
+
+    # Reset tracking
+    self._next_speed_limit_prev = 0.
+
+    # Calculate the time to the next speed limit and the adapt (braking)
+    next_speed_limit_time = (map_data.speedLimitAheadDistance / self._v_ego) - gps_fix_age
+    adapt_time = _LIMIT_ADAPT_TIME_PER_MS * (self._v_ego - next_speed_limit)
+
+    # When we detect we are close enough, we provide the next limit value and track it.
+    if next_speed_limit_time <= adapt_time:
+      self._results[SpeedLimitResolver.Key.map_data] = next_speed_limit
+      self._next_speed_limit_prev = next_speed_limit
+      return
+
+    # Otherwise we just provide the map datae speed limit.
     self._results[SpeedLimitResolver.Key.map_data] = speed_limit
 
   def _consolidate(self):
@@ -138,6 +162,7 @@ class SpeedLimitResolver():
 class SpeedLimitController():
   def __init__(self, CP):
     self._params = Params()
+    self._resolver = SpeedLimitResolver()
     self._last_params_update = 0.0
     self._is_metric = self._params.get("IsMetric", encoding='utf8') == "1"
     self._is_enabled = self._params.get("SpeedLimitControl", encoding='utf8') == "1"
@@ -149,7 +174,6 @@ class SpeedLimitController():
     self._adapting_jerk_limits = [_MIN_ADAPTING_BRAKE_JERK, 1.0]
     self._v_ego = 0.0
     self._a_ego = 0.0
-    self._v_adapting = 0.0
     self._v_offset = 0.0
     self._v_cruise_setpoint = 0.0
     self._v_cruise_setpoint_prev = 0.0
@@ -189,7 +213,7 @@ class SpeedLimitController():
         # of canceling delayed increase limit, if pending.
         self._speed_limit = self._speed_limit_set
         self._speed_limit_prev = self._speed_limit
-  
+
     self._state = value
 
   @property
@@ -324,14 +348,7 @@ class SpeedLimitController():
     self._v_ego = v_ego
     self._a_ego = a_ego
 
-    # velocity before adapting should folow v_ego while not in adapting state.
-    if self.state != SpeedLimitControlState.adapting:
-      self._v_adapting = self._v_ego
-
-    resolver = SpeedLimitResolver(self._v_adapting, self.speed_limit, sm)
-    resolver.resolve()
-    self._speed_limit_set = resolver.speed_limit
-
+    self._speed_limit_set = self._resolver.resolve(v_ego, self.speed_limit, sm)
     self._v_cruise_setpoint = v_cruise_setpoint
     self._active_accel_limits = accel_limits
     self._active_jerk_limits = jerk_limits
