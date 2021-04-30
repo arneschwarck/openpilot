@@ -56,7 +56,7 @@ class CarInterface(CarInterfaceBase):
       ret.longitudinalTuning.kpV = [0.35, 0.2, 0.05]  # braking tune from rav4h
       ret.longitudinalTuning.kiV = [0.15, 0.010]
 
-    if candidate not in [CAR.PRIUS, CAR.RAV4, CAR.RAV4H, CAR.PRIUS_TSS2]:  # These cars use LQR/INDI
+    if candidate not in [CAR.PRIUS, CAR.RAV4, CAR.RAV4H]:  # These cars use LQR/INDI
       ret.lateralTuning.init('pid')
       ret.lateralTuning.pid.kiBP, ret.lateralTuning.pid.kpBP, ret.lateralTuning.pid.kfBP = [[0.], [0.], [0.]]
 
@@ -88,9 +88,12 @@ class CarInterface(CarInterfaceBase):
       ret.mass = 3115. * CV.LB_TO_KG + STD_CARGO_KG
       if prius_pid:
         ret.lateralTuning.init('pid')
-        ret.lateralTuning.pid.kiBP, ret.lateralTuning.pid.kpBP, ret.lateralTuning.pid.kfBP = [[0.], [0.], [0.]]
-        ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.6], [0.12]]
-        ret.lateralTuning.pid.kfV = [0.00007818594]
+        ret.lateralTuning.pid.kpBP = [0, 8, 16, 23.6, 28] # 8-16 speed at which low velocity curves mostly occur
+        ret.lateralTuning.pid.kiBP = [0, 8, 23.6, 28, 33, 40] # 23.6 chosen as the maximum on-ramp freeway interchange speed
+        ret.lateralTuning.pid.kfBP = [0, 40]
+        ret.lateralTuning.pid.kpV = [0.6, 0.38, 0.38, 0.375, 0.3] # optimal bp turning force for RAV4TSS2 to take on most curves
+        ret.lateralTuning.pid.kiV = [0.3, 0.45, 0.45, 0.3, 0.2, 0.1] # too high causes smooth but irratic course, too low causes jagged course correction
+        ret.lateralTuning.pid.kfV = [0.00007818594, 0.00007518594] # one value seems to suffice for AP084
       else:
         ret.lateralTuning.init('indi')
         ret.steerRateCost = 0.5
