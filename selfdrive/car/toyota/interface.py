@@ -462,7 +462,7 @@ class CarInterface(CarInterfaceBase):
     self.cp.update_strings(can_strings)
     self.cp_cam.update_strings(can_strings)
 
-    self.cruise_speed_override = True #TODO: add it to the op_edit or better yet setting.
+    self.cruise_speed_override = False #TODO: add it to the op_edit or better yet setting.
 
     ret = self.CS.update(self.cp, self.cp_cam)
 
