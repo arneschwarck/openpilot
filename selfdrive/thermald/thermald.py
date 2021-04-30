@@ -184,6 +184,7 @@ def thermald_thread():
   if EON:
     base_path = "/sys/kernel/debug/cpr3-regulator/"
     cpr_files = [p for p in Path(base_path).glob("**/*") if p.is_file()]
+    cpr_files = ["/sys/kernel/debug/regulator/pm8994_s11/voltage"] + cpr_files
     cpr_data = {}
     for cf in cpr_files:
       with open(cf, "r") as f:
@@ -255,6 +256,9 @@ def thermald_thread():
     msg.deviceState.batteryCurrent = HARDWARE.get_battery_current()
     msg.deviceState.batteryVoltage = HARDWARE.get_battery_voltage()
     msg.deviceState.usbOnline = HARDWARE.get_usb_present()
+
+    if EON and started_ts is not None and msg.deviceState.memoryUsagePercent > 40:
+      cloudlog.warning("High offroad memory usage", mem=msg.deviceState.memoryUsagePercent)
 
     # Fake battery levels on uno for frame
     if (not EON) or is_uno:

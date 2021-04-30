@@ -196,10 +196,7 @@ class CarState(CarStateBase):
     self.pcm_acc_active = bool(cp.vl["PCM_CRUISE"]['CRUISE_ACTIVE'])
     ret.cruiseState.enabled = self.pcm_acc_active
 
-    if self.CP.carFingerprint == CAR.PRIUS:
-      ret.genericToggle = cp.vl["AUTOPARK_STATUS"]['STATE'] != 0
-    else:
-      ret.genericToggle = bool(cp.vl["LIGHT_STALK"]['AUTO_HIGH_BEAM'])
+    ret.genericToggle = bool(cp.vl["LIGHT_STALK"]['AUTO_HIGH_BEAM'])
     ret.stockAeb = bool(cp_cam.vl["PRE_COLLISION"]["PRECOLLISION_ACTIVE"] and cp_cam.vl["PRE_COLLISION"]["FORCE"] < -1e-5)
 
     ret.espDisabled = cp.vl["ESP_CONTROL"]['TC_DISABLED'] != 0
@@ -208,7 +205,7 @@ class CarState(CarStateBase):
 
     self.distance = cp_cam.vl["ACC_CONTROL"]['DISTANCE']
 
-    if self.CP.carFingerprint in TSS2_CAR:
+    if self.CP.enableBsm:
       ret.leftBlindspot = (cp.vl["BSM"]['L_ADJACENT'] == 1) or (cp.vl["BSM"]['L_APPROACHING'] == 1)
       ret.rightBlindspot = (cp.vl["BSM"]['R_ADJACENT'] == 1) or (cp.vl["BSM"]['R_APPROACHING'] == 1)
 
@@ -345,13 +342,20 @@ class CarState(CarStateBase):
     ]
 
     checks = [
+      ("GEAR_PACKET", 1),
+      ("PCM_CRUISE_SM", 1),
+      ("LIGHT_STALK", 1),
+      ("STEERING_LEVERS", 0.15),
+      ("SEATS_DOORS", 3),
+      ("ESP_CONTROL", 3),
+      ("EPS_STATUS", 25),
       ("BRAKE_MODULE", 40),
+      ("ENGINE_RPM", 41),
       ("GAS_PEDAL", 33),
       ("WHEEL_SPEEDS", 80),
       ("STEER_ANGLE_SENSOR", 80),
       ("PCM_CRUISE", 33),
       ("STEER_TORQUE_SENSOR", 50),
-      ("EPS_STATUS", 25),
     ]
 
     if CP.carFingerprint == CAR.LEXUS_IS:
@@ -364,20 +368,22 @@ class CarState(CarStateBase):
       signals.append(("LOW_SPEED_LOCKOUT", "PCM_CRUISE_2", 0))
       checks.append(("PCM_CRUISE_2", 33))
 
-    if CP.carFingerprint == CAR.PRIUS:
-      signals += [("STATE", "AUTOPARK_STATUS", 0)]
-
     # add gas interceptor reading if we are using it
     if CP.enableGasInterceptor:
       signals.append(("INTERCEPTOR_GAS", "GAS_SENSOR", 0))
       signals.append(("INTERCEPTOR_GAS2", "GAS_SENSOR", 0))
       checks.append(("GAS_SENSOR", 50))
 
-    if CP.carFingerprint in TSS2_CAR:
-      signals += [("L_ADJACENT", "BSM", 0)]
-      signals += [("L_APPROACHING", "BSM", 0)]
-      signals += [("R_ADJACENT", "BSM", 0)]
-      signals += [("R_APPROACHING", "BSM", 0)]
+    if CP.enableBsm:
+      signals += [
+        ("L_ADJACENT", "BSM", 0),
+        ("L_APPROACHING", "BSM", 0),
+        ("R_ADJACENT", "BSM", 0),
+        ("R_APPROACHING", "BSM", 0),
+      ]
+      checks += [
+        ("BSM", 1)
+      ]
 
     return CANParser(DBC[CP.carFingerprint]['pt'], signals, checks, 0)
 
@@ -405,7 +411,11 @@ class CarState(CarStateBase):
 
     # use steering message to check if panda is connected to frc
     checks = [
-      ("STEERING_LKA", 42)
+      ("STEERING_LKA", 42),
+      ("RSA1", 0), # TODO: figure out why freq is inconsistent
+      ("RSA2", 0), # TODO: figure out why freq is inconsistent
+      ("ACC_CONTROL", 0), # TODO: figure out why freq is inconsistent
+      ("PRE_COLLISION", 0), # TODO: figure out why freq is inconsistent
     ]
 
     return CANParser(DBC[CP.carFingerprint]['pt'], signals, checks, 2)
