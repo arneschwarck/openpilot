@@ -13,7 +13,8 @@ EventName = car.CarEvent.EventName
 
 op_params = opParams()
 prius_pid = op_params.get('prius_pid')
-
+cruise_speed_override_enabled = op_params.get('cruise_speed_override_enabled')
+cruise_speed_override = op_params.get('cruise_speed_override')
 class CarInterface(CarInterfaceBase):
   def __init__(self, CP, CarController, CarState):
     super().__init__(CP, CarController, CarState)
@@ -462,20 +463,20 @@ class CarInterface(CarInterfaceBase):
     self.cp.update_strings(can_strings)
     self.cp_cam.update_strings(can_strings)
 
-    self.cruise_speed_override = False #TODO: add it to the op_edit or better yet setting.
+    self.cruise_speed_override = cruise_speed_override #TODO: add it to the op_edit or better yet setting.
 
     ret = self.CS.update(self.cp, self.cp_cam)
-
-    if ret.cruiseState.enabled and ret.cruiseState.speed < 12 and self.CP.openpilotLongitudinalControl:
-      if self.cruise_speed_override:
-        if self.init_cruise_speed == 0.:
-          ret.cruiseState.speed = self.init_cruise_speed = max(2, ret.vEgo)
+    if cruise_speed_override_enabled:
+      if ret.cruiseState.enabled and ret.cruiseState.speed < 12 and self.CP.openpilotLongitudinalControl:
+        if self.cruise_speed_override:
+          if self.init_cruise_speed == 0.:
+            ret.cruiseState.speed = self.init_cruise_speed = max(2, ret.vEgo)
+          else:
+            ret.cruiseState.speed = self.init_cruise_speed
         else:
-          ret.cruiseState.speed = self.init_cruise_speed
+          ret.cruiseState.speed = 2
       else:
-        ret.cruiseState.speed = 2
-    else:
-      self.init_cruise_speed = 0.
+        self.init_cruise_speed = 0.
 
     ret.canValid = self.cp.can_valid and self.cp_cam.can_valid
     ret.steeringRateLimited = self.CC.steer_rate_limited if self.CC is not None else False
