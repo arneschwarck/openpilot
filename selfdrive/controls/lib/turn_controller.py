@@ -137,9 +137,8 @@ class TurnController():
 
   def _update_calculations(self):
     # Get path poly aproximation from model data
-    md = self._model_data
-    if len(md.position.x) == TRAJECTORY_SIZE:
-      path_poly = np.polyfit(md.position.x, md.position.y, 3)
+    if self._lateral_planner_data is not None:
+      path_poly = np.polyfit(self._lateral_planner_data.dPathWLinesX, self._lateral_planner_data.dPathWLinesY, 3)
     else:
       path_poly = np.array([0., 0., 0., 0.])
 
@@ -234,7 +233,7 @@ class TurnController():
     self._v_cruise_setpoint = v_cruise_setpoint
     self._current_curvature = abs(
         sm['carState'].steeringAngleDeg * CV.DEG_TO_RAD / (self._CP.steerRatio * self._CP.wheelbase))
-    self._model_data = sm['modelV2']
+    self._lateral_planner_data = sm['lateralPlan'] if sm.valid.get('lateralPlan', False) else None
 
     self._update_calculations()
     self._state_transition()
