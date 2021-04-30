@@ -1,25 +1,9 @@
 import numpy as np
 from enum import Enum
-from selfdrive.mapd.lib.geo import DIRECTION, R
+from selfdrive.mapd.lib.geo import DIRECTION, R, vectors
 
 _TURN_CURVATURE_THRESHOLD = 0.001  # 1/mts. A curvature over this value will generate a speed limit section.
 _MAX_LAT_ACC = 1.5  # Maximum lateral acceleration in turns.
-
-
-def vectors(points):
-  """Provides a array of vectors on cartesian space (x, y).
-     Each vector represents the path from a point in `points` to the next.
-     `points` must by a (N, 2) array of [lat, lon] pairs in radians.
-  """
-  latA = points[:-1, 0]
-  latB = points[1:, 0]
-  delta = np.diff(points, axis=0)
-  dlon = delta[:, 1]
-
-  x = np.sin(dlon) * np.cos(latB)
-  y = np.cos(latA) * np.sin(latB) - (np.sin(latA) * np.cos(latB) * np.cos(dlon))
-
-  return np.column_stack((x, y))
 
 
 def nodes_raw_data_array_for_wr(wr, drop_last=False):

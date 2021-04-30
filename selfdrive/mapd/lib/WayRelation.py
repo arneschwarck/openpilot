@@ -1,12 +1,10 @@
-from selfdrive.mapd.lib.geo import DIRECTION, R
+from selfdrive.mapd.lib.geo import DIRECTION, R, vectors
 from selfdrive.config import Conversions as CV
 from datetime import datetime
 import numpy as np
 import re
 
 
-_ACCEPTABLE_BEARING_DELTA_V = [70., 50., 30., 10.]
-_ACCEPTABLE_BEARING_DELTA_BP = [30., 100., 200., 300.]
 _WAY_BBOX_PANNING = 1.6e-06  # 10 mts of paning to bounding box. (expressed in radians)
 
 _COUNTRY_LIMITS_KPH = {
@@ -175,6 +173,7 @@ class WayRelation():
     self.ahead_idx = None
     self.behind_idx = None
     self._active_bearing_delta = None
+    self._distance_to_way = None
 
   @property
   def id(self):
@@ -191,18 +190,17 @@ class WayRelation():
     if not self.is_location_in_bbox(location):
       return
 
-    # Find where we are located in the way:
     location_rad = np.radians(np.array(location))
     bearing_rad = np.radians(bearing)
 
-    # - Get the distance and bearings from location to all nodes.
+    # - Get the distance and bearings from location to all nodes. (N)
     bearings = bearing_to_points(location_rad, self._nodes_np)
     distances = distance_to_points(location_rad, self._nodes_np)
 
-    # - Get absolute bearing delta to current driving bearing.
+    # - Get absolute bearing delta to current driving bearing. (N)
     delta = np.abs(bearing_rad - bearings)
 
-    # - Nodes are ahead if the cosine of the delta is positive
+    # - Nodes are ahead if the cosine of the delta is positive (N)
     is_ahead = np.cos(delta) >= 0.
 
     # - Possible locations on the way are those where adjacent nodes change from ahead to behind or viceversa.
@@ -212,17 +210,38 @@ class WayRelation():
     if len(possible_idxs) == 0:
       return
 
-    # - The smallest angle between bearing and the bearing of the way, is the sine of the delta.
-    # This value indicates how far are we from alignment with the way direction and will aid us in
-    # choosing a location when we have multiple candidates.
-    delta_abs = np.abs(np.sin(delta))
+    # - Get the vectors representation of the segments betwheen consecutive nodes. (N-1, 2)
+    v = vectors(self._nodes_np) * R
 
-    # - Get the deltas on nodes ahead and behind for the possible locations and pick the minimum as the delta
-    # to actual way bearing.
-    delta_to_way_bearings = np.min(np.row_stack((delta_abs[possible_idxs], delta_abs[possible_idxs + 1])), axis=0)
+    # - Calculate the vector magnitudes (or distance) between nodes. (N-1)
+    d = np.linalg.norm(v, axis=1)
 
-    # - Get the index where the delta to way bearing is minimum. That is the chosen location.
-    min_delta_idx = possible_idxs[np.argmin(delta_to_way_bearings)]
+    # - Find then angle formed between the vectors from the current location to consecutive nodes. This is the
+    # absolute value of the difference in the bearings of the vectors.
+    teta = np.abs(np.diff(bearings))
+
+    # - When two consecutive nodes will be ahead and behind, they will form a triangle with the current location.
+    # We find the closest distance to the way by solving the ara of the triangle and finding the height (h)
+    # https://www.mathsisfun.com/algebra/trig-area-triangle-without-right-angle.html
+    h = distances[:-1] * distances[1:] * np.sin(teta) / d
+
+    # - Calculate the bearing (from true north clockwise) for every section of the way (vectors between nodes). (N-1)
+    bw = np.arctan2(v[:, 0], v[:, 1])
+
+    # - Calculate the delta between driving bearing and way bearings. (N-1)
+    bw_delta = bw - bearing_rad
+
+    # - The absolut value of the sin of `bw_delta` indicates how close the bearings match independent of direction.
+    # We will use this value along the distance to the way to aid on way selection. (N-1)
+    abs_sin_bw_delta = np.abs(np.sin(bw_delta))
+
+    # - Get the delta to way bearing indicators and the distance to the way for the possible locations.
+    abs_sin_bw_delta_possible = abs_sin_bw_delta[possible_idxs]
+    h_possible = h[possible_idxs]
+
+    # - Get the index where the distance to the way is minimum. That is the chosen location.
+    min_h_possible_idx = np.argmin(h_possible)
+    min_delta_idx = possible_idxs[min_h_possible_idx]
 
     # Populate location variables with result
     if is_ahead[min_delta_idx]:
@@ -234,7 +253,8 @@ class WayRelation():
       self.ahead_idx = min_delta_idx + 1
       self.behind_idx = min_delta_idx
 
-    self._active_bearing_delta = np.amin(delta_to_way_bearings)
+    self._distance_to_way = h[min_delta_idx]
+    self._active_bearing_delta = abs_sin_bw_delta_possible[min_h_possible_idx]
     self.distance_to_node_ahead = distances[self.ahead_idx]
     self.active = True
     self.location = location
@@ -299,10 +319,16 @@ class WayRelation():
 
   @property
   def active_bearing_delta(self):
-    """Returns the delta between the current location bearing and the exact
+    """Returns the sine of the delta between the current location bearing and the exact
        bearing of the portion of way we are currentluy located at.
     """
     return self._active_bearing_delta
+
+  @property
+  def distance_to_way(self):
+    """Returns the perpendicular (i.e. minimum) distance between current location and the way
+    """
+    return self._distance_to_way
 
   @property
   def node_behind(self):
