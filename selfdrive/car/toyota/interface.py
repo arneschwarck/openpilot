@@ -87,13 +87,12 @@ class CarInterface(CarInterfaceBase):
       tire_stiffness_factor = 0.6371   # hand-tune
       ret.mass = 3115. * CV.LB_TO_KG + STD_CARGO_KG
       if prius_pid:
-        ret.lateralTuning.init('pid')
-        ret.lateralTuning.pid.kpBP = [0, 8, 16, 23.6, 28] # 8-16 speed at which low velocity curves mostly occur
-        ret.lateralTuning.pid.kiBP = [0, 8, 23.6, 28, 33, 40] # 23.6 chosen as the maximum on-ramp freeway interchange speed
-        ret.lateralTuning.pid.kfBP = [0, 40]
-        ret.lateralTuning.pid.kpV = [0.6, 0.38, 0.38, 0.375, 0.3] # optimal bp turning force for RAV4TSS2 to take on most curves
-        ret.lateralTuning.pid.kiV = [0.3, 0.45, 0.45, 0.3, 0.2, 0.1] # too high causes smooth but irratic course, too low causes jagged course correction
-        ret.lateralTuning.pid.kfV = [0.00007818594, 0.00007518594] # one value seems to suffice for AP084
+        ret.lateralTuning.pid.kpBP = [0]
+        ret.lateralTuning.pid.kiBP = [0, 23, 23.01, 40]
+        ret.lateralTuning.pid.kfBP = [0, 23, 40]
+        ret.lateralTuning.pid.kpV = [0.6] # power or torque
+        ret.lateralTuning.pid.kiV = [0.52, 0.52, 0.1, 0.02] # trajectory variance
+        ret.lateralTuning.pid.kfV = [0.000153263811757641, 0.000153263811757641, 0.00007818594] # curvature
       else:
         ret.lateralTuning.init('indi')
         ret.steerRateCost = 0.5
@@ -114,17 +113,25 @@ class CarInterface(CarInterfaceBase):
       ret.steerRatio = 16.88   # 14.5 is spec end-to-end
       tire_stiffness_factor = 0.5533
       ret.mass = 3650. * CV.LB_TO_KG + STD_CARGO_KG  # mean between normal and hybrid
-      ret.lateralTuning.init('lqr')
+      if prius_pid:
+        ret.lateralTuning.pid.kpBP = [0]
+        ret.lateralTuning.pid.kiBP = [0, 23, 23.01, 40]
+        ret.lateralTuning.pid.kfBP = [0, 23, 40]
+        ret.lateralTuning.pid.kpV = [0.6] # power or torque
+        ret.lateralTuning.pid.kiV = [0.52, 0.52, 0.1, 0.02] # trajectory variance
+        ret.lateralTuning.pid.kfV = [0.000153263811757641, 0.000153263811757641, 0.00007818594] # curvature
+      else:
+        ret.lateralTuning.init('lqr')
 
-      ret.lateralTuning.lqr.scale = 1500.0
-      ret.lateralTuning.lqr.ki = 0.05
-
-      ret.lateralTuning.lqr.a = [0., 1., -0.22619643, 1.21822268]
-      ret.lateralTuning.lqr.b = [-1.92006585e-04, 3.95603032e-05]
-      ret.lateralTuning.lqr.c = [1., 0.]
-      ret.lateralTuning.lqr.k = [-110.73572306, 451.22718255]
-      ret.lateralTuning.lqr.l = [0.3233671, 0.3185757]
-      ret.lateralTuning.lqr.dcGain = 0.002237852961363602
+        ret.lateralTuning.lqr.scale = 1500.0
+        ret.lateralTuning.lqr.ki = 0.05
+  
+        ret.lateralTuning.lqr.a = [0., 1., -0.22619643, 1.21822268]
+        ret.lateralTuning.lqr.b = [-1.92006585e-04, 3.95603032e-05]
+        ret.lateralTuning.lqr.c = [1., 0.]
+        ret.lateralTuning.lqr.k = [-110.73572306, 451.22718255]
+        ret.lateralTuning.lqr.l = [0.3233671, 0.3185757]
+        ret.lateralTuning.lqr.dcGain = 0.002237852961363602
 
     elif candidate == CAR.COROLLA:
       stop_and_go = False
@@ -133,8 +140,16 @@ class CarInterface(CarInterfaceBase):
       ret.steerRatio = 18.27
       tire_stiffness_factor = 0.444  # not optimized yet
       ret.mass = 2860. * CV.LB_TO_KG + STD_CARGO_KG  # mean between normal and hybrid
-      ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.2], [0.05]]
-      ret.lateralTuning.pid.kfV = [0.00003]   # full torque for 20 deg at 80mph means 0.00007818594
+      if prius_pid:
+        ret.lateralTuning.pid.kpBP = [0]
+        ret.lateralTuning.pid.kiBP = [0, 23, 23.01, 40]
+        ret.lateralTuning.pid.kfBP = [0, 23, 40]
+        ret.lateralTuning.pid.kpV = [0.6] # power or torque
+        ret.lateralTuning.pid.kiV = [0.52, 0.52, 0.1, 0.02] # trajectory variance
+        ret.lateralTuning.pid.kfV = [0.000153263811757641, 0.000153263811757641, 0.00007818594] # curvature
+      else:
+        ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.2], [0.05]]
+        ret.lateralTuning.pid.kfV = [0.00003]   # full torque for 20 deg at 80mph means 0.00007818594
 
     elif candidate == CAR.LEXUS_RX:
       stop_and_go = True
@@ -143,8 +158,16 @@ class CarInterface(CarInterfaceBase):
       ret.steerRatio = 14.8
       tire_stiffness_factor = 0.5533
       ret.mass = 4387. * CV.LB_TO_KG + STD_CARGO_KG
-      ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.6], [0.05]]
-      ret.lateralTuning.pid.kfV = [0.00006]
+      if prius_pid:
+        ret.lateralTuning.pid.kpBP = [0]
+        ret.lateralTuning.pid.kiBP = [0, 23, 23.01, 40]
+        ret.lateralTuning.pid.kfBP = [0, 23, 40]
+        ret.lateralTuning.pid.kpV = [0.6] # power or torque
+        ret.lateralTuning.pid.kiV = [0.52, 0.52, 0.1, 0.02] # trajectory variance
+        ret.lateralTuning.pid.kfV = [0.000153263811757641, 0.000153263811757641, 0.00007818594] # curvature
+      else:
+        ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.6], [0.05]]
+        ret.lateralTuning.pid.kfV = [0.00006]
 
     elif candidate == CAR.LEXUS_RXH:
       stop_and_go = True
@@ -153,8 +176,16 @@ class CarInterface(CarInterfaceBase):
       ret.steerRatio = 16.  # 14.8 is spec end-to-end
       tire_stiffness_factor = 0.444  # not optimized yet
       ret.mass = 4481. * CV.LB_TO_KG + STD_CARGO_KG  # mean between min and max
-      ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.6], [0.1]]
-      ret.lateralTuning.pid.kfV = [0.00006]   # full torque for 10 deg at 80mph means 0.00007818594
+      if prius_pid:
+        ret.lateralTuning.pid.kpBP = [0]
+        ret.lateralTuning.pid.kiBP = [0, 23, 23.01, 40]
+        ret.lateralTuning.pid.kfBP = [0, 23, 40]
+        ret.lateralTuning.pid.kpV = [0.6] # power or torque
+        ret.lateralTuning.pid.kiV = [0.52, 0.52, 0.1, 0.02] # trajectory variance
+        ret.lateralTuning.pid.kfV = [0.000153263811757641, 0.000153263811757641, 0.00007818594] # curvature
+      else:
+        ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.6], [0.1]]
+        ret.lateralTuning.pid.kfV = [0.00006]   # full torque for 10 deg at 80mph means 0.00007818594
 
     elif candidate == CAR.LEXUS_RX_TSS2:
       stop_and_go = True
@@ -163,8 +194,16 @@ class CarInterface(CarInterfaceBase):
       ret.steerRatio = 14.8
       tire_stiffness_factor = 0.5533  # not optimized yet
       ret.mass = 4387. * CV.LB_TO_KG + STD_CARGO_KG
-      ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.6], [0.1]]
-      ret.lateralTuning.pid.kfV = [0.00007818594]
+      if prius_pid:
+        ret.lateralTuning.pid.kpBP = [0]
+        ret.lateralTuning.pid.kiBP = [0, 23, 23.01, 40]
+        ret.lateralTuning.pid.kfBP = [0, 23, 40]
+        ret.lateralTuning.pid.kpV = [0.6] # power or torque
+        ret.lateralTuning.pid.kiV = [0.52, 0.52, 0.1, 0.02] # trajectory variance
+        ret.lateralTuning.pid.kfV = [0.000153263811757641, 0.000153263811757641, 0.00007818594] # curvature
+      else:
+        ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.6], [0.1]]
+        ret.lateralTuning.pid.kfV = [0.00007818594]
 
     elif candidate == CAR.LEXUS_RXH_TSS2:
       stop_and_go = True
@@ -173,8 +212,16 @@ class CarInterface(CarInterfaceBase):
       ret.steerRatio = 16.0  # 14.8 is spec end-to-end
       tire_stiffness_factor = 0.444  # not optimized yet
       ret.mass = 4481.0 * CV.LB_TO_KG + STD_CARGO_KG  # mean between min and max
-      ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.6], [0.15]]
-      ret.lateralTuning.pid.kfV = [0.00007818594]
+      if prius_pid:
+        ret.lateralTuning.pid.kpBP = [0]
+        ret.lateralTuning.pid.kiBP = [0, 23, 23.01, 40]
+        ret.lateralTuning.pid.kfBP = [0, 23, 40]
+        ret.lateralTuning.pid.kpV = [0.6] # power or torque
+        ret.lateralTuning.pid.kiV = [0.52, 0.52, 0.1, 0.02] # trajectory variance
+        ret.lateralTuning.pid.kfV = [0.000153263811757641, 0.000153263811757641, 0.00007818594] # curvature
+      else:
+        ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.6], [0.15]]
+        ret.lateralTuning.pid.kfV = [0.00007818594]
 
     elif candidate in [CAR.CHR, CAR.CHRH]:
       stop_and_go = True
@@ -183,8 +230,16 @@ class CarInterface(CarInterfaceBase):
       ret.steerRatio = 13.6
       tire_stiffness_factor = 0.7933
       ret.mass = 3300. * CV.LB_TO_KG + STD_CARGO_KG
-      ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.723], [0.0428]]
-      ret.lateralTuning.pid.kfV = [0.00006]
+      if prius_pid:
+        ret.lateralTuning.pid.kpBP = [0]
+        ret.lateralTuning.pid.kiBP = [0, 23, 23.01, 40]
+        ret.lateralTuning.pid.kfBP = [0, 23, 40]
+        ret.lateralTuning.pid.kpV = [0.6] # power or torque
+        ret.lateralTuning.pid.kiV = [0.52, 0.52, 0.1, 0.02] # trajectory variance
+        ret.lateralTuning.pid.kfV = [0.000153263811757641, 0.000153263811757641, 0.00007818594] # curvature
+      else:
+        ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.723], [0.0428]]
+        ret.lateralTuning.pid.kfV = [0.00006]
 
     elif candidate in [CAR.CAMRY, CAR.CAMRYH, CAR.CAMRY_TSS2, CAR.CAMRYH_TSS2]:
       stop_and_go = True
@@ -193,8 +248,16 @@ class CarInterface(CarInterfaceBase):
       ret.steerRatio = 13.7
       tire_stiffness_factor = 0.7933
       ret.mass = 3400. * CV.LB_TO_KG + STD_CARGO_KG  # mean between normal and hybrid
-      ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.6], [0.1]]
-      ret.lateralTuning.pid.kfV = [0.00006]
+      if prius_pid:
+        ret.lateralTuning.pid.kpBP = [0]
+        ret.lateralTuning.pid.kiBP = [0, 23, 23.01, 40]
+        ret.lateralTuning.pid.kfBP = [0, 23, 40]
+        ret.lateralTuning.pid.kpV = [0.6] # power or torque
+        ret.lateralTuning.pid.kiV = [0.52, 0.52, 0.1, 0.02] # trajectory variance
+        ret.lateralTuning.pid.kfV = [0.000153263811757641, 0.000153263811757641, 0.00007818594] # curvature
+      else:
+        ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.6], [0.1]]
+        ret.lateralTuning.pid.kfV = [0.00006]
 
     elif candidate in [CAR.HIGHLANDER_TSS2, CAR.HIGHLANDERH_TSS2]:
       stop_and_go = True
@@ -203,8 +266,16 @@ class CarInterface(CarInterfaceBase):
       ret.steerRatio = 16.0
       tire_stiffness_factor = 0.8
       ret.mass = 4700. * CV.LB_TO_KG + STD_CARGO_KG  # 4260 + 4-5 people
-      ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.18], [0.015]]  # community tuning
-      ret.lateralTuning.pid.kfV =[0.00012]  # community tuning
+      if prius_pid:
+        ret.lateralTuning.pid.kpBP = [0]
+        ret.lateralTuning.pid.kiBP = [0, 23, 23.01, 40]
+        ret.lateralTuning.pid.kfBP = [0, 23, 40]
+        ret.lateralTuning.pid.kpV = [0.6] # power or torque
+        ret.lateralTuning.pid.kiV = [0.52, 0.52, 0.1, 0.02] # trajectory variance
+        ret.lateralTuning.pid.kfV = [0.000153263811757641, 0.000153263811757641, 0.00007818594] # curvature
+      else:
+        ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.18], [0.015]]  # community tuning
+        ret.lateralTuning.pid.kfV =[0.00012]  # community tuning
 
     elif candidate in [CAR.HIGHLANDER, CAR.HIGHLANDERH]:
       stop_and_go = True
@@ -213,8 +284,16 @@ class CarInterface(CarInterfaceBase):
       ret.steerRatio = 16.0
       tire_stiffness_factor = 0.8
       ret.mass = 4607. * CV.LB_TO_KG + STD_CARGO_KG  # mean between normal and hybrid limited
-      ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.18], [0.015]]  # community tuning
-      ret.lateralTuning.pid.kfV = [0.00012]  # community tuning
+      if prius_pid:
+        ret.lateralTuning.pid.kpBP = [0]
+        ret.lateralTuning.pid.kiBP = [0, 23, 23.01, 40]
+        ret.lateralTuning.pid.kfBP = [0, 23, 40]
+        ret.lateralTuning.pid.kpV = [0.6] # power or torque
+        ret.lateralTuning.pid.kiV = [0.52, 0.52, 0.1, 0.02] # trajectory variance
+        ret.lateralTuning.pid.kfV = [0.000153263811757641, 0.000153263811757641, 0.00007818594] # curvature
+      else:
+        ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.18], [0.015]]  # community tuning
+        ret.lateralTuning.pid.kfV = [0.00012]  # community tuning
 
     elif candidate == CAR.AVALON:
       stop_and_go = False
@@ -223,60 +302,101 @@ class CarInterface(CarInterfaceBase):
       ret.steerRatio = 14.8  # Found at https://pressroom.toyota.com/releases/2016+avalon+product+specs.download
       tire_stiffness_factor = 0.7983
       ret.mass = 3505. * CV.LB_TO_KG + STD_CARGO_KG  # mean between normal and hybrid
-      ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.17], [0.03]]
-      ret.lateralTuning.pid.kfV = [0.00006]
+      if prius_pid:
+        ret.lateralTuning.pid.kpBP = [0]
+        ret.lateralTuning.pid.kiBP = [0, 23, 23.01, 40]
+        ret.lateralTuning.pid.kfBP = [0, 23, 40]
+        ret.lateralTuning.pid.kpV = [0.6] # power or torque
+        ret.lateralTuning.pid.kiV = [0.52, 0.52, 0.1, 0.02] # trajectory variance
+        ret.lateralTuning.pid.kfV = [0.000153263811757641, 0.000153263811757641, 0.00007818594] # curvature
+      else:
+        ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.17], [0.03]]
+        ret.lateralTuning.pid.kfV = [0.00006]
 
     elif candidate == CAR.RAV4_TSS2:
       stop_and_go = True
       ret.safetyParam = 73
       ret.wheelbase = 2.68986
       ret.steerRatio = 14.3
-      tire_stiffness_factor = 0.7933
-      ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.15], [0.05]]
       ret.mass = 3370. * CV.LB_TO_KG + STD_CARGO_KG
-      ret.lateralTuning.pid.kfV = [0.00004]
+      tire_stiffness_factor = 0.7933
+      if prius_pid:
+        ret.lateralTuning.pid.kpBP = [0]
+        ret.lateralTuning.pid.kiBP = [0, 23, 23.01, 40]
+        ret.lateralTuning.pid.kfBP = [0, 23, 40]
+        ret.lateralTuning.pid.kpV = [0.6] # power or torque
+        ret.lateralTuning.pid.kiV = [0.52, 0.52, 0.1, 0.02] # trajectory variance
+        ret.lateralTuning.pid.kfV = [0.000153263811757641, 0.000153263811757641, 0.00007818594] # curvature
+      else:
+        ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.15], [0.05]]
+        ret.lateralTuning.pid.kfV = [0.00004]
 
-      for fw in car_fw:
-        if fw.ecu == "eps" and fw.fwVersion == b"8965B42170\x00\x00\x00\x00\x00\x00":
-          ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.6], [0.1]]
-          ret.lateralTuning.pid.kfV = [0.00007818594]
-          break
+        for fw in car_fw:
+          if fw.ecu == "eps" and fw.fwVersion == b"8965B42170\x00\x00\x00\x00\x00\x00":
+            ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.6], [0.1]]
+            ret.lateralTuning.pid.kfV = [0.00007818594]
+            break
 
     elif candidate == CAR.RAV4H_TSS2:
       stop_and_go = True
       ret.safetyParam = 73
       ret.wheelbase = 2.68986
       ret.steerRatio = 14.3
-      tire_stiffness_factor = 0.7933
-      ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.15], [0.05]]
       ret.mass = 3800. * CV.LB_TO_KG + STD_CARGO_KG
-      ret.lateralTuning.pid.kfV = [0.00004]
+      tire_stiffness_factor = 0.7933
+      if prius_pid:
+        ret.lateralTuning.pid.kpBP = [0]
+        ret.lateralTuning.pid.kiBP = [0, 23, 23.01, 40]
+        ret.lateralTuning.pid.kfBP = [0, 23, 40]
+        ret.lateralTuning.pid.kpV = [0.6] # power or torque
+        ret.lateralTuning.pid.kiV = [0.52, 0.52, 0.1, 0.02] # trajectory variance
+        ret.lateralTuning.pid.kfV = [0.000153263811757641, 0.000153263811757641, 0.00007818594] # curvature
+      else:
+        ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.15], [0.05]]
+        ret.mass = 3800. * CV.LB_TO_KG + STD_CARGO_KG
+        ret.lateralTuning.pid.kfV = [0.00004]
 
-      for fw in car_fw:
-        if fw.ecu == "eps" and fw.fwVersion == b"8965B42170\x00\x00\x00\x00\x00\x00":
-          ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.6], [0.1]]
-          ret.lateralTuning.pid.kfV = [0.00007818594]
-          break
+        for fw in car_fw:
+          if fw.ecu == "eps" and fw.fwVersion == b"8965B42170\x00\x00\x00\x00\x00\x00":
+            ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.6], [0.1]]
+            ret.lateralTuning.pid.kfV = [0.00007818594]
+            break
 
     elif candidate in [CAR.COROLLA_TSS2, CAR.COROLLAH_TSS2]:
       stop_and_go = True
       ret.safetyParam = 73
       ret.wheelbase = 2.67  # Average between 2.70 for sedan and 2.64 for hatchback
       ret.steerRatio = 13.9
-      tire_stiffness_factor = 0.444  # not optimized yet
       ret.mass = 3060. * CV.LB_TO_KG + STD_CARGO_KG
-      ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.6], [0.1]]
-      ret.lateralTuning.pid.kfV = [0.00007818594]
+      tire_stiffness_factor = 0.444  # not optimized yet
+      if prius_pid:
+        ret.lateralTuning.pid.kpBP = [0]
+        ret.lateralTuning.pid.kiBP = [0, 23, 23.01, 40]
+        ret.lateralTuning.pid.kfBP = [0, 23, 40]
+        ret.lateralTuning.pid.kpV = [0.6] # power or torque
+        ret.lateralTuning.pid.kiV = [0.52, 0.52, 0.1, 0.02] # trajectory variance
+        ret.lateralTuning.pid.kfV = [0.000153263811757641, 0.000153263811757641, 0.00007818594] # curvature
+      else:
+        ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.6], [0.1]]
+        ret.lateralTuning.pid.kfV = [0.00007818594]
 
     elif candidate in [CAR.LEXUS_ES_TSS2, CAR.LEXUS_ESH_TSS2]:
       stop_and_go = True
       ret.safetyParam = 73
       ret.wheelbase = 2.8702
       ret.steerRatio = 16.0  # not optimized
-      tire_stiffness_factor = 0.444  # not optimized yet
       ret.mass = 3704. * CV.LB_TO_KG + STD_CARGO_KG
-      ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.6], [0.1]]
-      ret.lateralTuning.pid.kfV = [0.00007818594]
+      tire_stiffness_factor = 0.444  # not optimized yet
+      if prius_pid:
+        ret.lateralTuning.pid.kpBP = [0]
+        ret.lateralTuning.pid.kiBP = [0, 23, 23.01, 40]
+        ret.lateralTuning.pid.kfBP = [0, 23, 40]
+        ret.lateralTuning.pid.kpV = [0.6] # power or torque
+        ret.lateralTuning.pid.kiV = [0.52, 0.52, 0.1, 0.02] # trajectory variance
+        ret.lateralTuning.pid.kfV = [0.000153263811757641, 0.000153263811757641, 0.00007818594] # curvature
+      else:
+        ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.6], [0.1]]
+        ret.lateralTuning.pid.kfV = [0.00007818594]
 
     elif candidate == CAR.LEXUS_ESH:
       stop_and_go = True
@@ -285,8 +405,16 @@ class CarInterface(CarInterfaceBase):
       ret.steerRatio = 16.06
       tire_stiffness_factor = 0.444  # not optimized yet
       ret.mass = 3682. * CV.LB_TO_KG + STD_CARGO_KG
-      ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.6], [0.1]]
-      ret.lateralTuning.pid.kfV = [0.00007818594]
+      if prius_pid:
+        ret.lateralTuning.pid.kpBP = [0]
+        ret.lateralTuning.pid.kiBP = [0, 23, 23.01, 40]
+        ret.lateralTuning.pid.kfBP = [0, 23, 40]
+        ret.lateralTuning.pid.kpV = [0.6] # power or torque
+        ret.lateralTuning.pid.kiV = [0.52, 0.52, 0.1, 0.02] # trajectory variance
+        ret.lateralTuning.pid.kfV = [0.000153263811757641, 0.000153263811757641, 0.00007818594] # curvature
+      else:
+        ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.6], [0.1]]
+        ret.lateralTuning.pid.kfV = [0.00007818594]
 
     elif candidate == CAR.SIENNA:
       stop_and_go = True
@@ -295,8 +423,16 @@ class CarInterface(CarInterfaceBase):
       ret.steerRatio = 15.5
       tire_stiffness_factor = 0.444
       ret.mass = 4590. * CV.LB_TO_KG + STD_CARGO_KG
-      ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.19], [0.02]]
-      ret.lateralTuning.pid.kfV = [0.00007818594]
+      if prius_pid:
+        ret.lateralTuning.pid.kpBP = [0]
+        ret.lateralTuning.pid.kiBP = [0, 23, 23.01, 40]
+        ret.lateralTuning.pid.kfBP = [0, 23, 40]
+        ret.lateralTuning.pid.kpV = [0.6] # power or torque
+        ret.lateralTuning.pid.kiV = [0.52, 0.52, 0.1, 0.02] # trajectory variance
+        ret.lateralTuning.pid.kfV = [0.000153263811757641, 0.000153263811757641, 0.00007818594] # curvature
+      else:
+        ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.19], [0.02]]
+        ret.lateralTuning.pid.kfV = [0.00007818594]
 
     elif candidate == CAR.LEXUS_IS:
       stop_and_go = False
@@ -305,8 +441,16 @@ class CarInterface(CarInterfaceBase):
       ret.steerRatio = 13.3
       tire_stiffness_factor = 0.444
       ret.mass = 3736.8 * CV.LB_TO_KG + STD_CARGO_KG
-      ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.3], [0.05]]
-      ret.lateralTuning.pid.kfV = [0.00006]
+      if prius_pid:
+        ret.lateralTuning.pid.kpBP = [0]
+        ret.lateralTuning.pid.kiBP = [0, 23, 23.01, 40]
+        ret.lateralTuning.pid.kfBP = [0, 23, 40]
+        ret.lateralTuning.pid.kpV = [0.6] # power or torque
+        ret.lateralTuning.pid.kiV = [0.52, 0.52, 0.1, 0.02] # trajectory variance
+        ret.lateralTuning.pid.kfV = [0.000153263811757641, 0.000153263811757641, 0.00007818594] # curvature
+      else:
+        ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.3], [0.05]]
+        ret.lateralTuning.pid.kfV = [0.00006]
 
     elif candidate == CAR.LEXUS_CTH:
       stop_and_go = True
@@ -315,8 +459,16 @@ class CarInterface(CarInterfaceBase):
       ret.steerRatio = 18.6
       tire_stiffness_factor = 0.517
       ret.mass = 3108 * CV.LB_TO_KG + STD_CARGO_KG  # mean between min and max
-      ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.3], [0.05]]
-      ret.lateralTuning.pid.kfV = [0.00007]
+      if prius_pid:
+        ret.lateralTuning.pid.kpBP = [0]
+        ret.lateralTuning.pid.kiBP = [0, 23, 23.01, 40]
+        ret.lateralTuning.pid.kfBP = [0, 23, 40]
+        ret.lateralTuning.pid.kpV = [0.6] # power or torque
+        ret.lateralTuning.pid.kiV = [0.52, 0.52, 0.1, 0.02] # trajectory variance
+        ret.lateralTuning.pid.kfV = [0.000153263811757641, 0.000153263811757641, 0.00007818594] # curvature
+      else:
+        ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.3], [0.05]]
+        ret.lateralTuning.pid.kfV = [0.00007]
 
     elif candidate in [CAR.LEXUS_NXH, CAR.LEXUS_NX]:
       stop_and_go = True
@@ -325,8 +477,16 @@ class CarInterface(CarInterfaceBase):
       ret.steerRatio = 14.7
       tire_stiffness_factor = 0.444  # not optimized yet
       ret.mass = 4070 * CV.LB_TO_KG + STD_CARGO_KG
-      ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.6], [0.1]]
-      ret.lateralTuning.pid.kfV = [0.00006]
+      if prius_pid:
+        ret.lateralTuning.pid.kpBP = [0]
+        ret.lateralTuning.pid.kiBP = [0, 23, 23.01, 40]
+        ret.lateralTuning.pid.kfBP = [0, 23, 40]
+        ret.lateralTuning.pid.kpV = [0.6] # power or torque
+        ret.lateralTuning.pid.kiV = [0.52, 0.52, 0.1, 0.02] # trajectory variance
+        ret.lateralTuning.pid.kfV = [0.000153263811757641, 0.000153263811757641, 0.00007818594] # curvature
+      else:
+        ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.6], [0.1]]
+        ret.lateralTuning.pid.kfV = [0.00006]
 
     elif candidate == CAR.MIRAI:
       stop_and_go = True
@@ -335,8 +495,16 @@ class CarInterface(CarInterfaceBase):
       ret.steerRatio = 14.8
       tire_stiffness_factor = 0.8
       ret.mass = 4300. * CV.LB_TO_KG + STD_CARGO_KG
-      ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.6], [0.1]]
-      ret.lateralTuning.pid.kfV = [0.00006]
+      if prius_pid:
+        ret.lateralTuning.pid.kpBP = [0, 23, 23.01, 40]
+        ret.lateralTuning.pid.kiBP = [0, 23, 23.01, 40]
+        ret.lateralTuning.pid.kfBP = [0, 23, 40]
+        ret.lateralTuning.pid.kpV = [0.6, 0.6, 0.6, 0.6] # power or torque
+        ret.lateralTuning.pid.kiV = [0.52, 0.52, 0.1, 0.02] # trajectory variance
+        ret.lateralTuning.pid.kfV = [0.000153263811757641, 0.000153263811757641, 0.00007818594] # curvature
+      else:
+        ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.6], [0.1]]
+        ret.lateralTuning.pid.kfV = [0.00006]
 
     elif candidate == CAR.MIRAI:
       stop_and_go = True
