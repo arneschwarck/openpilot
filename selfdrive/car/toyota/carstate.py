@@ -411,9 +411,9 @@ class CarState(CarStateBase):
     # use steering message to check if panda is connected to frc
     checks = [
       ("STEERING_LKA", 42),
-      ("RSA1", 1),
-      ("RSA2", 1),
-      ("ACC_CONTROL", 33),
+      ("RSA1", 0), # TODO: figure out why freq is inconsistent
+      ("RSA2", 0), # TODO: figure out why freq is inconsistent
+      ("ACC_CONTROL", 0), # TODO: figure out why freq is inconsistent
       ("PRE_COLLISION", 0), # TODO: figure out why freq is inconsistent
     ]
 
