@@ -1,3 +1,4 @@
+#pylint: skip-file
 import numpy as np
 from cereal import log, car
 from common.params import Params
