@@ -12,7 +12,7 @@ from common.travis_checker import travis
 if not travis:
   import cereal.messaging as messaging
 op_params = opParams()
-#set_speed_offset = op_params.get('set_speed_offset')
+set_speed_offset = op_params.get('set_speed_offset')
 physical_buttons_DF = op_params.get('physical_buttons_DF')
 
 _TRAFFIC_SINGAL_MAP = {
@@ -146,7 +146,7 @@ class CarState(CarStateBase):
      ####################
 
     if self.CP.carFingerprint in TSS2_CAR:
-      minimum_set_speed = 27.0
+      minimum_set_speed = 28.0
     elif self.CP.carFingerprint == CAR.RAV4:
       minimum_set_speed = 44.0
     else:
@@ -184,7 +184,8 @@ class CarState(CarStateBase):
       self.setspeedoffset = int(ret.cruiseState.speed) - 7
     if int(ret.cruiseState.speed) - self.setspeedoffset > maximum_set_speed:
       self.setspeedoffset = int(ret.cruiseState.speed) - maximum_set_speed
-
+    if set_speed_offset:
+      ret.cruiseState.speed = ret.cruiseState.speed - self.setspeedoffset/3.6
     self.pcm_acc_status = cp.vl["PCM_CRUISE"]['CRUISE_STATE']
     if self.CP.carFingerprint in NO_STOP_TIMER_CAR or self.CP.enableGasInterceptor:
       # ignore standstill in hybrid vehicles, since pcm allows to restart without
