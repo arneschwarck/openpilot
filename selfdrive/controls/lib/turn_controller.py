@@ -4,7 +4,6 @@ from enum import Enum
 from common.numpy_fast import interp
 from common.params import Params
 from selfdrive.config import Conversions as CV
-from selfdrive.controls.lib.lane_planner import TRAJECTORY_SIZE
 
 
 _LON_MPC_STEP = 0.2  # Time stemp of longitudinal control (5 Hz)

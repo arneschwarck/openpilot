@@ -7,6 +7,9 @@ from common.realtime import sec_since_boot
 from selfdrive.controls.lib.speed_smoother import speed_smoother
 from selfdrive.controls.lib.events import Events
 
+
+_PARAMS_UPDATE_PERIOD = 2.  # secs. Time between parameter updates.
+
 _LON_MPC_STEP = 0.2  # Time stemp of longitudinal control (5 Hz)
 _WAIT_TIME_LIMIT_RISE = 2.0  # Waiting time before raising the speed limit.
 
@@ -230,11 +233,9 @@ class SpeedLimitController():
 
   def _update_params(self):
     time = sec_since_boot()
-    if time > self._last_params_update + 5.0:
-      self._speed_limit_perc_offset = float(self._params.get("SpeedLimitPercOffset"))
+    if time > self._last_params_update + _PARAMS_UPDATE_PERIOD:
       self._is_enabled = self._params.get("SpeedLimitControl", encoding='utf8') == "1"
-      _debug(f'Updated Speed limit params. enabled: {self._is_enabled}, \
-              perc_offset: {self._speed_limit_perc_offset:.1f}')
+      _debug(f'Updated Speed limit params. enabled: {self._is_enabled}')
       self._last_params_update = time
 
   def _update_calculations(self):
