@@ -79,6 +79,8 @@ class opParams:
                         #'curvature_factor': Param(1.4, VT.number, 'Multiplier for the curvature slowdown. Increase for less braking.'),
                         #'cloak': Param(True, bool, "make comma believe you are on their fork"),
                         #'corolla_tss2_d_tuning': Param(False, bool, 'lateral tuning using PID w/ true derivative'),
+                        'cruise_speed_override': Param(False, bool, 'overridecruisespeed'),
+                        'cruise_speed_override_enabled': Param(False, bool, 'enable overridecruisespeed'),
                         'dynamic_gas_mod': Param(0, VT.number, 'off:0, eco:1, normal:2, sport:3\n', live=True),
                         #'default_brake_distance': Param(250.0, VT.number, 'Distance in m to start braking for mapped speeds.'),
                         #'distance_traveled': Param(False, bool, 'Whether to log distance_traveled or not.'),
