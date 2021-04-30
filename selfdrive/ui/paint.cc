@@ -28,14 +28,14 @@ static void ui_draw_text(const UIState *s, float x, float y, const char *string,
   nvgText(s->vg, x, y, string, NULL);
 }
 
-static void ui_draw_circle(const UIState *s, float x, float y, float size, NVGcolor color) {
+static void ui_draw_circle(UIState *s, float x, float y, float size, NVGcolor color) {
   nvgBeginPath(s->vg);
   nvgCircle(s->vg, x, y + (bdr_s * 1.5), size);
   nvgFillColor(s->vg, color);
   nvgFill(s->vg);
 }
 
-static void ui_draw_speed_sign(const UIState *s, float x, float y, int size, float speed, float speed_offset, const char *font_name, int ring_alpha, int inner_alpha) {
+static void ui_draw_speed_sign(UIState *s, float x, float y, int size, float speed, float speed_offset, const char *font_name, int ring_alpha, int inner_alpha) {
   ui_draw_circle(s, x, y, float(size), COLOR_RED_ALPHA(ring_alpha));
   ui_draw_circle(s, x, y, float(size) * 0.8, COLOR_WHITE_ALPHA(inner_alpha));
 
@@ -233,7 +233,7 @@ static void ui_draw_vision_speedlimit(UIState *s) {
   const float speedLimitOffset = speedLimit * s->scene.speed_limit_perc_offset / 100.0;
 
   if (speedLimit > 0.0) {
-    const int viz_maxspeed_w = 189;
+    const int viz_maxspeed_w = 184;
     const int viz_maxspeed_h = 202;
     const float sign_center_x = s->viz_rect.x + bdr_s * 3 + viz_maxspeed_w + speed_sgn_r;
     const float sign_center_y = s->viz_rect.y + viz_maxspeed_h / 2;
@@ -241,7 +241,7 @@ static void ui_draw_vision_speedlimit(UIState *s) {
     const float speed_offset = (s->scene.is_metric ? speedLimitOffset * 3.6 : speedLimitOffset * 2.2369363) + 0.5;
 
     auto speedLimitControlState = s->scene.controls_state.getSpeedLimitControlState();
-    const bool force_active = s->scene.speed_limit_control_enabled && seconds_since_boot() < s->last_speed_limit_sign_tap + 5.0;
+    const bool force_active = s->scene.speed_limit_control_enabled && seconds_since_boot() < s->scene.last_speed_limit_sign_tap + 5.0;
     const bool inactive = !force_active && (!s->scene.speed_limit_control_enabled || speedLimitControlState == cereal::ControlsState::SpeedLimitControlState::INACTIVE);
     const bool temp_inactive = !force_active && (s->scene.speed_limit_control_enabled && speedLimitControlState == cereal::ControlsState::SpeedLimitControlState::TEMP_INACTIVE);
     const int ring_alpha = inactive ? 100 : 255;

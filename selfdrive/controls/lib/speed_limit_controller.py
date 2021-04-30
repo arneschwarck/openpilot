@@ -7,10 +7,11 @@ from selfdrive.controls.lib.events import Events
 
 _LON_MPC_STEP = 0.2  # Time stemp of longitudinal control (5 Hz)
 _WAIT_TIME_LIMIT_RISE = 2.0  # Waiting time before raising the speed limit.
-_MIN_ADAPTING_BRAKE_ACC = -2.0  # Minimum acceleration allowed when adapting to lower speed limit.
-_SPEED_OFFSET_TH = -5.0  # Maximum offset between speed limit and current speed for adapting state.
-_LIMIT_ADAPT_TIME = 4.0  # Ideal time (s) to adapt to lower speed limit. i.e. braking.
 
+_MIN_ADAPTING_BRAKE_ACC = -1.5  # Minimum acceleration allowed when adapting to lower speed limit.
+_MIN_ADAPTING_BRAKE_JERK = -1.0  # Minimum jerk allowed when adapting to lower speed limit.
+_SPEED_OFFSET_TH = -3.0  # m/s Maximum offset between speed limit and current speed for adapting state.
+_LIMIT_ADAPT_TIME = 5.0  # Ideal time (s) to adapt to lower speed limit. i.e. braking.
 
 _MAX_SPEED_OFFSET_DELTA = 1.0  # m/s Maximum delta for speed limit changes.
 
@@ -33,14 +34,14 @@ class SpeedLimitController():
   def __init__(self, CP):
     self._params = Params()
     self._last_params_update = 0.0
-    self._is_metric = self._params.get("IsMetric", True, encoding='utf8') == "1"
-    self._is_enabled = self._params.get("SpeedLimitControl", True, encoding='utf8') == "1"
-    self._speed_limit_perc_offset = float(self._params.get("SpeedLimitPercOffset", True))
+    self._is_metric = self._params.get("IsMetric", encoding='utf8') == "1"
+    self._is_enabled = self._params.get("SpeedLimitControl", encoding='utf8') == "1"
+    self._speed_limit_perc_offset = float(self._params.get("SpeedLimitPercOffset"))
     self._CP = CP
     self._op_enabled = False
     self._active_jerk_limits = [0.0, 0.0]
     self._active_accel_limits = [0.0, 0.0]
-    self._adapting_jerk_limits = [_MIN_ADAPTING_BRAKE_ACC, 1.0]
+    self._adapting_jerk_limits = [_MIN_ADAPTING_BRAKE_JERK, 1.0]
     self._v_ego = 0.0
     self._a_ego = 0.0
     self._v_offset = 0.0
@@ -178,7 +179,7 @@ class SpeedLimitController():
       # calculate the solution values
       self.a_limit = max(a_target, _MIN_ADAPTING_BRAKE_ACC)  # acceleration in next Longitudinal control step.
       self.v_limit = self._v_ego + self.a_limit * _LON_MPC_STEP  # speed in next Longitudinal control step.
-      self.v_limit_future = self._v_ego + self.a_limit * 4.  # speed in 4 seconds.
+      self.v_limit_future = max(self._v_ego + self.a_limit * 4., self.speed_limit_offseted)  # speed in 4 seconds.
     # active
     elif self.state == SpeedLimitControlState.active:
       # Calculate following same cruise logic in planner.py

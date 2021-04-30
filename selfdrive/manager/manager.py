@@ -57,7 +57,6 @@ def manager_init():
   # parameters set by Enviroment Varables
   if os.getenv("HANDSMONITORING") is not None:
     params.put("HandsOnWheelMonitoring", str(int(os.getenv("HANDSMONITORING"))))
-
   if os.getenv("FOLLOWSPEEDLIMIT") is not None:
     params.put("SpeedLimitControl", str(int(os.getenv("FOLLOWSPEEDLIMIT"))))
 
