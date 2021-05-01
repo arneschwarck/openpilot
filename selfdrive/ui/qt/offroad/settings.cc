@@ -313,9 +313,20 @@ QWidget * ArnePilot_panel() {
                                             "Show usefull information. such as steerin angle, radar distance, accelection, rpm, etc. list goes on and on.",
                                             "../assets/offroad/icon_shell.png"
                                               ));
-
   toggles_list->addWidget(horizontal_line());
 
+  toggles_list->addWidget(new ParamControl("SpeedLimitControl",
+                                            "Toyota RSA",
+                                            "Turning on this will use Toyota/Lexus built in RSA (Road Side assistance) to control vechicle's speed. only works on vechicle that has RSA ",
+                                            "../assets/offroad/icon_shell.png"
+                                              ));
+  toggles_list->addWidget(horizontal_line());
+
+  toggles_list->addWidget(new ParamControl("MaxDecelerationForTurns",
+                                            "Turn Controller.",
+                                            "Turning on this will vehicle speed durning turn. It will slow down based on...  ",
+                                            "../assets/offroad/icon_shell.png"
+                                              ));
 
   QWidget *widget = new QWidget;
   widget->setLayout(toggles_list);
