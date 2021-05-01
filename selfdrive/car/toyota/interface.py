@@ -87,10 +87,10 @@ class CarInterface(CarInterfaceBase):
       tire_stiffness_factor = 0.6371   # hand-tune
       ret.mass = 3115. * CV.LB_TO_KG + STD_CARGO_KG
       if prius_pid:
-        ret.lateralTuning.pid.kpBP = [0]
+        ret.lateralTuning.pid.kpBP = [0, 23, 23.01, 40]
         ret.lateralTuning.pid.kiBP = [0, 23, 23.01, 40]
         ret.lateralTuning.pid.kfBP = [0, 23, 40]
-        ret.lateralTuning.pid.kpV = [0.6] # power or torque
+        ret.lateralTuning.pid.kpV = [0.6, 0.6, 0.6, 0.6] # power or torque
         ret.lateralTuning.pid.kiV = [0.52, 0.52, 0.1, 0.02] # trajectory variance
         ret.lateralTuning.pid.kfV = [0.000153263811757641, 0.000153263811757641, 0.00007818594] # curvature
       else:
@@ -114,10 +114,10 @@ class CarInterface(CarInterfaceBase):
       tire_stiffness_factor = 0.5533
       ret.mass = 3650. * CV.LB_TO_KG + STD_CARGO_KG  # mean between normal and hybrid
       if prius_pid:
-        ret.lateralTuning.pid.kpBP = [0]
+        ret.lateralTuning.pid.kpBP = [0, 23, 23.01, 40]
         ret.lateralTuning.pid.kiBP = [0, 23, 23.01, 40]
         ret.lateralTuning.pid.kfBP = [0, 23, 40]
-        ret.lateralTuning.pid.kpV = [0.6] # power or torque
+        ret.lateralTuning.pid.kpV = [0.6, 0.6, 0.6, 0.6] # power or torque
         ret.lateralTuning.pid.kiV = [0.52, 0.52, 0.1, 0.02] # trajectory variance
         ret.lateralTuning.pid.kfV = [0.000153263811757641, 0.000153263811757641, 0.00007818594] # curvature
       else:
@@ -141,10 +141,10 @@ class CarInterface(CarInterfaceBase):
       tire_stiffness_factor = 0.444  # not optimized yet
       ret.mass = 2860. * CV.LB_TO_KG + STD_CARGO_KG  # mean between normal and hybrid
       if prius_pid:
-        ret.lateralTuning.pid.kpBP = [0]
+        ret.lateralTuning.pid.kpBP = [0, 23, 23.01, 40]
         ret.lateralTuning.pid.kiBP = [0, 23, 23.01, 40]
         ret.lateralTuning.pid.kfBP = [0, 23, 40]
-        ret.lateralTuning.pid.kpV = [0.6] # power or torque
+        ret.lateralTuning.pid.kpV = [0.6, 0.6, 0.6, 0.6] # power or torque
         ret.lateralTuning.pid.kiV = [0.52, 0.52, 0.1, 0.02] # trajectory variance
         ret.lateralTuning.pid.kfV = [0.000153263811757641, 0.000153263811757641, 0.00007818594] # curvature
       else:
@@ -159,10 +159,10 @@ class CarInterface(CarInterfaceBase):
       tire_stiffness_factor = 0.5533
       ret.mass = 4387. * CV.LB_TO_KG + STD_CARGO_KG
       if prius_pid:
-        ret.lateralTuning.pid.kpBP = [0]
+        ret.lateralTuning.pid.kpBP = [0, 23, 23.01, 40]
         ret.lateralTuning.pid.kiBP = [0, 23, 23.01, 40]
         ret.lateralTuning.pid.kfBP = [0, 23, 40]
-        ret.lateralTuning.pid.kpV = [0.6] # power or torque
+        ret.lateralTuning.pid.kpV = [0.6, 0.6, 0.6, 0.6] # power or torque
         ret.lateralTuning.pid.kiV = [0.52, 0.52, 0.1, 0.02] # trajectory variance
         ret.lateralTuning.pid.kfV = [0.000153263811757641, 0.000153263811757641, 0.00007818594] # curvature
       else:
@@ -177,10 +177,10 @@ class CarInterface(CarInterfaceBase):
       tire_stiffness_factor = 0.444  # not optimized yet
       ret.mass = 4481. * CV.LB_TO_KG + STD_CARGO_KG  # mean between min and max
       if prius_pid:
-        ret.lateralTuning.pid.kpBP = [0]
+        ret.lateralTuning.pid.kpBP = [0, 23, 23.01, 40]
         ret.lateralTuning.pid.kiBP = [0, 23, 23.01, 40]
         ret.lateralTuning.pid.kfBP = [0, 23, 40]
-        ret.lateralTuning.pid.kpV = [0.6] # power or torque
+        ret.lateralTuning.pid.kpV = [0.6, 0.6, 0.6, 0.6] # power or torque
         ret.lateralTuning.pid.kiV = [0.52, 0.52, 0.1, 0.02] # trajectory variance
         ret.lateralTuning.pid.kfV = [0.000153263811757641, 0.000153263811757641, 0.00007818594] # curvature
       else:
@@ -195,10 +195,10 @@ class CarInterface(CarInterfaceBase):
       tire_stiffness_factor = 0.5533  # not optimized yet
       ret.mass = 4387. * CV.LB_TO_KG + STD_CARGO_KG
       if prius_pid:
-        ret.lateralTuning.pid.kpBP = [0]
+        ret.lateralTuning.pid.kpBP = [0, 23, 23.01, 40]
         ret.lateralTuning.pid.kiBP = [0, 23, 23.01, 40]
         ret.lateralTuning.pid.kfBP = [0, 23, 40]
-        ret.lateralTuning.pid.kpV = [0.6] # power or torque
+        ret.lateralTuning.pid.kpV = [0.6, 0.6, 0.6, 0.6] # power or torque
         ret.lateralTuning.pid.kiV = [0.52, 0.52, 0.1, 0.02] # trajectory variance
         ret.lateralTuning.pid.kfV = [0.000153263811757641, 0.000153263811757641, 0.00007818594] # curvature
       else:
@@ -213,10 +213,10 @@ class CarInterface(CarInterfaceBase):
       tire_stiffness_factor = 0.444  # not optimized yet
       ret.mass = 4481.0 * CV.LB_TO_KG + STD_CARGO_KG  # mean between min and max
       if prius_pid:
-        ret.lateralTuning.pid.kpBP = [0]
+        ret.lateralTuning.pid.kpBP = [0, 23, 23.01, 40]
         ret.lateralTuning.pid.kiBP = [0, 23, 23.01, 40]
         ret.lateralTuning.pid.kfBP = [0, 23, 40]
-        ret.lateralTuning.pid.kpV = [0.6] # power or torque
+        ret.lateralTuning.pid.kpV = [0.6, 0.6, 0.6, 0.6] # power or torque
         ret.lateralTuning.pid.kiV = [0.52, 0.52, 0.1, 0.02] # trajectory variance
         ret.lateralTuning.pid.kfV = [0.000153263811757641, 0.000153263811757641, 0.00007818594] # curvature
       else:
@@ -231,10 +231,10 @@ class CarInterface(CarInterfaceBase):
       tire_stiffness_factor = 0.7933
       ret.mass = 3300. * CV.LB_TO_KG + STD_CARGO_KG
       if prius_pid:
-        ret.lateralTuning.pid.kpBP = [0]
+        ret.lateralTuning.pid.kpBP = [0, 23, 23.01, 40]
         ret.lateralTuning.pid.kiBP = [0, 23, 23.01, 40]
         ret.lateralTuning.pid.kfBP = [0, 23, 40]
-        ret.lateralTuning.pid.kpV = [0.6] # power or torque
+        ret.lateralTuning.pid.kpV = [0.6, 0.6, 0.6, 0.6] # power or torque
         ret.lateralTuning.pid.kiV = [0.52, 0.52, 0.1, 0.02] # trajectory variance
         ret.lateralTuning.pid.kfV = [0.000153263811757641, 0.000153263811757641, 0.00007818594] # curvature
       else:
@@ -249,10 +249,10 @@ class CarInterface(CarInterfaceBase):
       tire_stiffness_factor = 0.7933
       ret.mass = 3400. * CV.LB_TO_KG + STD_CARGO_KG  # mean between normal and hybrid
       if prius_pid:
-        ret.lateralTuning.pid.kpBP = [0]
+        ret.lateralTuning.pid.kpBP = [0, 23, 23.01, 40]
         ret.lateralTuning.pid.kiBP = [0, 23, 23.01, 40]
         ret.lateralTuning.pid.kfBP = [0, 23, 40]
-        ret.lateralTuning.pid.kpV = [0.6] # power or torque
+        ret.lateralTuning.pid.kpV = [0.6, 0.6, 0.6, 0.6] # power or torque
         ret.lateralTuning.pid.kiV = [0.52, 0.52, 0.1, 0.02] # trajectory variance
         ret.lateralTuning.pid.kfV = [0.000153263811757641, 0.000153263811757641, 0.00007818594] # curvature
       else:
@@ -267,10 +267,10 @@ class CarInterface(CarInterfaceBase):
       tire_stiffness_factor = 0.8
       ret.mass = 4700. * CV.LB_TO_KG + STD_CARGO_KG  # 4260 + 4-5 people
       if prius_pid:
-        ret.lateralTuning.pid.kpBP = [0]
+        ret.lateralTuning.pid.kpBP = [0, 23, 23.01, 40]
         ret.lateralTuning.pid.kiBP = [0, 23, 23.01, 40]
         ret.lateralTuning.pid.kfBP = [0, 23, 40]
-        ret.lateralTuning.pid.kpV = [0.6] # power or torque
+        ret.lateralTuning.pid.kpV = [0.6, 0.6, 0.6, 0.6] # power or torque
         ret.lateralTuning.pid.kiV = [0.52, 0.52, 0.1, 0.02] # trajectory variance
         ret.lateralTuning.pid.kfV = [0.000153263811757641, 0.000153263811757641, 0.00007818594] # curvature
       else:
@@ -285,10 +285,10 @@ class CarInterface(CarInterfaceBase):
       tire_stiffness_factor = 0.8
       ret.mass = 4607. * CV.LB_TO_KG + STD_CARGO_KG  # mean between normal and hybrid limited
       if prius_pid:
-        ret.lateralTuning.pid.kpBP = [0]
+        ret.lateralTuning.pid.kpBP = [0, 23, 23.01, 40]
         ret.lateralTuning.pid.kiBP = [0, 23, 23.01, 40]
         ret.lateralTuning.pid.kfBP = [0, 23, 40]
-        ret.lateralTuning.pid.kpV = [0.6] # power or torque
+        ret.lateralTuning.pid.kpV = [0.6, 0.6, 0.6, 0.6] # power or torque
         ret.lateralTuning.pid.kiV = [0.52, 0.52, 0.1, 0.02] # trajectory variance
         ret.lateralTuning.pid.kfV = [0.000153263811757641, 0.000153263811757641, 0.00007818594] # curvature
       else:
@@ -303,10 +303,10 @@ class CarInterface(CarInterfaceBase):
       tire_stiffness_factor = 0.7983
       ret.mass = 3505. * CV.LB_TO_KG + STD_CARGO_KG  # mean between normal and hybrid
       if prius_pid:
-        ret.lateralTuning.pid.kpBP = [0]
+        ret.lateralTuning.pid.kpBP = [0, 23, 23.01, 40]
         ret.lateralTuning.pid.kiBP = [0, 23, 23.01, 40]
         ret.lateralTuning.pid.kfBP = [0, 23, 40]
-        ret.lateralTuning.pid.kpV = [0.6] # power or torque
+        ret.lateralTuning.pid.kpV = [0.6, 0.6, 0.6, 0.6] # power or torque
         ret.lateralTuning.pid.kiV = [0.52, 0.52, 0.1, 0.02] # trajectory variance
         ret.lateralTuning.pid.kfV = [0.000153263811757641, 0.000153263811757641, 0.00007818594] # curvature
       else:
@@ -345,10 +345,10 @@ class CarInterface(CarInterfaceBase):
       ret.mass = 3800. * CV.LB_TO_KG + STD_CARGO_KG
       tire_stiffness_factor = 0.7933
       if prius_pid:
-        ret.lateralTuning.pid.kpBP = [0]
+        ret.lateralTuning.pid.kpBP = [0, 23, 23.01, 40]
         ret.lateralTuning.pid.kiBP = [0, 23, 23.01, 40]
         ret.lateralTuning.pid.kfBP = [0, 23, 40]
-        ret.lateralTuning.pid.kpV = [0.6] # power or torque
+        ret.lateralTuning.pid.kpV = [0.6, 0.6, 0.6, 0.6] # power or torque
         ret.lateralTuning.pid.kiV = [0.52, 0.52, 0.1, 0.02] # trajectory variance
         ret.lateralTuning.pid.kfV = [0.000153263811757641, 0.000153263811757641, 0.00007818594] # curvature
       else:
@@ -370,10 +370,10 @@ class CarInterface(CarInterfaceBase):
       ret.mass = 3060. * CV.LB_TO_KG + STD_CARGO_KG
       tire_stiffness_factor = 0.444  # not optimized yet
       if prius_pid:
-        ret.lateralTuning.pid.kpBP = [0]
+        ret.lateralTuning.pid.kpBP = [0, 23, 23.01, 40]
         ret.lateralTuning.pid.kiBP = [0, 23, 23.01, 40]
         ret.lateralTuning.pid.kfBP = [0, 23, 40]
-        ret.lateralTuning.pid.kpV = [0.6] # power or torque
+        ret.lateralTuning.pid.kpV = [0.6, 0.6, 0.6, 0.6] # power or torque
         ret.lateralTuning.pid.kiV = [0.52, 0.52, 0.1, 0.02] # trajectory variance
         ret.lateralTuning.pid.kfV = [0.000153263811757641, 0.000153263811757641, 0.00007818594] # curvature
       else:
@@ -388,10 +388,10 @@ class CarInterface(CarInterfaceBase):
       ret.mass = 3704. * CV.LB_TO_KG + STD_CARGO_KG
       tire_stiffness_factor = 0.444  # not optimized yet
       if prius_pid:
-        ret.lateralTuning.pid.kpBP = [0]
+        ret.lateralTuning.pid.kpBP = [0, 23, 23.01, 40]
         ret.lateralTuning.pid.kiBP = [0, 23, 23.01, 40]
         ret.lateralTuning.pid.kfBP = [0, 23, 40]
-        ret.lateralTuning.pid.kpV = [0.6] # power or torque
+        ret.lateralTuning.pid.kpV = [0.6, 0.6, 0.6, 0.6] # power or torque
         ret.lateralTuning.pid.kiV = [0.52, 0.52, 0.1, 0.02] # trajectory variance
         ret.lateralTuning.pid.kfV = [0.000153263811757641, 0.000153263811757641, 0.00007818594] # curvature
       else:
@@ -406,10 +406,10 @@ class CarInterface(CarInterfaceBase):
       tire_stiffness_factor = 0.444  # not optimized yet
       ret.mass = 3682. * CV.LB_TO_KG + STD_CARGO_KG
       if prius_pid:
-        ret.lateralTuning.pid.kpBP = [0]
+        ret.lateralTuning.pid.kpBP = [0, 23, 23.01, 40]
         ret.lateralTuning.pid.kiBP = [0, 23, 23.01, 40]
         ret.lateralTuning.pid.kfBP = [0, 23, 40]
-        ret.lateralTuning.pid.kpV = [0.6] # power or torque
+        ret.lateralTuning.pid.kpV = [0.6, 0.6, 0.6, 0.6] # power or torque
         ret.lateralTuning.pid.kiV = [0.52, 0.52, 0.1, 0.02] # trajectory variance
         ret.lateralTuning.pid.kfV = [0.000153263811757641, 0.000153263811757641, 0.00007818594] # curvature
       else:
@@ -424,10 +424,10 @@ class CarInterface(CarInterfaceBase):
       tire_stiffness_factor = 0.444
       ret.mass = 4590. * CV.LB_TO_KG + STD_CARGO_KG
       if prius_pid:
-        ret.lateralTuning.pid.kpBP = [0]
+        ret.lateralTuning.pid.kpBP = [0, 23, 23.01, 40]
         ret.lateralTuning.pid.kiBP = [0, 23, 23.01, 40]
         ret.lateralTuning.pid.kfBP = [0, 23, 40]
-        ret.lateralTuning.pid.kpV = [0.6] # power or torque
+        ret.lateralTuning.pid.kpV = [0.6, 0.6, 0.6, 0.6] # power or torque
         ret.lateralTuning.pid.kiV = [0.52, 0.52, 0.1, 0.02] # trajectory variance
         ret.lateralTuning.pid.kfV = [0.000153263811757641, 0.000153263811757641, 0.00007818594] # curvature
       else:
@@ -442,10 +442,10 @@ class CarInterface(CarInterfaceBase):
       tire_stiffness_factor = 0.444
       ret.mass = 3736.8 * CV.LB_TO_KG + STD_CARGO_KG
       if prius_pid:
-        ret.lateralTuning.pid.kpBP = [0]
+        ret.lateralTuning.pid.kpBP = [0, 23, 23.01, 40]
         ret.lateralTuning.pid.kiBP = [0, 23, 23.01, 40]
         ret.lateralTuning.pid.kfBP = [0, 23, 40]
-        ret.lateralTuning.pid.kpV = [0.6] # power or torque
+        ret.lateralTuning.pid.kpV = [0.6, 0.6, 0.6, 0.6] # power or torque
         ret.lateralTuning.pid.kiV = [0.52, 0.52, 0.1, 0.02] # trajectory variance
         ret.lateralTuning.pid.kfV = [0.000153263811757641, 0.000153263811757641, 0.00007818594] # curvature
       else:
@@ -460,10 +460,10 @@ class CarInterface(CarInterfaceBase):
       tire_stiffness_factor = 0.517
       ret.mass = 3108 * CV.LB_TO_KG + STD_CARGO_KG  # mean between min and max
       if prius_pid:
-        ret.lateralTuning.pid.kpBP = [0]
+        ret.lateralTuning.pid.kpBP = [0, 23, 23.01, 40]
         ret.lateralTuning.pid.kiBP = [0, 23, 23.01, 40]
         ret.lateralTuning.pid.kfBP = [0, 23, 40]
-        ret.lateralTuning.pid.kpV = [0.6] # power or torque
+        ret.lateralTuning.pid.kpV = [0.6, 0.6, 0.6, 0.6] # power or torque
         ret.lateralTuning.pid.kiV = [0.52, 0.52, 0.1, 0.02] # trajectory variance
         ret.lateralTuning.pid.kfV = [0.000153263811757641, 0.000153263811757641, 0.00007818594] # curvature
       else:
@@ -478,10 +478,10 @@ class CarInterface(CarInterfaceBase):
       tire_stiffness_factor = 0.444  # not optimized yet
       ret.mass = 4070 * CV.LB_TO_KG + STD_CARGO_KG
       if prius_pid:
-        ret.lateralTuning.pid.kpBP = [0]
+        ret.lateralTuning.pid.kpBP = [0, 23, 23.01, 40]
         ret.lateralTuning.pid.kiBP = [0, 23, 23.01, 40]
         ret.lateralTuning.pid.kfBP = [0, 23, 40]
-        ret.lateralTuning.pid.kpV = [0.6] # power or torque
+        ret.lateralTuning.pid.kpV = [0.6, 0.6, 0.6, 0.6] # power or torque
         ret.lateralTuning.pid.kiV = [0.52, 0.52, 0.1, 0.02] # trajectory variance
         ret.lateralTuning.pid.kfV = [0.000153263811757641, 0.000153263811757641, 0.00007818594] # curvature
       else:
