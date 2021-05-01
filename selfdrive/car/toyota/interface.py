@@ -87,12 +87,12 @@ class CarInterface(CarInterfaceBase):
       tire_stiffness_factor = 0.6371   # hand-tune
       ret.mass = 3115. * CV.LB_TO_KG + STD_CARGO_KG
       if prius_pid:
-        ret.lateralTuning.pid.kpBP = [0, 23, 23.01, 40]
-        ret.lateralTuning.pid.kiBP = [0, 23, 23.01, 40]
-        ret.lateralTuning.pid.kfBP = [0, 23, 40]
-        ret.lateralTuning.pid.kpV = [0.6, 0.6, 0.6, 0.6] # power or torque
-        ret.lateralTuning.pid.kiV = [0.52, 0.52, 0.1, 0.02] # trajectory variance
-        ret.lateralTuning.pid.kfV = [0.000153263811757641, 0.000153263811757641, 0.00007818594] # curvature
+        ret.lateralTuning.pid.kpBP = [0, 8, 16, 23.6, 28]
+        ret.lateralTuning.pid.kiBP = [0, 8, 23.6, 28, 33, 40]
+        ret.lateralTuning.pid.kfBP = [0, 40]
+        ret.lateralTuning.pid.kpV = [0.6, 0.38, 0.38, 0.2, 0.2]
+        ret.lateralTuning.pid.kiV = [0.3, 0.45, 0.45, 0.3, 0.1, 0.05]
+        ret.lateralTuning.pid.kfV = [0.00007818594, 0.00007518594]
       else:
         ret.lateralTuning.init('indi')
         ret.steerRateCost = 0.5
