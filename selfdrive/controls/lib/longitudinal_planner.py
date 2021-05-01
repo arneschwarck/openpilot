@@ -14,8 +14,10 @@ from selfdrive.controls.lib.events import Events
 from selfdrive.controls.lib.fcw import FCWChecker
 from selfdrive.controls.lib.long_mpc import LongitudinalMpc
 from selfdrive.controls.lib.drive_helpers import V_CRUISE_MAX
-from selfdrive.controls.lib.turn_controller import TurnController
+from common.travis_checker import travis
 from selfdrive.controls.lib.speed_limit_controller import SpeedLimitController
+if not travis:
+  from selfdrive.controls.lib.turn_controller import TurnController
 
 
 LON_MPC_STEP = 0.2  # first step is 0.2s
