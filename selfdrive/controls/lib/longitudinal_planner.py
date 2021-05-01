@@ -73,7 +73,8 @@ class Planner():
 
     self.mpc1 = LongitudinalMpc(1)
     self.mpc2 = LongitudinalMpc(2)
-    self.turn_controller = TurnController(CP)
+    if not travis:
+      self.turn_controller = TurnController(CP)
     self.speed_limit_controller = SpeedLimitController(CP)
 
     self.v_acc_start = 0.0
@@ -116,7 +117,7 @@ class Planner():
         solutions['mpc1'] = self.mpc1.v_mpc
       if self.mpc2.prev_lead_status and lead2_check:
         solutions['mpc2'] = self.mpc2.v_mpc
-      if self.turn_controller.is_active:
+      if not travis and self.turn_controller.is_active:
         solutions['turn'] = self.turn_controller.v_turn
       if self.speed_limit_controller.is_active:
         solutions['limit'] = self.speed_limit_controller.v_limit
@@ -134,7 +135,7 @@ class Planner():
       elif slowest == 'cruise':
         self.v_acc = self.v_cruise
         self.a_acc = self.a_cruise
-      elif slowest == 'turn':
+      elif not travis and slowest == 'turn':
         self.v_acc = self.turn_controller.v_turn
         self.a_acc = self.turn_controller.a_turn
       elif slowest == 'limit':
@@ -146,7 +147,7 @@ class Planner():
       self.v_acc_future = min([self.mpc1.v_mpc_future, self.v_acc_future])
     if lead2_check:
       self.v_acc_future = min([self.mpc2.v_mpc_future, self.v_acc_future])
-    if self.turn_controller.is_active:
+    if not travis and self.turn_controller.is_active:
       self.v_acc_future = min(self.v_acc_future, self.turn_controller.v_turn_future)
     if self.speed_limit_controller.is_active:
       self.v_acc_future = min(self.v_acc_future, self.speed_limit_controller.v_limit_future)
@@ -213,7 +214,8 @@ class Planner():
 
     self.mpc1.update(sm['carState'], lead_1)
     self.mpc2.update(sm['carState'], lead_2)
-    self.turn_controller.update(enabled, self.v_acc_start, self.a_acc_start, v_cruise_setpoint, sm)
+    if not travis:
+      self.turn_controller.update(enabled, self.v_acc_start, self.a_acc_start, v_cruise_setpoint, sm)
 
     self.choose_solution(v_cruise_setpoint, enabled, lead_1, lead_2, sm['carState'].steeringAngleDeg)
 
@@ -260,8 +262,8 @@ class Planner():
     longitudinalPlan.hasLead = self.mpc1.prev_lead_status
     longitudinalPlan.longitudinalPlanSource = self.longitudinalPlanSource
     longitudinalPlan.fcw = self.fcw
-
-    longitudinalPlan.decelForTurnDEPRECATED = bool(self.turn_controller.is_active)
+    if not travis:
+      longitudinalPlan.decelForTurnDEPRECATED = bool(self.turn_controller.is_active)
     longitudinalPlan.speedLimitControlState = self.speed_limit_controller.state
     longitudinalPlan.eventsDEPRECATED = self.events.to_msg()
 
