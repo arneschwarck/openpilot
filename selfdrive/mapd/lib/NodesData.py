@@ -1,7 +1,7 @@
 import numpy as np
 from scipy import interpolate
 from enum import Enum
-from selfdrive.mapd.lib.geo import DIRECTION, R
+from selfdrive.mapd.lib.geo import DIRECTION, R, vectors
 
 _TURN_CURVATURE_THRESHOLD = 0.003  # 1/mts. A curvature over this value will generate a speed limit section.
 _MAX_LAT_ACC = 2.0  # Maximum lateral acceleration in turns.
