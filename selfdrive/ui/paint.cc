@@ -321,7 +321,7 @@ static void ui_draw_vision_event(UIState *s) {
       if (handsOnWheelState == cereal::DriverMonitoringState::HandsOnWheelState::WARNING) {
         color = COLOR_YELLOW;
       }
-      const int wheel_y = bg_wheel_y + bdr_s + 2 * bg_wheel_size;
+      const int center_y = s->viz_rect.y + radius  + (bdr_s * 2);
       ui_draw_circle_image(s, center_x, center_y, radius, "hands_on_wheel", bg_colors[s->status], 1.0f);
     }
   }
