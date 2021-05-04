@@ -323,10 +323,10 @@ QWidget * ArnePilot_panel() {
   toggles_list->addWidget(horizontal_line());
 
   toggles_list->addWidget(new ParamControl("SpeedLimitControl",
-                                            "Toyota RSA",
-                                            "Turning on this will use Toyota/Lexus built in RSA (Road Side assistance) to control vechicle's speed. only works on vechicle that has RSA ",
-                                            "../assets/offroad/icon_shell.png"
-                                              ));
+                                           "Enable Speed Limit Control",
+                                           "Use speed limit signs information from map data and car interface to automatically adapt cruise speed to road limits.",
+                                           "../assets/offroad/icon_speed_limit.png"
+                                           ));
   toggles_list->addWidget(horizontal_line());
 
   toggles_list->addWidget(new ParamControl("TurnVisionControl",

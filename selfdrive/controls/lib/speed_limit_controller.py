@@ -1,4 +1,3 @@
-#pylint: skip-file
 import numpy as np
 from cereal import log, car
 from common.params import Params
@@ -37,7 +36,7 @@ class SpeedLimitController():
     self._last_params_update = 0.0
     self._is_metric = self._params.get("IsMetric", encoding='utf8') == "1"
     self._is_enabled = self._params.get("SpeedLimitControl", encoding='utf8') == "1"
-    self._speed_limit_perc_offset = float(self._params.get("SpeedLimitPercOffset", True))
+    self._speed_limit_perc_offset = float(self._params.get("SpeedLimitPercOffset"))
     self._CP = CP
     self._op_enabled = False
     self._active_jerk_limits = [0.0, 0.0]
