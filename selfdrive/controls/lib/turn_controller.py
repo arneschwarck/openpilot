@@ -1,6 +1,7 @@
 import numpy as np
 import math
 from enum import Enum
+from cereal import log
 from common.numpy_fast import interp
 from common.params import Params
 from common.realtime import sec_since_boot
@@ -43,6 +44,8 @@ _ENTERING_SMOOTH_DECEL_BP = [1., 3]  # absolute value of lat acc ahead
 _TURNING_ACC_V = [0.5, -0.2, -0.4]  # acc value
 _TURNING_ACC_BP = [1., 2., 3.]  # absolute value of current lat acc
 
+TurnControllerState = log.ControlsState.TurnControllerState
+
 
 def eval_curvature(poly, x_vals):
   """
@@ -70,22 +73,15 @@ def eval_lat_acc(v_ego, x_curv):
   return np.vectorize(lat_acc)(x_curv)
 
 
-class TurnState(Enum):
-  DISABLED = 1
-  ENTERING = 2
-  TURNING = 3
-  LEAVING = 4
-
-  @property
-  def description(self):
-    if self == TurnState.DISABLED:
-      return 'DISABLED'
-    if self == TurnState.ENTERING:
-      return 'ENTERING'
-    if self == TurnState.TURNING:
-      return 'TURNING'
-    if self == TurnState.LEAVING:
-      return 'LEAVING'
+def _description_for_state(turn_controller_state):
+  if turn_controller_state == TurnControllerState.disabled:
+    return 'DISABLED'
+  if turn_controller_state == TurnControllerState.entering:
+    return 'ENTERING'
+  if turn_controller_state == TurnControllerState.turning:
+    return 'TURNING'
+  if turn_controller_state == TurnControllerState.leaving:
+    return 'LEAVING'
 
 
 class TurnController():
@@ -99,13 +95,13 @@ class TurnController():
     self._last_params_update = 0.0
     self._v_cruise_setpoint = 0.0
     self._v_ego = 0.0
-    self._state = TurnState.DISABLED
+    self._state = TurnControllerState.disabled
 
     self._reset()
 
   @property
   def v_turn_future(self):
-    return float(self._v_turn_future) if self.state != TurnState.DISABLED else self._v_cruise_setpoint
+    return float(self._v_turn_future) if self.state != TurnControllerState.disabled else self._v_cruise_setpoint
 
   @property
   def state(self):
@@ -113,13 +109,13 @@ class TurnController():
 
   @property
   def is_active(self):
-    return self._state != TurnState.DISABLED
+    return self._state != TurnControllerState.disabled
 
   @state.setter
   def state(self, value):
     if value != self._state:
-      print(f'TurnController state: {value.description}')
-      if value == TurnState.DISABLED:
+      print(f'TurnController state: {_description_for_state(value)}')
+      if value == TurnControllerState.disabled:
         self._reset()
     self._state = value
 
@@ -149,8 +145,7 @@ class TurnController():
       path_poly = np.array([0., 0., 0., 0.])
 
     pred_curvatures = eval_curvature(path_poly, _EVAL_RANGE)
-    max_pred_curvature_idx = np.argmax(pred_curvatures)
-    self._max_pred_curvature = pred_curvatures[max_pred_curvature_idx]
+    self._max_pred_curvature = np.amax(pred_curvatures)
     self._max_pred_lat_acc = self._v_ego**2 * self._max_pred_curvature
 
     a_lat_reg_max = interp(self._v_ego, _A_LAT_REG_MAX_BP, _A_LAT_REG_MAX_V)
@@ -167,11 +162,11 @@ class TurnController():
     # In any case, if system is disabled or the feature is disabeld or min braking param has been
     # set to non negative value, disable.
     if not self._op_enabled or not self._is_enabled or self._min_braking_acc >= 0.0:
-      self.state = TurnState.DISABLED
+      self.state = TurnControllerState.disabled
       return
 
     # DISABLED
-    if self.state == TurnState.DISABLED:
+    if self.state == TurnControllerState.disabled:
       # Do not enter a turn control cycle if speed is low.
       if self._v_ego <= _MIN_V:
         pass
@@ -179,35 +174,35 @@ class TurnController():
       # acceleration is predicted, then move to Entering turn state.
       elif self._max_pred_curvature >= _ENTERING_PRED_CURVATURE_TH \
               and self._max_pred_lat_acc >= _ENTERING_PRED_LAT_ACC_TH:
-        self.state = TurnState.ENTERING
+        self.state = TurnControllerState.entering
     # ENTERING
-    elif self.state == TurnState.ENTERING:
+    elif self.state == TurnControllerState.entering:
       # Transition to Turning if current curvature over threshold.
       if self._current_curvature >= _TURNING_CURVATURE_TH:
-        self.state = TurnState.TURNING
+        self.state = TurnControllerState.turning
       # Abort if road straightens.
       elif self._max_pred_curvature < _ABORT_ENTERING_CURVATURE_TH:
-        self.state = TurnState.DISABLED
+        self.state = TurnControllerState.disabled
     # TURNING
-    elif self.state == TurnState.TURNING:
+    elif self.state == TurnControllerState.turning:
       # Transition to Leaving if current curvature under threshold.
       if self._current_curvature < _LEAVING_CURVATURE_TH:
-        self.state = TurnState.LEAVING
+        self.state = TurnControllerState.leaving
     # LEAVING
-    elif self.state == TurnState.LEAVING:
+    elif self.state == TurnControllerState.leaving:
       # Transition back to Turning if current curvature over threshold.
       if self._current_curvature >= _TURNING_CURVATURE_TH:
-        self.state = TurnState.TURNING
+        self.state = TurnControllerState.turning
       elif self._current_curvature < _FINISH_CURVATURE_TH:
-        self.state = TurnState.DISABLED
+        self.state = TurnControllerState.disabled
 
   def _update_solution(self):
     # Calculate target acceleration based on turn state.
     # DISABLED
-    if self.state == TurnState.DISABLED:
+    if self.state == TurnControllerState.disabled:
       a_target = self._a_ego
     # ENTERING
-    elif self.state == TurnState.ENTERING:
+    elif self.state == TurnControllerState.entering:
       entering_smooth_decel = interp(self._max_pred_lat_acc, _ENTERING_SMOOTH_DECEL_BP, _ENTERING_SMOOTH_DECEL_V)
       print(f'Overshooting {self._lat_acc_overshoot_ahead}, _entering_smooth_decel {entering_smooth_decel:.2f}')
       if self._lat_acc_overshoot_ahead:
@@ -215,11 +210,11 @@ class TurnController():
       else:
         a_target = entering_smooth_decel
     # TURNING
-    elif self.state == TurnState.TURNING:
+    elif self.state == TurnControllerState.turning:
       current_lat_acc = self._current_curvature * self._v_ego**2
       a_target = interp(current_lat_acc, _TURNING_ACC_BP, _TURNING_ACC_V)
     # LEAVING
-    elif self.state == TurnState.LEAVING:
+    elif self.state == TurnControllerState.leaving:
       a_target = _LEAVING_ACC
 
     # smooth out acceleration using jerk limits.
