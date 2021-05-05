@@ -270,48 +270,6 @@ static void ui_draw_vision_turnspeed(UIState *s) {
   }
 }
 
-static void ui_draw_vision_speedlimit(UIState *s) {
-  const float speedLimit = s->scene.controls_state.getSpeedLimit();
-  const float speedLimitOffset = speedLimit * s->scene.speed_limit_perc_offset / 100.0;
-
-  if (speedLimit > 0.0) {
-    const int viz_maxspeed_w = 184;
-    const int viz_maxspeed_h = 202;
-    const float sign_center_x = s->viz_rect.x + bdr_s * 3 + viz_maxspeed_w + speed_sgn_r;
-    const float sign_center_y = s->viz_rect.y + viz_maxspeed_h / 2;
-    const float speed = (s->scene.is_metric ? speedLimit * 3.6 : speedLimit * 2.2369363) + 0.5;
-    const float speed_offset = (s->scene.is_metric ? speedLimitOffset * 3.6 : speedLimitOffset * 2.2369363) + 0.5;
-
-    auto speedLimitControlState = s->scene.controls_state.getSpeedLimitControlState();
-    const bool force_active = s->scene.speed_limit_control_enabled && seconds_since_boot() < s->scene.last_speed_limit_sign_tap + 2.0;
-    const bool inactive = !force_active && (!s->scene.speed_limit_control_enabled || speedLimitControlState == cereal::ControlsState::SpeedLimitControlState::INACTIVE);
-    const bool temp_inactive = !force_active && (s->scene.speed_limit_control_enabled && speedLimitControlState == cereal::ControlsState::SpeedLimitControlState::TEMP_INACTIVE);
-    const int ring_alpha = inactive ? 100 : 255;
-    const int inner_alpha = inactive || temp_inactive ? 100 : 255;
-
-    ui_draw_speed_sign(s, sign_center_x, sign_center_y, speed_sgn_r, speed, speed_offset, "sans-bold", ring_alpha, inner_alpha);
-    s->scene.ui_speed_sgn_x = sign_center_x - speed_sgn_r;
-    s->scene.ui_speed_sgn_y = sign_center_y - speed_sgn_r;
-  }
-}
-
-static void ui_draw_vision_turnspeed(UIState *s) {
-  const float turnSpeed = s->scene.controls_state.getTurnSpeed();
-
-  if (turnSpeed > 0.0) {
-    const int viz_maxspeed_h = 202;
-    const float sign_center_x = s->viz_rect.right() - bdr_s * 4 - speed_sgn_r * 3;
-    const float sign_center_y = s->viz_rect.y + viz_maxspeed_h / 2;
-    const float speed = (s->scene.is_metric ? turnSpeed * 3.6 : turnSpeed * 2.2369363) + 0.5;
-
-    auto turnSpeedControlState = s->scene.controls_state.getTurnSpeedControlState();
-    const bool inactive = turnSpeedControlState == cereal::ControlsState::SpeedLimitControlState::INACTIVE;
-    const int ring_alpha = inactive ? 100 : 255;
-
-    ui_draw_speed_sign(s, sign_center_x, sign_center_y, speed_sgn_r, speed, 0, "sans-bold", ring_alpha, ring_alpha);
-  }
-}
-
 static void ui_draw_vision_speed(UIState *s) {
   const float speed = std::max(0.0, s->scene.car_state.getVEgo() * (s->scene.is_metric ? 3.6 : 2.2369363));
   const std::string speed_str = std::to_string((int)std::nearbyint(speed));
