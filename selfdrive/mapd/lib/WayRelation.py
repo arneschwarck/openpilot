@@ -1,3 +1,5 @@
+#pylint: skip-file
+# flake8: noqa
 from selfdrive.mapd.lib.geo import DIRECTION, R, vectors
 from selfdrive.config import Conversions as CV
 from datetime import datetime

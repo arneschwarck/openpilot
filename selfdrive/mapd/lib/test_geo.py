@@ -1,3 +1,5 @@
+#pylint: skip-file
+# flake8: noqa
 import unittest
 from decimal import Decimal
 from math import pi, sqrt

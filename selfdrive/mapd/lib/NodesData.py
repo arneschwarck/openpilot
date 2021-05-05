@@ -1,3 +1,5 @@
+#pylint: skip-file
+# flake8: noqa
 import numpy as np
 from scipy import interpolate
 from enum import Enum

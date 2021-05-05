@@ -1,3 +1,5 @@
+#pylint: skip-file
+# flake8: noqa
 from selfdrive.mapd.lib.WayRelation import WayRelation
 from selfdrive.mapd.lib.Route import Route
 import uuid
@@ -36,7 +38,7 @@ class WayCollection():
 
     # If more than one is active, filter out any active way relation where the bearing delta indicator is too high.
     else:
-      wr_acceptable_bearing = list(filter(lambda wr: wr.active_bearing_delta <= _ACCEPTABLE_BEARING_DELTA_IND, 
+      wr_acceptable_bearing = list(filter(lambda wr: wr.active_bearing_delta <= _ACCEPTABLE_BEARING_DELTA_IND,
                                           active_way_relations))
 
       # If delta bearing indicator is too high for all, then use as current the one that has the shorter one.

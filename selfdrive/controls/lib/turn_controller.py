@@ -1,6 +1,6 @@
 import numpy as np
 import math
-from enum import Enum
+#from enum import Enum
 from cereal import log
 from common.numpy_fast import interp
 from common.params import Params
@@ -107,10 +107,6 @@ class TurnController():
   def state(self):
     return self._state
 
-  @property
-  def is_active(self):
-    return self._state != TurnControllerState.disabled
-
   @state.setter
   def state(self, value):
     if value != self._state:
@@ -118,6 +114,10 @@ class TurnController():
       if value == TurnControllerState.disabled:
         self._reset()
     self._state = value
+
+  @property
+  def is_active(self):
+    return self._state != TurnControllerState.disabled
 
   def _reset(self):
     self._v_turn_future = 0.0

@@ -103,13 +103,6 @@ static std::map<cereal::ControlsState::TurnControllerState, NVGcolor> tcs_colors
   {cereal::ControlsState::TurnControllerState::LEAVING, nvgRGBA(0x17, 0x86, 0x44, 0xf1)},
 };
 
-static std::map<cereal::ControlsState::TurnControllerState, NVGcolor> tcs_colors = {
-  {cereal::ControlsState::TurnControllerState::DISABLED, nvgRGBA(0x0, 0x0, 0x0, 0xff)},
-  {cereal::ControlsState::TurnControllerState::ENTERING, COLOR_RED},
-  {cereal::ControlsState::TurnControllerState::TURNING, COLOR_YELLOW},
-  {cereal::ControlsState::TurnControllerState::LEAVING, nvgRGBA(0x17, 0x86, 0x44, 0xf1)},
-};
-
 typedef struct {
   float x, y;
 } vertex_data;

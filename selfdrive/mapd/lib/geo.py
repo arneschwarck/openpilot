@@ -1,3 +1,5 @@
+#pylint: skip-file
+# flake8: noqa
 from math import sin, cos, sqrt, atan2, radians, degrees
 from enum import Enum
 import numpy as np
