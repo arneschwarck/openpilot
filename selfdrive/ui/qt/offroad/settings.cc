@@ -308,14 +308,39 @@ QWidget * ArnePilot_panel() {
   QVBoxLayout *toggles_list = new QVBoxLayout();
   //toggles_list->setMargin(50);
 
+  toggles_list->addWidget(new ParamControl("HandsOnWheelMonitoring",
+                                            "Enable Hands on Wheel Monitoring",
+                                            "Monitor and alert when driver is not keeping the hands on the steering wheel.",
+                                            "../assets/offroad/icon_openpilot.png"
+                                            ));
+  toggles_list->addWidget(horizontal_line());
+
   toggles_list->addWidget(new ParamControl("DevBBUI",
                                             "Developer UI",
                                             "Show usefull information. such as steerin angle, radar distance, accelection, rpm, etc. list goes on and on.",
                                             "../assets/offroad/icon_shell.png"
                                               ));
-
   toggles_list->addWidget(horizontal_line());
 
+  toggles_list->addWidget(new ParamControl("SpeedLimitControl",
+                                           "Enable Speed Limit Control",
+                                           "Use speed limit signs information from map data and car interface to automatically adapt cruise speed to road limits.",
+                                           "../assets/offroad/icon_speed_limit.png"
+                                           ));
+  toggles_list->addWidget(horizontal_line());
+
+  toggles_list->addWidget(new ParamControl("TurnVisionControl",
+                                           "Enable vision based turn control",
+                                           "Use vision path predictions to estimate the appropiate speed to drive through turns ahead.",
+                                           "../assets/offroad/icon_road.png"
+                                           ));
+  toggles_list->addWidget(horizontal_line());
+
+  toggles_list->addWidget(new ParamControl("TurnSpeedControl",
+                                           "Enable Map Data Turn Control",
+                                           "Use curvature info from map data to define speed limits to take turns ahead",
+                                           "../assets/offroad/icon_openpilot.png"
+                                          ));
 
   QWidget *widget = new QWidget;
   widget->setLayout(toggles_list);

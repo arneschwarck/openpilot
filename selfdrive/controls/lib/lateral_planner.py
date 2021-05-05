@@ -71,6 +71,7 @@ class LateralPlanner():
     self.y_pts = np.zeros(TRAJECTORY_SIZE)
     self.alca_nudge_required = self.op_params.get('alca_nudge_required')
     self.alca_min_speed = self.op_params.get('alca_min_speed')
+    self.d_path_w_lines_xyz = np.zeros((TRAJECTORY_SIZE,3))
 
   def setup_mpc(self):
     self.libmpc = libmpc_py.libmpc
@@ -169,8 +170,9 @@ class LateralPlanner():
     if self.desire == log.LateralPlan.Desire.laneChangeRight or self.desire == log.LateralPlan.Desire.laneChangeLeft:
       self.LP.lll_prob *= self.lane_change_ll_prob
       self.LP.rll_prob *= self.lane_change_ll_prob
+    self.d_path_w_lines_xyz = self.LP.get_d_path(v_ego, self.t_idxs, self.path_xyz)
     if self.use_lanelines:
-      d_path_xyz = self.LP.get_d_path(v_ego, self.t_idxs, self.path_xyz)
+      d_path_xyz = self.d_path_w_lines_xyz#self.LP.get_d_path(v_ego, self.t_idxs, self.path_xyz)
       self.libmpc.set_weights(MPC_COST_LAT.PATH, MPC_COST_LAT.HEADING, CP.steerRateCost)
     else:
       d_path_xyz = self.path_xyz
@@ -253,6 +255,9 @@ class LateralPlanner():
     plan_send.lateralPlan.desire = self.desire
     plan_send.lateralPlan.laneChangeState = self.lane_change_state
     plan_send.lateralPlan.laneChangeDirection = self.lane_change_direction
+
+    plan_send.lateralPlan.dPathWLinesX = [float(x) for x in self.d_path_w_lines_xyz[:, 0]]
+    plan_send.lateralPlan.dPathWLinesY = [float(y) for y in self.d_path_w_lines_xyz[:, 1]]
 
     pm.send('lateralPlan', plan_send)
 

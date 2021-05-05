@@ -1,3 +1,5 @@
+#pylint: skip-file
+# flake8: noqa
 import unittest
 from decimal import Decimal
 from math import pi, sqrt
@@ -18,7 +20,7 @@ class TestMapsdGeoLibrary(unittest.TestCase):
         (0., 2 * pi),
         (pi, 3 * pi),
     ]
-    rad_tuples = list(map(coord_to_rad, points))#list(map(lambda p: coord_to_rad(p), points))
+    rad_tuples = list(map(lambda p: coord_to_rad(p), points))
     self.assertEqual(rad_tuples, expected)
 
   # 1. test distance calculation between two points in coordiantes.
@@ -142,7 +144,7 @@ class TestMapsdGeoLibrary(unittest.TestCase):
         (0, DIRECTION.AHEAD),
     ]
 
-    d_and_d = list(map(absoule_delta_with_direction, deltas))#list(map(lambda d: absoule_delta_with_direction(d), deltas))
+    d_and_d = list(map(lambda d: absoule_delta_with_direction(d), deltas))
     self.assertEqual(d_and_d, expected)
 
   # 7. Test tangent angle estimation from three points

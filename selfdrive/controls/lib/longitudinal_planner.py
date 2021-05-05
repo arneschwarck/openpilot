@@ -10,9 +10,16 @@ from selfdrive.swaglog import cloudlog
 from selfdrive.config import Conversions as CV
 from selfdrive.controls.lib.speed_smoother import speed_smoother
 from selfdrive.controls.lib.longcontrol import LongCtrlState
+from selfdrive.controls.lib.events import Events
 from selfdrive.controls.lib.fcw import FCWChecker
 from selfdrive.controls.lib.long_mpc import LongitudinalMpc
 from selfdrive.controls.lib.drive_helpers import V_CRUISE_MAX
+from common.travis_checker import travis
+if not travis:
+  from selfdrive.controls.lib.turn_controller import TurnController
+  from selfdrive.controls.lib.speed_limit_controller import SpeedLimitController
+  from selfdrive.controls.lib.turn_speed_controller import TurnSpeedController
+
 
 LON_MPC_STEP = 0.2  # first step is 0.2s
 AWARENESS_DECEL = -0.2     # car smoothly decel at .2m/s^2 when user is distracted
@@ -67,6 +74,10 @@ class Planner():
 
     self.mpc1 = LongitudinalMpc(1)
     self.mpc2 = LongitudinalMpc(2)
+    if not travis:
+      self.turn_controller = TurnController(CP)
+      self.speed_limit_controller = SpeedLimitController()
+      self.turn_speed_controller = TurnSpeedController()
 
     self.v_acc_start = 0.0
     self.a_acc_start = 0.0
@@ -88,6 +99,8 @@ class Planner():
     self.params = Params()
     self.first_loop = True
 
+    self.events = Events()
+
   def choose_solution(self, v_cruise_setpoint, enabled, lead_1, lead_2, steeringAngleDeg):
     center_x = -2.5 # Wheel base 2.5m
     lead1_check = True
@@ -106,6 +119,12 @@ class Planner():
         solutions['mpc1'] = self.mpc1.v_mpc
       if self.mpc2.prev_lead_status and lead2_check:
         solutions['mpc2'] = self.mpc2.v_mpc
+      if not travis and self.turn_controller.is_active:
+        solutions['turn'] = self.turn_controller.v_turn
+      if not travis and self.speed_limit_controller.is_active:
+        solutions['limit'] = self.speed_limit_controller.v_limit
+      if not travis and self.turn_speed_controller.is_active:
+        solutions['turnlimit'] = self.turn_speed_controller.v_turn_limit
 
       slowest = min(solutions, key=solutions.get)
 
@@ -120,12 +139,27 @@ class Planner():
       elif slowest == 'cruise':
         self.v_acc = self.v_cruise
         self.a_acc = self.a_cruise
+      elif not travis and slowest == 'turn':
+        self.v_acc = self.turn_controller.v_turn
+        self.a_acc = self.turn_controller.a_turn
+      elif not travis and slowest == 'limit':
+        self.v_acc = self.speed_limit_controller.v_limit
+        self.a_acc = self.speed_limit_controller.a_limit
+      elif not travis and slowest == 'turnlimit':
+        self.v_acc = self.turn_speed_controller.v_turn_limit
+        self.a_acc = self.turn_speed_controller.a_turn_limit
 
     self.v_acc_future = v_cruise_setpoint
     if lead1_check:
       self.v_acc_future = min([self.mpc1.v_mpc_future, self.v_acc_future])
     if lead2_check:
       self.v_acc_future = min([self.mpc2.v_mpc_future, self.v_acc_future])
+    if not travis and self.turn_controller.is_active:
+      self.v_acc_future = min(self.v_acc_future, self.turn_controller.v_turn_future)
+    if not travis and self.speed_limit_controller.is_active:
+      self.v_acc_future = min(self.v_acc_future, self.speed_limit_controller.v_limit_future)
+    if not travis and self.turn_speed_controller.is_active:
+      self.v_acc_future = min(self.v_acc_future, self.turn_speed_controller.v_turn_limit_future)
 
   def update(self, sm, CP):
     """Gets called when new radarState is available"""
@@ -141,6 +175,7 @@ class Planner():
 
     lead_1 = sm['radarState'].leadOne
     lead_2 = sm['radarState'].leadTwo
+    self.events = Events()
 
     enabled = (long_control_state == LongCtrlState.pid) or (long_control_state == LongCtrlState.stopping)
     following = (lead_1.status and lead_1.dRel < 45.0 and lead_1.vRel < 0.0) or (lead_2.status and lead_2.dRel < 45.0 and lead_2.vRel < 0.0) #lead_1.status and lead_1.dRel < 45.0 and lead_1.vLeadK > v_ego and lead_1.aLeadK > 0.0
@@ -167,6 +202,13 @@ class Planner():
 
       # cruise speed can't be negative even is user is distracted
       self.v_cruise = max(self.v_cruise, 0.)
+      # update speed limit solution calculation.
+      if not travis:
+        self.speed_limit_controller.update(enabled, self.v_acc_start, self.a_acc_start, sm,
+                                         v_cruise_setpoint, accel_limits_turns, jerk_limits, self.events)
+      # update turn speed solution calculation.
+        self.turn_speed_controller.update(enabled, self.v_acc_start, self.a_acc_start, sm, accel_limits_turns,
+                                        jerk_limits)
     else:
       starting = long_control_state == LongCtrlState.starting
       a_ego = min(sm['carState'].aEgo, 0.0)
@@ -178,12 +220,17 @@ class Planner():
       self.a_acc_start = reset_accel
       self.v_cruise = reset_speed
       self.a_cruise = reset_accel
+      if not travis:
+        self.speed_limit_controller.deactivate()  # Deactivate speed limit controller to provide no solution.
+        self.turn_speed_controller.deactivate()  # Deactivate turn speed controller to provide no solution.
 
     self.mpc1.set_cur_state(self.v_acc_start, self.a_acc_start)
     self.mpc2.set_cur_state(self.v_acc_start, self.a_acc_start)
 
     self.mpc1.update(sm['carState'], lead_1)
     self.mpc2.update(sm['carState'], lead_2)
+    if not travis:
+      self.turn_controller.update(enabled, self.v_acc_start, self.a_acc_start, v_cruise_setpoint, sm)
 
     self.choose_solution(v_cruise_setpoint, enabled, lead_1, lead_2, sm['carState'].steeringAngleDeg)
 
@@ -220,7 +267,6 @@ class Planner():
     longitudinalPlan = plan_send.longitudinalPlan
     longitudinalPlan.mdMonoTime = sm.logMonoTime['modelV2']
     longitudinalPlan.radarStateMonoTime = sm.logMonoTime['radarState']
-
     longitudinalPlan.vCruise = float(self.v_cruise)
     longitudinalPlan.aCruise = float(self.a_cruise)
     longitudinalPlan.vStart = float(self.v_acc_start)
@@ -231,6 +277,16 @@ class Planner():
     longitudinalPlan.hasLead = self.mpc1.prev_lead_status
     longitudinalPlan.longitudinalPlanSource = self.longitudinalPlanSource
     longitudinalPlan.fcw = self.fcw
+    if not travis:
+      longitudinalPlan.turnControllerState = self.turn_controller.state
+      longitudinalPlan.turnAcc = float(self.turn_controller.a_turn)
+
+      longitudinalPlan.turnSpeedControlState = self.turn_speed_controller.state
+      longitudinalPlan.turnSpeed = float(self.turn_speed_controller.speed_limit)
+
+      longitudinalPlan.speedLimitControlState = self.speed_limit_controller.state
+      longitudinalPlan.speedLimit = float(self.speed_limit_controller.speed_limit)
+    longitudinalPlan.eventsDEPRECATED = self.events.to_msg()
 
     longitudinalPlan.processingDelay = (plan_send.logMonoTime / 1e9) - sm.rcv_time['radarState']
 

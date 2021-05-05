@@ -26,7 +26,7 @@ def dmonitoringd_thread(sm=None, pm=None):
   v_cruise_last = 0
   driver_engaged = False
   steering_wheel_engaged = False
-  hands_on_wheel_monitoring_enabled = Params().get("HandsOnWheelMonitoring") == b"1"
+  hands_on_wheel_monitoring_enabled = Params().get("HandsOnWheelMonitoring", encoding='utf8') == "1"
 
   # 10Hz <- dmonitoringmodeld
   while True:

@@ -28,14 +28,14 @@ static void ui_draw_text(const UIState *s, float x, float y, const char *string,
   nvgText(s->vg, x, y, string, NULL);
 }
 
-static void ui_draw_circle(const UIState *s, float x, float y, float size, NVGcolor color) {
+static void ui_draw_circle(UIState *s, float x, float y, float size, NVGcolor color) {
   nvgBeginPath(s->vg);
   nvgCircle(s->vg, x, y + (bdr_s * 1.5), size);
   nvgFillColor(s->vg, color);
   nvgFill(s->vg);
 }
 
-static void ui_draw_speed_sign(const UIState *s, float x, float y, int size, float speed, float speed_offset, const char *font_name, int ring_alpha, int inner_alpha) {
+static void ui_draw_speed_sign(UIState *s, float x, float y, int size, float speed, float speed_offset, const char *font_name, int ring_alpha, int inner_alpha) {
   ui_draw_circle(s, x, y, float(size), COLOR_RED_ALPHA(ring_alpha));
   ui_draw_circle(s, x, y, float(size) * 0.8, COLOR_WHITE_ALPHA(inner_alpha));
 
@@ -233,7 +233,7 @@ static void ui_draw_vision_speedlimit(UIState *s) {
   const float speedLimitOffset = speedLimit * s->scene.speed_limit_perc_offset / 100.0;
 
   if (speedLimit > 0.0) {
-    const int viz_maxspeed_w = 189;
+    const int viz_maxspeed_w = 184;
     const int viz_maxspeed_h = 202;
     const float sign_center_x = s->viz_rect.x + bdr_s * 3 + viz_maxspeed_w + speed_sgn_r;
     const float sign_center_y = s->viz_rect.y + viz_maxspeed_h / 2;
@@ -241,7 +241,7 @@ static void ui_draw_vision_speedlimit(UIState *s) {
     const float speed_offset = (s->scene.is_metric ? speedLimitOffset * 3.6 : speedLimitOffset * 2.2369363) + 0.5;
 
     auto speedLimitControlState = s->scene.controls_state.getSpeedLimitControlState();
-    const bool force_active = s->scene.speed_limit_control_enabled && seconds_since_boot() < s->last_speed_limit_sign_tap + 5.0;
+    const bool force_active = s->scene.speed_limit_control_enabled && seconds_since_boot() < s->scene.last_speed_limit_sign_tap + 2.0;
     const bool inactive = !force_active && (!s->scene.speed_limit_control_enabled || speedLimitControlState == cereal::ControlsState::SpeedLimitControlState::INACTIVE);
     const bool temp_inactive = !force_active && (s->scene.speed_limit_control_enabled && speedLimitControlState == cereal::ControlsState::SpeedLimitControlState::TEMP_INACTIVE);
     const int ring_alpha = inactive ? 100 : 255;
@@ -250,6 +250,23 @@ static void ui_draw_vision_speedlimit(UIState *s) {
     ui_draw_speed_sign(s, sign_center_x, sign_center_y, speed_sgn_r, speed, speed_offset, "sans-bold", ring_alpha, inner_alpha);
     s->scene.ui_speed_sgn_x = sign_center_x - speed_sgn_r;
     s->scene.ui_speed_sgn_y = sign_center_y - speed_sgn_r;
+  }
+}
+
+static void ui_draw_vision_turnspeed(UIState *s) {
+  const float turnSpeed = s->scene.controls_state.getTurnSpeed();
+
+  if (turnSpeed > 0.0) {
+    const int viz_maxspeed_h = 202;
+    const float sign_center_x = s->viz_rect.right() - bdr_s * 4 - speed_sgn_r * 3;
+    const float sign_center_y = s->viz_rect.y + viz_maxspeed_h / 2;
+    const float speed = (s->scene.is_metric ? turnSpeed * 3.6 : turnSpeed * 2.2369363) + 0.5;
+
+    auto turnSpeedControlState = s->scene.controls_state.getTurnSpeedControlState();
+    const bool inactive = turnSpeedControlState == cereal::ControlsState::SpeedLimitControlState::INACTIVE;
+    const int ring_alpha = inactive ? 100 : 255;
+
+    ui_draw_speed_sign(s, sign_center_x, sign_center_y, speed_sgn_r, speed, 0, "sans-bold", ring_alpha, ring_alpha);
   }
 }
 
@@ -301,36 +318,37 @@ static void ui_draw_vision_speed(UIState *s) {
 }
 
 static void ui_draw_vision_event(UIState *s) {
-  const int viz_event_w = 220;
-  const int viz_event_x = s->viz_rect.right() - (viz_event_w + bdr_s*3);
-  const int viz_event_y = s->viz_rect.y + (bdr_s*1.5);
+  auto turnControllerState = s->scene.controls_state.getTurnControllerState();
+  if (turnControllerState > cereal::ControlsState::TurnControllerState::DISABLED && s->scene.controls_state.getEnabled()) {
+    // draw a rectangle with colors indicating the state with the value of the acceleration inside.
+    const int size = 184;
+    const Rect rect = {s->viz_rect.right() - size - bdr_s, int(s->viz_rect.y + (bdr_s * 1.5)), size, size};
+    ui_fill_rect(s->vg, rect, COLOR_BLACK_ALPHA(100), 30.);
+    ui_draw_rect(s->vg, rect, tcs_colors[turnControllerState], 10, 20.);
+    const float turnAcc = s->scene.controls_state.getTurnAcc();
+    char acc_str[16];
+    snprintf(acc_str, sizeof(acc_str), "%.2f", turnAcc);
+    nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
+    ui_draw_text(s, rect.centerX(), rect.centerY(), acc_str, 48, COLOR_WHITE, "sans-bold");
+  } else if (s->scene.controls_state.getEngageable()) {
+    // draw steering wheel
+    const int radius = 96;
+    const int center_x = s->viz_rect.right() - radius - bdr_s * 2;
+    const int center_y = s->viz_rect.y + radius  + (bdr_s * 1.5);
+    ui_draw_circle_image(s, center_x, center_y, radius, "wheel", bg_colors[s->status], 1.0f);
 
-   // draw steering wheel
-    float angleSteers = s->scene.car_state.getSteeringAngleDeg();
-    //int steerOverride = s->scene.car_state.getSteeringPressed();
-
-    const int bg_wheel_size = 96;
-    const int bg_wheel_x = viz_event_x + (viz_event_w - bg_wheel_size);
-    const int bg_wheel_y = viz_event_y + (bg_wheel_size/2);
-    const int img_wheel_size = bg_wheel_size*1.5;
-    const int img_wheel_x = bg_wheel_x - (img_wheel_size/2);
-    const int img_wheel_y = bg_wheel_y - 55;
-    const float img_rotation = angleSteers/180*3.141592;
-    nvgBeginPath(s->vg);
-    nvgCircle(s->vg, bg_wheel_x, (bg_wheel_y + (bdr_s*1.5)), bg_wheel_size);
-    nvgFillColor(s->vg,bg_colors[s->status]);
-    nvgFill(s->vg);
-    float img_wheel_alpha = 0.1f;
-    nvgSave(s->vg);
-    nvgTranslate(s->vg,bg_wheel_x, bg_wheel_y + (bdr_s*1.5));
-    nvgRotate(s->vg,-img_rotation);
-    nvgBeginPath(s->vg);
-    NVGpaint imgPaint = nvgImagePattern(s->vg, img_wheel_x-bg_wheel_x, img_wheel_y-(bg_wheel_y + (bdr_s*1.5)), img_wheel_size, img_wheel_size, 0, s->images["wheel"], img_wheel_alpha);
-    nvgRect(s->vg, img_wheel_x-bg_wheel_x, img_wheel_y-(bg_wheel_y + (bdr_s*1.5)), img_wheel_size, img_wheel_size);
-    nvgFillPaint(s->vg, imgPaint);
-    nvgFill(s->vg);
-    nvgRestore(s->vg);
+    // draw hands on wheel pictogram under wheel pictogram.
+    auto handsOnWheelState = s->scene.dmonitoring_state.getHandsOnWheelState();
+    if (handsOnWheelState >= cereal::DriverMonitoringState::HandsOnWheelState::WARNING) {
+      NVGcolor color = COLOR_RED;
+      if (handsOnWheelState == cereal::DriverMonitoringState::HandsOnWheelState::WARNING) {
+        color = COLOR_YELLOW;
+      }
+      const int center_y = s->viz_rect.y + radius  + (bdr_s * 2);
+      ui_draw_circle_image(s, center_x, center_y, radius, "hands_on_wheel", bg_colors[s->status], 1.0f);
+    }
   }
+}
 
 static void ui_draw_vision_face(UIState *s) {
   const int radius = 96;
@@ -719,11 +737,10 @@ static void ui_draw_vision_header(UIState *s) {
 
   ui_fill_rect(s->vg, {s->viz_rect.x, s->viz_rect.y, s->viz_rect.w, header_h}, gradient);
 
-  if (s->scene.longitudinal_control) {
-    ui_draw_vision_maxspeed(s);
-  }
+  ui_draw_vision_maxspeed(s);
   ui_draw_vision_speedlimit(s);
   ui_draw_vision_speed(s);
+  ui_draw_vision_turnspeed(s);
   ui_draw_vision_event(s);
   if (s->scene.dev_bbui){
     bb_ui_draw_UI(s);
@@ -968,6 +985,7 @@ void ui_nvg_init(UIState *s) {
   // init images
   std::vector<std::pair<const char *, const char *>> images = {
       {"wheel", "../assets/img_chffr_wheel.png"},
+      {"hands_on_wheel", "../assets/img_hands_on_wheel.png"},
       {"trafficSign_turn", "../assets/img_trafficSign_turn.png"},
       {"driver_face", "../assets/img_driver_face.png"},
       {"button_settings", "../assets/images/button_settings.png"},

@@ -41,6 +41,8 @@ def manager_init():
     ("OpenpilotEnabledToggle", "1"),
     ("SpeedLimitControl", "1"),
     ("SpeedLimitPercOffset", "10.0"),
+    ("TurnSpeedControl", "1"),
+    ("TurnVisionControl", "1"),
   ]
 
   if TICI:
@@ -57,7 +59,6 @@ def manager_init():
   # parameters set by Enviroment Varables
   if os.getenv("HANDSMONITORING") is not None:
     params.put("HandsOnWheelMonitoring", str(int(os.getenv("HANDSMONITORING"))))
-
   if os.getenv("FOLLOWSPEEDLIMIT") is not None:
     params.put("SpeedLimitControl", str(int(os.getenv("FOLLOWSPEEDLIMIT"))))
 

@@ -71,7 +71,6 @@ const Rect settings_btn = {50, 35, 200, 117};
 const Rect home_btn = {60, 1080 - 180 - 40, 180, 180};
 const int speed_sgn_r = 96;
 const int speed_sgn_touch_pad = 50;
-const Rect rec_btn = {1745, 905, 140, 140};
 
 const int UI_FREQ = 20;   // Hz
 
@@ -97,6 +96,13 @@ static std::map<UIStatus, NVGcolor> bg_colors = {
   {STATUS_ALERT, nvgRGBA(0xC9, 0x22, 0x31, 0xff)},
 };
 
+static std::map<cereal::ControlsState::TurnControllerState, NVGcolor> tcs_colors = {
+  {cereal::ControlsState::TurnControllerState::DISABLED, nvgRGBA(0x0, 0x0, 0x0, 0xff)},
+  {cereal::ControlsState::TurnControllerState::ENTERING, COLOR_RED},
+  {cereal::ControlsState::TurnControllerState::TURNING, COLOR_YELLOW},
+  {cereal::ControlsState::TurnControllerState::LEAVING, nvgRGBA(0x17, 0x86, 0x44, 0xf1)},
+};
+
 typedef struct {
   float x, y;
 } vertex_data;
@@ -114,8 +120,11 @@ typedef struct UIScene {
   bool is_rhd;
   bool driver_view;
 
-  // speed sign position
-  int ui_speed_sgn_x, ui_speed_sgn_y;
+  // Speed limit control
+  int ui_speed_sgn_x, ui_speed_sgn_y; // speed sign position
+  bool speed_limit_control_enabled;
+  float speed_limit_perc_offset;
+  double last_speed_limit_sign_tap;
 
   std::string alert_text1;
   std::string alert_text2;
@@ -174,9 +183,6 @@ typedef struct UIScene {
   float light_sensor, accel_sensor, gyro_sensor;
   bool started, ignition, is_metric, longitudinal_control, end_to_end;
   uint64_t started_frame;
-  bool speed_limit_control_enabled;
-  float speed_limit_perc_offset;
-  double last_speed_limit_sign_tap;
   bool dev_bbui;
 } UIScene;
 
@@ -210,12 +216,6 @@ typedef struct UIState {
 
   // device state
   bool awake;
-
-  bool speed_limit_control_enabled;
-  float speed_limit_perc_offset;
-  double last_speed_limit_sign_tap;
-  bool driving_record;
-  bool is_OpenpilotViewEnabled;
 
   bool sidebar_collapsed;
   Rect video_rect, viz_rect;

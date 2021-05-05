@@ -1,5 +1,8 @@
+#pylint: skip-file
+# flake8: noqa
 from math import sin, cos, sqrt, atan2, radians, degrees
 from enum import Enum
+import numpy as np
 
 
 R = 6373000.0  # approximate radius of earth in mt
@@ -7,10 +10,26 @@ CURVATURE_OFFSET = 300  # mts. The distance offset for curvature calculation
 MAX_DIST_FOR_CURVATURE = 500  # mts. Max distance between nodes for curvature calculation
 
 
+def vectors(points):
+  """Provides a array of vectors on cartesian space (x, y).
+     Each vector represents the path from a point in `points` to the next.
+     `points` must by a (N, 2) array of [lat, lon] pairs in radians.
+  """
+  latA = points[:-1, 0]
+  latB = points[1:, 0]
+  delta = np.diff(points, axis=0)
+  dlon = delta[:, 1]
+
+  x = np.sin(dlon) * np.cos(latB)
+  y = np.cos(latA) * np.sin(latB) - (np.sin(latA) * np.cos(latB) * np.cos(dlon))
+
+  return np.column_stack((x, y))
+
+
 def coord_to_rad(point):
   """Tranform coordinates in degrees to radians
   """
-  return radians(point[0]),radians(point[1]) #tuple(map(lambda p: radians(p), point))
+  return tuple(map(lambda p: radians(p), point))
 
 
 def distance(point_a, point_b):
@@ -87,7 +106,7 @@ def _xy_from_rad(point_a_in_rad, point_b_in_rad):
 
 
 def distance_and_bearing(point_a, point_b):
-  """ Provides distance and bearing calucations between two points in a single method call. see `distance` and 
+  """ Provides distance and bearing calucations between two points in a single method call. see `distance` and
   `bearing` for details.
   """
   point_a_in_rad = coord_to_rad(point_a)
@@ -118,11 +137,11 @@ def absoule_delta_with_direction(delta):
     return (delta_ahead, DIRECTION.NONE)
 
 
-def three_point_curvature_alt(ref_point, prev_point, next_point):
+def three_point_curvature_alt(ref, prev, next):
   # https://math.stackexchange.com/questions/2507540/numerical-way-to-solve-for-the-curvature-of-a-curve
   # https://en.wikipedia.org/wiki/Heron%27s_formula
-  prev_r = (prev_point[0] - ref_point[0], prev_point[1] - ref_point[1])
-  next_r = (next_point[0] - ref_point[0], next_point[1] - ref_point[1])
+  prev_r = (prev[0] - ref[0], prev[1] - ref[1])
+  next_r = (next[0] - ref[0], next[1] - ref[1])
 
   prev_ang = atan2(prev_r[0], prev_r[1])
   next_ang = atan2(next_r[0], next_r[1])
@@ -139,12 +158,12 @@ def three_point_curvature_alt(ref_point, prev_point, next_point):
   return 4 * A / (a * b * c)
 
 
-def three_point_tangent_angle(prev_point, ref_point, next_point):
-  """Angle (in readians) of the tangent line formed by three points in sequence `prev_point`, `ref_point`, `next_point`
+def three_point_tangent_angle(prev, ref, next):
+  """Angle (in readians) of the tangent line formed by three points in sequence `prev`, `ref`, `next`
   """
   # https://www.math24.net/curvature-radius
-  prev_vec = (ref_point[0] - prev_point[0], ref_point[1] - prev_point[1])
-  next_vec = (next_point[0] - ref_point[0], next_point[1] - ref_point[1])
+  prev_vec = (ref[0] - prev[0], ref[1] - prev[1])
+  next_vec = (next[0] - ref[0], next[1] - ref[1])
   avg_vec = ((prev_vec[0] + next_vec[0]) / 2., (prev_vec[1] + next_vec[1]) / 2.)
 
   return atan2(avg_vec[1], avg_vec[0])
