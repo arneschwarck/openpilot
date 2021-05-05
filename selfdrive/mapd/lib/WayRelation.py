@@ -21,6 +21,17 @@ _COUNTRY_LIMITS_KPH = {
         'unclassified': 72.,
         'residential': 40.,
         'service': 40.
+      
+      'US-NY': {
+        'motorway': 105.,
+        'school_zone': 40.,
+        'trunk': 88.,
+        'primary': 88.,
+        'secondary': 72.,
+        'tertiary': 65.,
+        'unclassified': 80.,
+        'residential': 32.,
+        'service': 40.
     }
 }
 
