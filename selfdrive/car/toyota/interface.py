@@ -87,12 +87,12 @@ class CarInterface(CarInterfaceBase):
       tire_stiffness_factor = 0.6371   # hand-tune
       ret.mass = 3115. * CV.LB_TO_KG + STD_CARGO_KG
       if prius_pid:
-        ret.lateralTuning.pid.kiBP = [0.]
-        ret.lateralTuning.pid.kpBP = [0.]
-        ret.lateralTuning.pid.kfBP = [0.]
-        ret.lateralTuning.pid.kpV = [0.38]
-        ret.lateralTuning.pid.kiV = [0.45]
-        ret.lateralTuning.pid.kfV = [0.00007818594]
+        ret.lateralTuning.pid.kpBP = [0, 8, 23.6, 23.7, 40]
+        ret.lateralTuning.pid.kiBP = [0, 8, 23.6, 23.7, 40]
+        ret.lateralTuning.pid.kfBP = [0, 40]
+        ret.lateralTuning.pid.kpV = [0.6, 0.38, 0.38, 0.6, 0.6]
+        ret.lateralTuning.pid.kiV = [0.3, 0.45, 0.45, 0.05, 0.05]
+        ret.lateralTuning.pid.kfV = [0.000153263811757641, 0.000153263811757641]
         #NEW GOOD PID FROM CGW (LANELESS)
         #ret.lateralTuning.pid.kpBP = [0, 23.6, 23.61, 40]
         #ret.lateralTuning.pid.kiBP = [0, 23.6, 23.61, 40]
