@@ -9,6 +9,7 @@ import re
 
 _WAY_BBOX_PANNING = 1.6e-06  # 10 mts of paning to bounding box. (expressed in radians)
 
+# you can find yours https://wiki.openstreetmap.org/wiki/Default_speed_limits#cite_note-177
 _COUNTRY_LIMITS_KPH = {
     'DE': {
         'urban': 50.,
@@ -16,6 +17,17 @@ _COUNTRY_LIMITS_KPH = {
         'motorway': 0.,
         'living_street': 7.,
         'bicycle_road': 30.
+    }
+    'US-AZ': {
+        'motorway': 105.,
+        'school_zone': 24.,
+        'trunk': 88.,
+        'primary': 88.,
+        'secondary': 72.,
+        'tertiary': 56.,
+        'unclassified': 72.,
+        'residential': 40.,
+        'service': 40.
     }
 }
 
