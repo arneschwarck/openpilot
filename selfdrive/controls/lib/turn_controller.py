@@ -15,9 +15,9 @@ _ENTERING_PRED_CURVATURE_TH = 0.003  # Predicitve curvature threshold to trigger
 _ENTERING_PRED_LAT_ACC_TH = 1.0  # Predicted Lat Acc threshold to trigger entering turn state.
 _ABORT_ENTERING_CURVATURE_TH = 0.0015  # Curvature threshold to abort entering state if road straightens.
 
-_TURNING_CURVATURE_TH = 0.003  # Curvature threshold to trigger turning turn state.
-_LEAVING_CURVATURE_TH = 0.0025  # Curvature threshold to trigger leaving turn state.
-_FINISH_CURVATURE_TH = 0.002  # Curvature threshold to trigger the end of turn cycle.
+_TURNING_CURVATURE_TH = 0.0022  # Curvature threshold to trigger turning turn state.
+_LEAVING_CURVATURE_TH = 0.002  # Curvature threshold to trigger leaving turn state.
+_FINISH_CURVATURE_TH = 0.0015  # Curvature threshold to trigger the end of turn cycle.
 
 _ENTERING_SMOOTH_DECEL = -0.3  # Smooth decel when entering curve without overshooting lat acc limits.
 _LEAVING_ACC = 0.0  # Allowed acceleration when leaving the turn.
