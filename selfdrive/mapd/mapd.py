@@ -87,7 +87,9 @@ class MapD():
 
     ways = self.osm.fetch_road_ways_around_location(self.location, QUERY_RADIUS)
     self.way_collection = WayCollection(ways)
-    self.last_fetch_location = self.location
+
+    if len(ways) > 0:
+      self.last_fetch_location = self.location
 
     _debug(f'Mapd: Updated map data @ {self.location} - got {len(ways)} ways')
 
