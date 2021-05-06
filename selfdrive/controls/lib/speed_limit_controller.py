@@ -17,7 +17,7 @@ _MIN_ADAPTING_BRAKE_ACC = -1.  # Minimum acceleration allowed when adapting to l
 _MIN_ADAPTING_BRAKE_JERK = -0.5  # Minimum jerk allowed when adapting to lower speed limit.
 _SPEED_OFFSET_TH = -1.  # m/s Maximum offset between speed limit and current speed for adapting state.
 
-_LIMIT_ADAPT_TIME_PER_MS = 1.8  # Ideal adapt time(s) to lower speed limit. i.e. braking for every m/s of speed delta.
+_LIMIT_ADAPT_TIME_PER_MS = 1.  # Ideal adapt time(s) to lower speed limit. i.e. braking for every m/s of speed delta.
 _MIN_LIMIT_ADAPT_TIME = 5.  # s, Minimum time to provide for adapting logic.
 
 _MAX_SPEED_OFFSET_DELTA = 1.0  # m/s Maximum delta for speed limit changes.
