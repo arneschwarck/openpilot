@@ -7,7 +7,7 @@ import numpy as np
 import re
 
 
-_WAY_BBOX_PANNING = 1.6e-06  # 10 mts of paning to bounding box. (expressed in radians)
+_WAY_BBOX_PADING = 1.6e-06  # 10 mts of pading to bounding box. (expressed in radians)
 
 # you can find yours https://wiki.openstreetmap.org/wiki/Default_speed_limits#cite_note-177
 _COUNTRY_LIMITS_KPH = {
@@ -163,8 +163,8 @@ class WayRelation():
 
     # Define bounding box to ease the process of locating a node in a way.
     # [[min_lat, min_lon], [max_lat, max_lon]]
-    self.bbox = np.row_stack((np.amin(self._nodes_np, 0) - _WAY_BBOX_PANNING,
-                              np.amax(self._nodes_np, 0) + _WAY_BBOX_PANNING))
+    self.bbox = np.row_stack((np.amin(self._nodes_np, 0) - _WAY_BBOX_PADING,
+                              np.amax(self._nodes_np, 0) + _WAY_BBOX_PADING))
 
     if location is not None and bearing is not None:
       self.update(location, bearing)
