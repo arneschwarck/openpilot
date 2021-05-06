@@ -10,8 +10,9 @@ _LON_MPC_STEP = 0.2  # Time stemp of longitudinal control (5 Hz)
 _MIN_ADAPTING_BRAKE_ACC = -1.5  # Minimum acceleration allowed when adapting to lower speed limit.
 _MIN_ADAPTING_BRAKE_JERK = -1.0  # Minimum jerk allowed when adapting to lower speed limit.
 _SPEED_OFFSET_TH = -3.0  # m/s Maximum offset between speed limit and current speed for adapting state.
-_LIMIT_ADAPT_TIME_PER_MS = 1.8  # Ideal adapt time(s) to lower speed limit. i.e. braking for every m/s of speed delta.
+_LIMIT_ADAPT_TIME_PER_MS = 1.0  # Ideal adapt time(s) to lower speed limit. i.e. braking for every m/s of speed delta.
 _MIN_LIMIT_ADAPT_TIME = 5.  # s, Minimum time to provide for adapting logic.
+_MIN_SPEED_LIMIT = 11.  # m/s, Minimum speed limit to provide as solution.
 
 _MAX_MAP_DATA_AGE = 10.0  # s Maximum time to hold to map data, then consider it invalid.
 
@@ -51,7 +52,7 @@ class TurnSpeedController():
     self._speed_limit = 0.0
     self._state = TurnSpeedControlState.inactive
 
-    self._v_adapting = 0.0
+    self._next_speed_limit_prev = 0.
     self._adapting_cycles = 0
     self._adapting_time = 0.
 
@@ -81,7 +82,7 @@ class TurnSpeedController():
 
   @property
   def speed_limit(self):
-    return self._speed_limit
+    return max(self._speed_limit, _MIN_SPEED_LIMIT) if self._speed_limit > 0. else 0.
 
   def _get_limit_from_map_data(self, sm):
     # Ignore if no live map data
@@ -93,6 +94,7 @@ class TurnSpeedController():
     # Load limits from map_data
     map_data = sm[sock]
     speed_limit = 0.
+    next_speed_limit = map_data.turnSpeedLimitAhead if map_data.turnSpeedLimitAheadValid else 0.
 
     # Calculate the age of the gps fix. Ignore if too old.
     gps_fix_age = time.time() - map_data.lastGpsTimestamp * 1e-3
@@ -106,16 +108,30 @@ class TurnSpeedController():
       if speed_limit_end_time > 0.:
         speed_limit = map_data.turnSpeedLimit
 
-    # Estimate the time left to reach new turn speed ahead (if any) and use it if we are close
-    # enough while traveling when the turn speed is being reduced or set from 0.
-    if map_data.turnSpeedLimitAheadValid and self._v_adapting > 0:
-      next_speed_limit = map_data.turnSpeedLimitAhead
-      if self._speed_limit == 0 or next_speed_limit <= self._speed_limit:
-        next_speed_limit_time = (map_data.turnSpeedLimitAheadDistance / self._v_adapting) - gps_fix_age
-        if next_speed_limit_time <= max(_LIMIT_ADAPT_TIME_PER_MS * (self._v_adapting - next_speed_limit),
-                                        _MIN_LIMIT_ADAPT_TIME):
-          speed_limit = next_speed_limit
+    # When we have no ahead speed limit to consider or it is greater than current speed limit
+    # or car has stopped, then provide current value and reset tracking.
+    if next_speed_limit == 0. or self._v_ego == 0. or (speed_limit > 0 and next_speed_limit > speed_limit):
+      self._next_speed_limit_prev = 0.
+      return speed_limit
 
+    # When we have a next_speed_limit value that has not changed from a provided next speed limit value
+    # in previous resolutions, we keep providing it.
+    if next_speed_limit == self._next_speed_limit_prev:
+      return next_speed_limit
+
+    # Reset tracking
+    self._next_speed_limit_prev = 0.
+
+    # Calculate the time to the next speed limit and the adapt (braking)
+    next_speed_limit_time = (map_data.turnSpeedLimitAheadDistance / self._v_ego) - gps_fix_age
+    adapt_time = _LIMIT_ADAPT_TIME_PER_MS * (self._v_ego - max(next_speed_limit, _MIN_SPEED_LIMIT))
+
+    # When we detect we are close enough, we provide the next limit value and track it.
+    if next_speed_limit_time <= adapt_time:
+      self._next_speed_limit_prev = next_speed_limit
+      return next_speed_limit
+
+    # Otherwise we just provide the calculated speed_limit
     return speed_limit
 
   def _update_params(self):
@@ -126,12 +142,12 @@ class TurnSpeedController():
 
   def _update_calculations(self):
     # Update current velocity offset (error)
-    self._v_offset = self._speed_limit - self._v_ego
+    self._v_offset = self.speed_limit - self._v_ego
 
   def _state_transition(self):
     # In any case, if op is disabled, or speed limit control is disabled
     # or the reported speed limit is 0, deactivate.
-    if not self._op_enabled or not self._is_enabled or self._speed_limit == 0.:
+    if not self._op_enabled or not self._is_enabled or self.speed_limit == 0.:
       self.state = TurnSpeedControlState.inactive
       return
 
@@ -166,7 +182,7 @@ class TurnSpeedController():
     elif self.state == TurnSpeedControlState.adapting:
       # Calculate to adapt speed on target time.
       adapting_time = max(self._adapting_time - self._adapting_cycles * _LON_MPC_STEP, 1.0)  # min adapt time 1 sec.
-      a_target = (self._speed_limit - self._v_ego) / adapting_time
+      a_target = (self.speed_limit - self._v_ego) / adapting_time
       # smooth out acceleration using jerk limits.
       j_limits = np.array(self._adapting_jerk_limits)
       a_limits = self._a_ego + j_limits * _LON_MPC_STEP
@@ -174,16 +190,16 @@ class TurnSpeedController():
       # calculate the solution values
       self.a_turn_limit = max(a_target, _MIN_ADAPTING_BRAKE_ACC)  # acceleration in next Longitudinal control step.
       self.v_turn_limit = self._v_ego + self.a_turn_limit * _LON_MPC_STEP  # speed in next Longitudinal control step.
-      self.v_turn_limit_future = max(self._v_ego + self.a_turn_limit * 4., self._speed_limit)  # speed in 4 seconds.
+      self.v_turn_limit_future = max(self._v_ego + self.a_turn_limit * 4., self.speed_limit)  # speed in 4 seconds.
     # active
     elif self.state == TurnSpeedControlState.active:
       # Calculate following same cruise logic in planner.py
       self.v_turn_limit, self.a_turn_limit = \
-          speed_smoother(self._v_ego, self._a_ego, self._speed_limit, self._active_accel_limits[1],
+          speed_smoother(self._v_ego, self._a_ego, self.speed_limit, self._active_accel_limits[1],
                          self._active_accel_limits[0], self._active_jerk_limits[1], self._active_jerk_limits[0],
                          _LON_MPC_STEP)
       self.v_turn_limit = max(self.v_turn_limit, 0.)
-      self.v_turn_limit_future = self._speed_limit
+      self.v_turn_limit_future = self.speed_limit
 
   def update(self, enabled, v_ego, a_ego, sm, accel_limits, jerk_limits):
     self._op_enabled = enabled
@@ -191,10 +207,6 @@ class TurnSpeedController():
     self._a_ego = a_ego
     self._active_accel_limits = accel_limits
     self._active_jerk_limits = jerk_limits
-
-    # velocity before adapting should folow v_ego while not in adapting state.
-    if self.state != TurnSpeedControlState.adapting:
-      self._v_adapting = self._v_ego
 
     # Get the speed limit from Map Data
     self._speed_limit = self._get_limit_from_map_data(sm)
