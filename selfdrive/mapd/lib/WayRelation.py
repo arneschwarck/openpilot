@@ -22,7 +22,7 @@ _COUNTRY_LIMITS_KPH = {
         'residential': 40.,
         'service': 40.
       
-      'US-NY': {
+     'US-NY': {
         'motorway': 105.,
         'school_zone': 40.,
         'trunk': 88.,
