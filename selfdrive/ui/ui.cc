@@ -367,14 +367,21 @@ void Device::setAwake(bool on, bool reset) {
 }
 
 void Device::updateBrightness(const UIState &s) {
-  float clipped_brightness = std::min(100.0f, (s.scene.light_sensor * brightness_m) + brightness_b);
-  if (Hardware::TICI() && !s.scene.started) {
-    clipped_brightness = BACKLIGHT_OFFROAD;
+  int brightness = BACKLIGHT_OFFROAD;
+  if (!s.scene.started) {
+    brightness = BACKLIGHT_OFFROAD;
   }
 
-  int brightness = brightness_filter.update(clipped_brightness);
   if (!awake) {
     brightness = 0;
+  }
+
+  if (s.scene.car_state.getHeadlightON()) {
+    brightness = 9.0;
+  } else if (s.scene.car_state.getParkingLightON() && !s.scene.car_state.getHeadlightON()) {
+    brightness = 50.0;
+  } else {
+    brightness = 100.0;
   }
 
   if (brightness != last_brightness) {
