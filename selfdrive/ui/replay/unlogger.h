@@ -39,3 +39,4 @@ Q_OBJECT
 
     VisionIpcServer *vipc_server = nullptr;
 };
+

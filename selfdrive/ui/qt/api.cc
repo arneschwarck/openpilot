@@ -83,8 +83,6 @@ HttpRequest::HttpRequest(QObject *parent, const QString &requestURL, const QStri
 
   sendRequest(requestURL);
 
-  sendRequest(requestURL);
-
   if (!cache_key.isEmpty()) {
     if (std::string cached_resp = Params().get(cache_key.toStdString()); !cached_resp.empty()) {
       QTimer::singleShot(0, [=]() { emit receivedResponse(QString::fromStdString(cached_resp)); });

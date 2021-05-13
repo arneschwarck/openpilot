@@ -141,3 +141,4 @@ void LogReader::readyRead() {
   int dled = raw.size() - bStream.avail_out;
   cdled.put(dled);
 }
+
