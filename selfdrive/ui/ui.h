@@ -66,7 +66,6 @@ typedef enum UIStatus {
 } UIStatus;
 
 static std::map<UIStatus, NVGcolor> bg_colors = {
-  {STATUS_OFFROAD, nvgRGBA(0x0, 0x0, 0x0, 0xff)},
   {STATUS_DISENGAGED, nvgRGBA(0x0, 0x0, 0x0, 0xff)},
   {STATUS_ENGAGED, nvgRGBA(0x01, 0x50, 0x01, 0x01)},
   {STATUS_WARNING, nvgRGBA(0x80, 0x80, 0x80, 0x0f)},

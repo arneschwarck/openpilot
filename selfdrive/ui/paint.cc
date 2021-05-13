@@ -316,6 +316,7 @@ static void ui_draw_vision_event(UIState *s) {
     const int center_y = s->viz_rect.y + radius  + (bdr_s * 1.5);
     ui_draw_circle_image(s, center_x, center_y, radius, "wheel", bg_colors[s->status], 1.0f);
   }
+}
 
 static void ui_draw_vision_face(UIState *s) {
   const int radius = 96;
