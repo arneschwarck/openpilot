@@ -55,6 +55,9 @@ typedef struct Rect {
 
 const int bdr_s = 30;
 const int header_h = 420;
+const int footer_h = 280;
+const int speed_sgn_r = 96;
+const int speed_sgn_touch_pad = 50;
 
 const int UI_FREQ = 20;   // Hz
 

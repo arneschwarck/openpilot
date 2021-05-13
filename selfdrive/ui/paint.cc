@@ -703,7 +703,7 @@ static void ui_draw_vision_header(UIState *s) {
   if (s->scene.longitudinal_control) {
     ui_draw_vision_maxspeed(s);
   }
-  ui_draw_vision_speedlimit(s);
+  //ui_draw_vision_speedlimit(s);
   ui_draw_vision_speed(s);
   ui_draw_vision_event(s);
   if (s->scene.dev_bbui){
