@@ -133,9 +133,22 @@ static void update_state(UIState *s) {
   UIScene &scene = s->scene;
   if (scene.started && sm.updated("controlsState")) {
     scene.controls_state = sm["controlsState"].getControlsState();
+    scene.angleSteersDes = scene.controls_state.getSteeringAngleDesiredDeg();
+    if(scene.leftBlinker!=scene.car_state.getLeftBlinker() || scene.rightBlinker!=scene.car_state.getRightBlinker()){
+      scene.blinker_blinkingrate = 120;
+    }
   }
   if (sm.updated("carState")) {
     scene.car_state = sm["carState"].getCarState();
+    scene.leftBlinker = scene.car_state.getLeftBlinker();
+    scene.rightBlinker = scene.car_state.getRightBlinker();
+    scene.engineRPM = scene.car_state.getEngineRPM();
+    s->scene.aEgo = scene.car_state.getAEgo();
+    //s->scene.brakePress = scene.car_state.getBrakePressed();
+    s->scene.brakeLights = scene.car_state.getBrakeLights();
+    s->scene.parkingLightON = scene.car_state.getParkingLightON();
+    s->scene.headlightON = scene.car_state.getHeadlightON();
+    s->scene.angleSteers = scene.car_state.getSteeringAngleDeg();
   }
   if (sm.updated("radarState")) {
     std::optional<cereal::ModelDataV2::XYZTData::Reader> line;
@@ -166,6 +179,11 @@ static void update_state(UIState *s) {
   }
   if (sm.updated("deviceState")) {
     scene.deviceState = sm["deviceState"].getDeviceState();
+    s->scene.cpuPerc = scene.deviceState.getCpuUsagePercent();
+    s->scene.cpuTemp = scene.deviceState.getCpuTempC()[0];
+    s->scene.fanSpeed = scene.deviceState.getFanSpeedPercentDesired();
+    auto data = sm["deviceState"].getDeviceState();
+    snprintf(scene.ipAddr, sizeof(scene.ipAddr), "%s", data.getIpAddr().cStr());
   }
   if (sm.updated("pandaState")) {
     auto pandaState = sm["pandaState"].getPandaState();
@@ -179,6 +197,9 @@ static void update_state(UIState *s) {
     if (data.which() == cereal::UbloxGnss::MEASUREMENT_REPORT) {
       scene.satelliteCount = data.getMeasurementReport().getNumMeas();
     }
+    auto data2 = sm["gpsLocationExternal"].getGpsLocationExternal();
+      scene.gpsAccuracyUblox = data2.getAccuracy();
+      scene.altitudeUblox = data2.getAltitude();
   }
   if (sm.updated("liveLocationKalman")) {
     scene.gpsOK = sm["liveLocationKalman"].getLiveLocationKalman().getGpsOK();
@@ -223,6 +244,7 @@ static void update_params(UIState *s) {
   UIScene &scene = s->scene;
   if (frame % (5*UI_FREQ) == 0) {
     scene.is_metric = Params().getBool("IsMetric");
+    scene.dev_bbui = Params().getBool("DevBBUI");
   }
 }
 
@@ -276,7 +298,7 @@ static void update_status(UIState *s) {
 QUIState::QUIState(QObject *parent) : QObject(parent) {
   ui_state.sm = std::make_unique<SubMaster, const std::initializer_list<const char *>>({
     "modelV2", "controlsState", "liveCalibration", "radarState", "deviceState", "liveLocationKalman",
-    "pandaState", "carParams", "driverState", "driverMonitoringState", "sensorEvents", "carState", "ubloxGnss",
+    "pandaState", "carParams", "driverState", "driverMonitoringState", "sensorEvents", "carState", "ubloxGnss", "gpsLocationExternal",
 #ifdef QCOM2
     "roadCameraState",
 #endif
