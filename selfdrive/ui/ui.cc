@@ -244,9 +244,9 @@ static void update_params(UIState *s) {
   UIScene &scene = s->scene;
   if (frame % (5*UI_FREQ) == 0) {
     scene.is_metric = Params().getBool("IsMetric");
-    scene.speed_limit_control_enabled = params.getBool("SpeedLimitControl");
-    scene.speed_limit_perc_offset = params.getBool("SpeedLimitPercOffset");
-    scene.dev_bbui = params.getBool("DevBBUI");
+    scene.speed_limit_control_enabled = Params().getBool("SpeedLimitControl");
+    scene.speed_limit_perc_offset = Params().getBool("SpeedLimitPercOffset");
+    scene.dev_bbui = Params().getBool("DevBBUI");
   }
 }
 
