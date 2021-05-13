@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common/clutil.h"
+#include "selfdrive/common/clutil.h"
 
 class Rgb2Yuv {
 public:
@@ -11,4 +11,3 @@ private:
   size_t work_size[2];
   cl_kernel krnl;
 };
-

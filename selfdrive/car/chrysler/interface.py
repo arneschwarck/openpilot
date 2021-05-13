@@ -51,6 +51,8 @@ class CarInterface(CarInterfaceBase):
 
     ret.enableCamera = True
 
+    ret.enableBsm = 720 in fingerprint[0]
+
     return ret
 
   # returns a car.CarState

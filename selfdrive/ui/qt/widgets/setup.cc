@@ -1,3 +1,5 @@
+#include "setup.h"
+
 #include <QDebug>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -6,12 +8,12 @@
 #include <QStackedWidget>
 #include <QTimer>
 #include <QVBoxLayout>
-#include <QPixmap>
 
-#include "QrCode.hpp"
-#include "request_repeater.hpp"
-#include "common/params.h"
-#include "setup.hpp"
+#include <QPixmap>
+#include <QrCode.hpp>
+
+#include "selfdrive/common/params.h"
+#include "selfdrive/ui/qt/request_repeater.h"
 
 using qrcodegen::QrCode;
 
@@ -24,13 +26,17 @@ PairingQRWidget::PairingQRWidget(QWidget* parent) : QWidget(parent) {
 
   QTimer* timer = new QTimer(this);
   timer->start(30 * 1000);
-  connect(timer, SIGNAL(timeout()), this, SLOT(refresh()));
-  refresh(); // don't wait for the first refresh
+  connect(timer, &QTimer::timeout, this, &PairingQRWidget::refresh);
+}
+
+void PairingQRWidget::showEvent(QShowEvent *event){
+  refresh();
 }
 
 void PairingQRWidget::refresh(){
-  QString IMEI = QString::fromStdString(Params().get("IMEI"));
-  QString serial = QString::fromStdString(Params().get("HardwareSerial"));
+  Params params;
+  QString IMEI = QString::fromStdString(params.get("IMEI"));
+  QString serial = QString::fromStdString(params.get("HardwareSerial"));
 
   if (std::min(IMEI.length(), serial.length()) <= 5) {
     qrCode->setText("Error getting serial: contact support");
@@ -106,10 +112,10 @@ PrimeUserWidget::PrimeUserWidget(QWidget* parent) : QWidget(parent) {
 
   QString url = "https://api.commadotai.com/v1/devices/" + dongleId + "/owner";
   RequestRepeater *repeater = new RequestRepeater(this, url, "ApiCache_Owner", 6);
-  QObject::connect(repeater, SIGNAL(receivedResponse(QString)), this, SLOT(replyFinished(QString)));
+  QObject::connect(repeater, &RequestRepeater::receivedResponse, this, &PrimeUserWidget::replyFinished);
 }
 
-void PrimeUserWidget::replyFinished(QString response) {
+void PrimeUserWidget::replyFinished(const QString &response) {
   QJsonDocument doc = QJsonDocument::fromJson(response.toUtf8());
   if (doc.isNull()) {
     qDebug() << "JSON Parse failed on getting username and points";
@@ -142,7 +148,7 @@ PrimeAdWidget::PrimeAdWidget(QWidget* parent) : QWidget(parent) {
 
 /*
 
-  QLabel* description = new QLabel("Become a comma prime member in the comma connect app and get premium features!");
+  QLabel* description = new QLabel("Become a comma prime member at my.comma.ai and get premium features!");
   description->setStyleSheet(R"(
     font-size: 50px;
     color: #b8b8b8;
@@ -188,7 +194,7 @@ SetupWidget::SetupWidget(QWidget* parent) : QFrame(parent) {
     background: #585858;
   )");
   finishRegistationLayout->addWidget(finishButton);
-  QObject::connect(finishButton, SIGNAL(released()), this, SLOT(showQrCode()));
+  QObject::connect(finishButton, &QPushButton::released, this, &SetupWidget::showQrCode);
 
   QWidget* finishRegistration = new QWidget;
   finishRegistration->setLayout(finishRegistationLayout);
@@ -247,12 +253,12 @@ SetupWidget::SetupWidget(QWidget* parent) : QFrame(parent) {
   QString url = "https://api.commadotai.com/v1.1/devices/" + dongleId + "/";
   RequestRepeater* repeater = new RequestRepeater(this, url, "ApiCache_Device", 5);
 
-  QObject::connect(repeater, SIGNAL(receivedResponse(QString)), this, SLOT(replyFinished(QString)));
-  QObject::connect(repeater, SIGNAL(failedResponse(QString)), this, SLOT(parseError(QString)));
+  QObject::connect(repeater, &RequestRepeater::receivedResponse, this, &SetupWidget::replyFinished);
+  QObject::connect(repeater, &RequestRepeater::failedResponse, this, &SetupWidget::parseError);
   hide(); // Only show when first request comes back
 }
 
-void SetupWidget::parseError(QString response) {
+void SetupWidget::parseError(const QString &response) {
   show();
   showQr = false;
   mainLayout->setCurrentIndex(0);
@@ -263,7 +269,7 @@ void SetupWidget::showQrCode(){
   mainLayout->setCurrentIndex(1);
 }
 
-void SetupWidget::replyFinished(QString response) {
+void SetupWidget::replyFinished(const QString &response) {
   show();
   QJsonDocument doc = QJsonDocument::fromJson(response.toUtf8());
   if (doc.isNull()) {

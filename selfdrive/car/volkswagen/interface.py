@@ -57,7 +57,12 @@ class CarInterface(CarInterfaceBase):
 
     # Per-chassis tuning values, override tuning defaults here if desired
 
-    if candidate == CAR.GOLF_MK7:
+    if candidate == CAR.ATLAS_MK1:
+      # Averages of all CA Atlas variants
+      ret.mass = 2011 + STD_CARGO_KG
+      ret.wheelbase = 2.98
+
+    elif candidate == CAR.GOLF_MK7:
       # Averages of all AU Golf variants
       ret.mass = 1397 + STD_CARGO_KG
       ret.wheelbase = 2.62
@@ -169,6 +174,8 @@ class CarInterface(CarInterfaceBase):
     can_sends = self.CC.update(c.enabled, self.CS, self.frame, c.actuators,
                    c.hudControl.visualAlert,
                    c.hudControl.leftLaneVisible,
-                   c.hudControl.rightLaneVisible)
+                   c.hudControl.rightLaneVisible,
+                   c.hudControl.leftLaneDepart,
+                   c.hudControl.rightLaneDepart)
     self.frame += 1
     return can_sends

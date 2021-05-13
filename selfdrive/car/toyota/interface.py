@@ -35,7 +35,7 @@ class CarInterface(CarInterfaceBase):
     ret.steerLimitTimer = 0.4
 
     # Improved longitudinal tune
-    if candidate in [CAR.COROLLA_TSS2, CAR.COROLLAH_TSS2, CAR.RAV4_TSS2, CAR.RAV4H_TSS2, CAR.PRIUS_TSS2]:
+    if candidate in [CAR.COROLLA_TSS2, CAR.COROLLAH_TSS2, CAR.RAV4_TSS2, CAR.RAV4H_TSS2, CAR.PRIUS_TSS2, CAR.LEXUS_NX_TSS2]:
       ret.longitudinalTuning.deadzoneBP = [0., 8.05]
       ret.longitudinalTuning.deadzoneV = [.0, .14]
       ret.longitudinalTuning.kpBP = [0., 5., 20.]
@@ -324,7 +324,7 @@ class CarInterface(CarInterfaceBase):
       ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.3], [0.05]]
       ret.lateralTuning.pid.kfV = [0.00007]
 
-    elif candidate in [CAR.LEXUS_NXH, CAR.LEXUS_NX]:
+    elif candidate in [CAR.LEXUS_NXH, CAR.LEXUS_NX, CAR.LEXUS_NX_TSS2]:
       stop_and_go = True
       ret.safetyParam = 73
       ret.wheelbase = 2.66
@@ -423,6 +423,16 @@ class CarInterface(CarInterfaceBase):
       ret.mass = 4300. * CV.LB_TO_KG + STD_CARGO_KG
       ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.6], [0.1]]
       ret.lateralTuning.pid.kfV = [0.00006]
+
+    elif candidate == CAR.MIRAI:
+      stop_and_go = True
+      ret.safetyParam = 73
+      ret.wheelbase = 2.91
+      ret.steerRatio = 14.8
+      tire_stiffness_factor = 0.8
+      ret.mass = 4300. * CV.LB_TO_KG + STD_CARGO_KG
+      ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.6], [0.1]]
+      ret.lateralTuning.pid.kf = 0.00006
 
     elif candidate == CAR.MIRAI:
       stop_and_go = True

@@ -1,1 +1,1 @@
-#define COMMA_VERSION "0.8.4-ArnePilot"
+#define COMMA_VERSION "0.8.5-ArnePilot"

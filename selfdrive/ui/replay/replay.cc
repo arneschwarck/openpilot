@@ -1,16 +1,16 @@
-#include "replay.hpp"
+#include "replay.h"
+#include "selfdrive/hardware/hw.h"
 
 Replay::Replay(QString route_, int seek) : route(route_) {
   unlogger = new Unlogger(&events, &events_lock, &frs, seek);
   current_segment = 0;
-
-  http = new HttpRequest(this, "https://api.commadotai.com/v1/route/" + route + "/files");
-  QObject::connect(http, SIGNAL(receivedResponse(QString)), this, SLOT(parseResponse(QString)));
+  bool create_jwt = !Hardware::PC();
+  http = new HttpRequest(this, "https://api.commadotai.com/v1/route/" + route + "/files", "", create_jwt);
+  QObject::connect(http, &HttpRequest::receivedResponse, this, &Replay::parseResponse);
 }
 
-void Replay::parseResponse(QString response){
-  response = response.trimmed();
-  QJsonDocument doc = QJsonDocument::fromJson(response.toUtf8());
+void Replay::parseResponse(const QString &response){
+  QJsonDocument doc = QJsonDocument::fromJson(response.trimmed().toUtf8());
 
   if (doc.isNull()) {
     qDebug() << "JSON Parse failed";
@@ -35,23 +35,11 @@ void Replay::addSegment(int i){
   lrs.insert(i, new LogReader(log_fn, &events, &events_lock, &unlogger->eidx));
 
   lrs[i]->moveToThread(thread);
-  QObject::connect(thread, SIGNAL (started()), lrs[i], SLOT (process()));
+  QObject::connect(thread, &QThread::started, lrs[i], &LogReader::process);
   thread->start();
 
   QString camera_fn = this->camera_paths.at(i).toString();
   frs.insert(i, new FrameReader(qPrintable(camera_fn)));
-}
-
-void Replay::trimSegment(int n){
-  event_sizes.enqueue(events.size() - event_sizes.last());
-  auto first = events.begin();
-
-  for(int i = 0 ; i < n ; i++){
-    int remove = event_sizes.dequeue();
-    for(int j = 0 ; j < remove ; j++){
-      first = events.erase(first);
-    }
-  }
 }
 
 void Replay::stream(SubMaster *sm){
@@ -64,8 +52,5 @@ void Replay::stream(SubMaster *sm){
 
   QObject::connect(unlogger, &Unlogger::loadSegment, [=](){
     addSegment(++current_segment);
-    if (current_segment > 1) {
-      trimSegment(1);
-    }
   });
 }

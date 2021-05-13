@@ -10,6 +10,10 @@ from cereal import log, car
 from selfdrive.car.fingerprints import all_known_cars
 from selfdrive.car.car_helpers import interfaces
 from selfdrive.car.honda.values import HONDA_BOSCH
+from selfdrive.car.honda.values import CAR as HONDA
+from selfdrive.car.toyota.values import CAR as TOYOTA
+from selfdrive.car.chrysler.values import CAR as CHRYSLER
+from selfdrive.car.hyundai.values import CAR as HYUNDAI
 from selfdrive.test.test_routes import routes, non_tested_cars
 from selfdrive.test.openpilotci import get_url
 from tools.lib.logreader import LogReader
@@ -19,66 +23,31 @@ from panda.tests.safety.common import package_can_msg
 
 PandaType = log.PandaState.PandaType
 
-ROUTES = {v['carFingerprint']: k for k, v in routes.items() if v['enableCamera']}
+ROUTES = {v['carFingerprint']: k for k, v in routes.items() if 'enableCamera' not in v or v['enableCamera']}
 
 # TODO: get updated routes for these cars
 ignore_can_valid = [
-  "ACURA ILX 2016 ACURAWATCH PLUS",
-  "TOYOTA PRIUS 2017",
-  "TOYOTA COROLLA 2017",
-  "LEXUS RX HYBRID 2017",
-  "TOYOTA AVALON 2016",
-  "HONDA PILOT 2019 ELITE",
-  "HYUNDAI SANTA FE LIMITED 2019",
+  HONDA.ACURA_ILX,
+  TOYOTA.LEXUS_RXH,
+  TOYOTA.AVALON,
+  HONDA.PILOT_2019,
+  HYUNDAI.SANTA_FE,
 
   # TODO: get new routes for these cars, current routes are from giraffe with different buses
-  "HONDA CR-V 2019 HYBRID",
-  "HONDA ACCORD 2018 SPORT 2T",
-  "HONDA INSIGHT 2019 TOURING",
-  "HONDA ACCORD 2018 HYBRID TOURING",
-
-  #TODO: fix This
-  "TOYOTA MIRAI 2021",
+  HONDA.CRV_HYBRID,
+  HONDA.INSIGHT,
+  HONDA.ACCORDH,
 ]
 
 ignore_carstate_check = [
   # TODO: chrysler gas state in panda also checks wheel speed, refactor so it's only gas
-  "CHRYSLER PACIFICA HYBRID 2017",
+  CHRYSLER.PACIFICA_2017_HYBRID,
 
   # TODO: get new routes for these cars, current routes are from giraffe with different buses
-  "HONDA CR-V 2019 HYBRID",
-  "HONDA ACCORD 2018 SPORT 2T",
-  "HONDA INSIGHT 2019 TOURING",
-  "HONDA ACCORD 2018 HYBRID TOURING",
-
-  # TODO: fix panda rx arne!
-  "TOYOTA AVALON 2016",
-  "TOYOTA COROLLA TSS2 2019",
-  "TOYOTA RAV4 2019",
-  "TOYOTA COROLLA HYBRID TSS2 2019",
-  "LEXUS ES 2019",
-  "LEXUS ES 300H 2018",
-  "TOYOTA SIENNA XLE 2018",
-  "LEXUS ES 300H 2019",
-  "LEXUS IS300 2018",
-  "TOYOTA RAV4 HYBRID 2019",
-  "LEXUS CT 200H 2018",
-  "LEXUS NX300H 2018",
-  "LEXUS NX300 2018",
-  "TOYOTA PRIUS TSS2 2021",
-  "TOYOTA MIRAI 2021",
-  "TOYOTA RAV4 2017",
-  "TOYOTA RAV4 HYBRID 2017",
-  "TOYOTA PRIUS 2017",
-  "LEXUS RX 350 2016",
-  "TOYOTA COROLLA 2017",
-  "LEXUS RX HYBRID 2017",
-  "LEXUS RX350 2020",
-  "LEXUS RX450 HYBRID 2020",
-  "TOYOTA CAMRY 2018",
-  "TOYOTA CAMRY 2021",
-  "TOYOTA CAMRY HYBRID 2021",
-  "TOYOTA HIGHLANDER 2020",
+  HONDA.CRV_HYBRID,
+  HONDA.ACCORD,
+  HONDA.INSIGHT,
+  HONDA.ACCORDH,
 ]
 
 @parameterized_class(('car_model'), [(car,) for car in all_known_cars()])

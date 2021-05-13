@@ -1,13 +1,13 @@
 #pragma once
 
-#include <string>
 #include <cstdint>
 #include <memory>
+#include <string>
 #include <unordered_map>
 
-#include "messaging.hpp"
-#include "generated/ubx.h"
-#include "generated/gps.h"
+#include "cereal/messaging/messaging.h"
+#include "selfdrive/locationd/generated/gps.h"
+#include "selfdrive/locationd/generated/ubx.h"
 
 // protocol constants
 namespace ublox {
@@ -49,4 +49,3 @@ class UbloxMsgParser {
     uint8_t msg_parse_buf[ublox::UBLOX_HEADER_SIZE + ublox::UBLOX_MAX_MSG_SIZE];
 
 };
-
