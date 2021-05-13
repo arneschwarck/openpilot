@@ -46,11 +46,7 @@ public:
 protected:
   void hideEvent(QHideEvent *event);
   void showEvent(QShowEvent *event);
-
-protected:
-  void hideEvent(QHideEvent *event);
-  void showEvent(QShowEvent *event);
-
+  
 signals:
   void closeSettings();
   void offroadTransition(bool offroad);

@@ -1,4 +1,5 @@
 """Install exception handler for process crash."""
+import os
 import sys
 import capnp
 import requests
@@ -8,7 +9,6 @@ from common.params import Params
 from selfdrive.version import version, dirty, origin, branch
 
 from selfdrive.swaglog import cloudlog
-from selfdrive.version import version
 
 import sentry_sdk
 from sentry_sdk.integrations.threading import ThreadingIntegration

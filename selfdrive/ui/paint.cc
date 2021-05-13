@@ -732,6 +732,7 @@ static void ui_draw_vision(UIState *s) {
     ui_draw_vision_header(s);
     if (s->scene.controls_state.getAlertSize() == cereal::ControlsState::AlertSize::NONE) {
       ui_draw_vision_face(s);
+      ui_draw_vision_brake(s);
     }
   } else {
     ui_draw_driver_view(s);
