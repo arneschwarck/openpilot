@@ -182,7 +182,7 @@ typedef struct UIState {
   bool speed_limit_control_enabled;
   float speed_limit_perc_offset;
   double last_speed_limit_sign_tap;
-  
+
   Rect video_rect, viz_rect;
   float car_space_transform[6];
   bool wide_camera;
