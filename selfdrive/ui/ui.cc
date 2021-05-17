@@ -168,9 +168,6 @@ static void update_state(UIState *s) {
     if (data.which() == cereal::UbloxGnss::MEASUREMENT_REPORT) {
       scene.satelliteCount = data.getMeasurementReport().getNumMeas();
     }
-    auto data2 = sm["gpsLocationExternal"].getGpsLocationExternal();
-      scene.gpsAccuracyUblox = data2.getAccuracy();
-      scene.altitudeUblox = data2.getAltitude();
   }
   if (sm.updated("carParams")) {
     scene.longitudinal_control = sm["carParams"].getCarParams().getOpenpilotLongitudinalControl();

@@ -195,7 +195,7 @@ DevicePanel::DevicePanel(QWidget* parent) : QWidget(parent) {
       padding: 0;
       height: 120px;
       border-radius: 15px;
-      background-color: #000000;
+      background-color: #393939;
     }
   )");
 }
@@ -250,31 +250,6 @@ QWidget * network_panel(QWidget * parent) {
   layout->addWidget(new SshToggle());
   layout->addWidget(horizontal_line());
   layout->addWidget(new SshControl());
-  layout->addWidget(horizontal_line());
-
-  const char* gitpull = "/data/openpilot/scripts/gitpull.sh ''";
-  layout->addWidget(new ButtonControl("Git Pull", "Fetch", "Pressing this button will pull latest changes from github.",
-                                      [=]() { std::system(gitpull); }));
-
-  layout->addWidget(horizontal_line());
-
-  const char* panda_flashing = "/data/openpilot/scripts/panda_flashing.sh ''";
-  layout->addWidget(new ButtonControl("Flash panda", "Flash", "Are you sure you want to flash the panda manully?",
-                                      [=]() {
-                                        if (ConfirmationDialog::confirm("are you sure?")) {
-                                          std::system(panda_flashing);
-                                        }
-                                      }));
-
-  layout->addWidget(horizontal_line());
-
-  const char* run_mixplorer = "/data/openpilot/run_mixplorer.sh ''";
-  layout->addWidget(new ButtonControl("Mixplorer", "Open Files", "This is open file browers.",
-                                      [=]() {
-                                        if (ConfirmationDialog::confirm("are you sure?")) {
-                                          std::system(run_mixplorer);
-                                        }
-                                      }));
 
   layout->addStretch(1);
 
@@ -299,7 +274,7 @@ void SettingsWindow::showEvent(QShowEvent *event) {
   panel_widget = new QStackedWidget();
   panel_widget->setStyleSheet(R"(
     border-radius: 30px;
-    background-color: #000000;
+    background-color: #292929;
   )");
 
   // close button
@@ -309,7 +284,7 @@ void SettingsWindow::showEvent(QShowEvent *event) {
     font-weight: bold;
     border 1px grey solid;
     border-radius: 100px;
-    background-color: #000000;
+    background-color: #292929;
   )");
   close_btn->setFixedSize(200, 200);
   sidebar_layout->addSpacing(45);
@@ -325,7 +300,6 @@ void SettingsWindow::showEvent(QShowEvent *event) {
     {"Network", network_panel(this)},
     {"Toggles", new TogglesPanel(this)},
     {"Developer", new DeveloperPanel()},
-    {"ArnePilot", ArnePilot_panel()},
   };
 
   sidebar_layout->addSpacing(45);
