@@ -9,7 +9,7 @@
 #include <QTimer>
 #include <QVBoxLayout>
 #include <QrCode.hpp>
-
+#include <QPixmap> // NICE PRIUS BOX
 #include "selfdrive/common/params.h"
 #include "selfdrive/ui/qt/request_repeater.h"
 
@@ -136,6 +136,16 @@ PrimeAdWidget::PrimeAdWidget(QWidget* parent) : QWidget(parent) {
   vlayout->setMargin(30);
   vlayout->setSpacing(15);
 
+  vlayout->addWidget(new QLabel("Easy Driving~"), 1, Qt::AlignCenter);
+
+  QPixmap logo("../assets/icon_prius.png");
+  QLabel *kumar = new QLabel();
+  kumar->setPixmap(logo.scaledToWidth(430, Qt::SmoothTransformation));
+  kumar->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
+  vlayout->addWidget(kumar, 0, Qt::AlignCenter);
+
+/*
+
   vlayout->addWidget(new QLabel("Upgrade now"), 1, Qt::AlignTop);
 
   QLabel* description = new QLabel("Become a comma prime member at my.comma.ai and get premium features!");
@@ -151,7 +161,7 @@ PrimeAdWidget::PrimeAdWidget(QWidget* parent) : QWidget(parent) {
     QLabel* feature = new QLabel(f);
     feature->setStyleSheet(R"(font-size: 40px;)");
     vlayout->addWidget(feature, 0, Qt::AlignBottom);
-  }
+  }*/
 
   setLayout(vlayout);
 }
