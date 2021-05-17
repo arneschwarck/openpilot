@@ -1,4 +1,5 @@
 #include "rgb_to_yuv.h"
+#include <assert.h>
 
 #include <assert.h>
 

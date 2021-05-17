@@ -49,4 +49,3 @@ class UbloxMsgParser {
     uint8_t msg_parse_buf[ublox::UBLOX_HEADER_SIZE + ublox::UBLOX_MAX_MSG_SIZE];
 
 };
-

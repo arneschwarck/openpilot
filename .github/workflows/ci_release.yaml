@@ -1,0 +1,59 @@
+name: CI Release
+on:
+  push:
+    branches-ignore:
+      - 'testing-closet*'
+    paths-ignore:
+      - '**.md'
+      - 'README*'
+  workflow_dispatch:
+
+jobs:
+  ci_release:
+    name: github ci release
+    runs-on: ubuntu-20.04
+    timeout-minutes: 90
+    env:
+      TARGET_DIR: tmp_op_ci
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: true
+        lfs: true
+    - name: Prepare CI Env Vars
+      run: |
+        chmod +x ./.github/scripts/ci_env_vars.sh
+        source ./.github/scripts/ci_env_vars.sh
+    - name: Stop for non-default repo
+      if: ${{ !env.IS_DEFAULT_REPO }}
+      run: |
+        echo "::error file=prebuilt.yaml::Prebuilts are only release from the default repo."
+        exit 1
+    - name: Setup Build Branch
+      run: |
+        if [[ $IS_MAIN_BRANCH ]]; then
+          echo "BRANCH=test" >> $GITHUB_ENV
+        else
+          echo "BRANCH=${{ env.HEAD_BRANCH }}-ci" >> $GITHUB_ENV
+        fi
+    - name: Wait For Passing Tests
+      id: wait_for_tests
+      uses: lewagon/wait-on-check-action@v0.2
+      if: ${{ github.event_name == 'push' }}
+      with:
+        ref: ${{ github.sha }}
+        wait-interval: 60
+        check-name: 'wait for selfdrive'
+    - name: Prepare release files
+      if: ${{ github.event_name == 'workflow_dispatch' || steps.wait_for_tests.outcome == 'success'}}
+      run: |
+        chmod +x release/build_release_ci.sh
+        ./release/build_release_ci.sh
+    - name: Push changes
+      if: ${{ github.event_name == 'workflow_dispatch' || steps.wait_for_tests.outcome == 'success'}}
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.REPO_PAT }}
+        branch: ${{ env.BRANCH }}
+        directory: ${{ env.TARGET_DIR }}
+        force: true

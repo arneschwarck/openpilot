@@ -27,6 +27,8 @@ try:
 except ImportError:
   migration = {}
 
+NO_API = "NO_API" in os.environ
+SUPPORTED_CARS = list(TOYOTA_FINGERPRINTS.keys()) + list(HONDA_FINGERPRINTS.keys()) + list(HYUNDAI_FINGERPRINTS.keys())+ list(VW_FINGERPRINTS.keys())
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser(description='Run FW fingerprint on Qlog of route or list of routes')
@@ -187,4 +189,3 @@ if __name__ == "__main__":
   print(f"Correct fuzzy matches:        {good_fuzzy}")
   print(f"Wrong fuzzy matches:          {wrong_fuzzy}")
   print()
-

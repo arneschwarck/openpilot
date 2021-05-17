@@ -1,6 +1,7 @@
 #include "selfdrive/common/util.h"
 
 #include <errno.h>
+#include <sstream>
 
 #include <sstream>
 

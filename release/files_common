@@ -18,11 +18,15 @@ common/__init__.py
 common/gpio.py
 common/realtime.py
 common/clock.pyx
+common/colors.py
+common/data_collector.py
+common/is_shane.py
 common/timeout.py
 common/ffi_wrapper.py
 common/file_helpers.py
 common/logging_extra.py
 common/numpy_fast.py
+common/op_params.py
 common/params.py
 common/params_pxd.pxd
 common/params_pyx.pyx
@@ -34,6 +38,7 @@ common/filter_simple.py
 common/stat_live.py
 common/spinner.py
 common/text_window.py
+common/travis_checker.py
 common/cython_hacks.py
 common/SConscript
 
@@ -220,6 +225,7 @@ selfdrive/controls/lib/alertmanager.py
 selfdrive/controls/lib/alerts_offroad.json
 selfdrive/controls/lib/events.py
 selfdrive/controls/lib/drive_helpers.py
+selfdrive/controls/lib/dynamic_gas.py
 selfdrive/controls/lib/latcontrol_pid.py
 selfdrive/controls/lib/latcontrol_indi.py
 selfdrive/controls/lib/latcontrol_lqr.py
@@ -232,11 +238,15 @@ selfdrive/controls/lib/longitudinal_planner.py
 selfdrive/controls/lib/radar_helpers.py
 selfdrive/controls/lib/vehicle_model.py
 selfdrive/controls/lib/speed_smoother.py
+selfdrive/controls/lib/speed_limit_controller.py
+selfdrive/controls/lib/turn_controller.py
 selfdrive/controls/lib/fcw.py
 selfdrive/controls/lib/long_mpc.py
 selfdrive/controls/lib/long_mpc_model.py
 
 selfdrive/controls/lib/cluster/*
+selfdrive/controls/lib/dynamic_follow
+selfdrive/controls/lib/dynamic_follow/auto_df_weights.npz
 
 selfdrive/controls/lib/lateral_mpc/lib_mpc_export/*
 selfdrive/controls/lib/lateral_mpc/.gitignore
@@ -350,7 +360,7 @@ selfdrive/ui/*.h
 selfdrive/ui/ui
 selfdrive/ui/text
 selfdrive/ui/spinner
-
+selfdrive/ui/dashcam.h
 selfdrive/ui/qt/*.cc
 selfdrive/ui/qt/*.h
 selfdrive/ui/qt/offroad/*.cc
