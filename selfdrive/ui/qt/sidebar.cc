@@ -64,6 +64,7 @@ void Sidebar::update(const UIState &s) {
   auto deviceState = (*s.sm)["deviceState"].getDeviceState();
   net_type = deviceState.getNetworkType();
   strength = deviceState.getNetworkStrength();
+  wifi_addr = deviceState.getWifiIpAddress().cStr();
 
   temp_status = danger_color;
   auto ts = deviceState.getThermalStatus();
@@ -102,10 +103,14 @@ void Sidebar::paintEvent(QPaintEvent *event) {
 
   // network
   p.drawImage(58, 196, signal_imgs[strength]);
-  configFont(p, "Open Sans", 35, "Regular");
+  configFont(p, "Open Sans", 30, "Regular");
   p.setPen(QColor(0xff, 0xff, 0xff));
-  const QRect r = QRect(50, 247, 100, 50);
-  p.drawText(r, Qt::AlignCenter, network_type[net_type]);
+  //  const QRect r = QRect(50, 247, 100, 50);
+  const QRect r = QRect(0, 247, event->rect().width(), 50);
+  if(Hardware::EON() && net_type == cereal::DeviceState::NetworkType::WIFI)
+    p.drawText(r, Qt::AlignCenter, wifi_addr);
+  else
+    p.drawText(r, Qt::AlignCenter, network_type[net_type]);
 
   // metrics
   drawMetric(p, "TEMP", QString("%1°C").arg(temp_val), temp_status, 338);
