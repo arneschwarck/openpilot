@@ -251,6 +251,10 @@ QWidget * network_panel(QWidget * parent) {
   layout->addWidget(horizontal_line());
   layout->addWidget(new SshControl());
   layout->addWidget(horizontal_line());
+  layout->addWidget(new ShutdowndToggle());
+  layout->addWidget(horizontal_line());
+  layout->addWidget(new DisableLoggerToggle());
+  layout->addWidget(horizontal_line());
 
   const char* gitpull = "/data/openpilot/scripts/gitpull.sh ''";
   layout->addWidget(new ButtonControl("Git Pull", "Fetch", "Pressing this button will pull latest changes from github.",
@@ -298,6 +302,12 @@ QWidget * ArnePilot_panel() {
                                               ));
 
   toggles_list->addWidget(horizontal_line());
+
+  toggles_list->addWidget(new ParamControl("AutoLaneChangeEnabled",
+                                            "Enable Auto Lane Change Assist",
+                                            "warnings: it is beta, be careful!!",
+                                            "../assets/offroad/icon_shell.png",
+                                              ));
 
 
   QWidget *widget = new QWidget;

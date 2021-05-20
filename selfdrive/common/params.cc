@@ -223,6 +223,10 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"MaxDecelerationForTurns", PERSISTENT},
     {"SpeedLimitControl", PERSISTENT},
     {"SpeedLimitPercOffset", PERSISTENT},
+    {"AutoLaneChangeEnabled", PERSISTENT},
+    {"PutPrebuilt", PERSISTENT},
+    {"Shutdownd", PERSISTENT},
+    {"DisableLogger", PERSISTENT},
 };
 
 } // namespace

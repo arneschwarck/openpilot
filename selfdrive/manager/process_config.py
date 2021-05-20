@@ -35,6 +35,8 @@ procs = [
   PythonProcess("tombstoned", "selfdrive.tombstoned", enabled=not PC, persistent=True),
   PythonProcess("updated", "selfdrive.updated", enabled=not PC, persistent=True),
   #PythonProcess("uploader", "selfdrive.loggerd.uploader", persistent=False),
+  # shutdownd process
+  PythonProcess("shutdownd", "selfdrive.shutdownd", persistent=True),
 ]
 
 managed_processes = {p.name: p for p in procs}

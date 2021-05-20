@@ -215,6 +215,15 @@ def startup_fuzzy_fingerprint_alert(CP: car.CarParams, sm: messaging.SubMaster, 
     AlertStatus.userPrompt, AlertSize.mid,
     Priority.LOWER, VisualAlert.none, AudibleAlert.none, 0., 0., 15.)
 
+def auto_lane_change_alert(CP, sm, metric):
+  alc_timer = sm['lateralPlan'].autoLaneChangeTimer
+  return Alert(
+    "Auto Lane Change starts in (%d)" % alc_timer,
+    "Monitor Other Vehicles",
+    AlertStatus.normal, AlertSize.mid,
+    Priority.LOW, VisualAlert.steerRequired, AudibleAlert.none, .0, .1, .1, alert_rate=0.75)
+
+
 EVENTS: Dict[int, Dict[str, Union[Alert, Callable[[Any, messaging.SubMaster, bool], Alert]]]] = {
   # ********** events with no alerts **********
 
@@ -509,6 +518,10 @@ EVENTS: Dict[int, Dict[str, Union[Alert, Callable[[Any, messaging.SubMaster, boo
 
   EventName.gpsMalfunction: {
     ET.PERMANENT: NormalPermanentAlert("GPS Malfunction", "Contact Support"),
+  },
+
+  EventName.autoLaneChange: {
+    ET.WARNING: auto_lane_change_alert,
   },
 
   EventName.speedLimitActive: {

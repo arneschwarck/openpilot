@@ -41,6 +41,10 @@ def manager_init():
     ("OpenpilotEnabledToggle", "1"),
     ("SpeedLimitControl", "1"),
     ("SpeedLimitPercOffset", "10.0"),
+    ("AutoLaneChangeEnabled", "0"),
+    ("PutPrebuilt", "0"),
+    ("Shutdownd", "0"),
+    ("DisableLogger", "0"),
   ]
 
   if TICI:
@@ -149,6 +153,15 @@ def manager_thread():
 
     if sm['deviceState'].freeSpacePercent < 5:
       not_run.append("loggerd")
+
+    if params.get_bool("Shutdownd"):
+      not_run.append("shutdownd")
+    if params.get_bool("DisableLogger"):
+      not_run.append("loggerd")
+      #not_run.append("deleter")
+      #not_run.append("logmessaged")
+      #not_run.append("tombstoned")
+      not_run.append("uploader")
 
     started = sm['deviceState'].started
     driverview = params.get_bool("IsDriverViewEnabled")
