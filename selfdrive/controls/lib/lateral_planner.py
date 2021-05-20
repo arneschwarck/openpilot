@@ -18,7 +18,7 @@ LaneChangeDirection = log.LateralPlan.LaneChangeDirection
 
 LOG_MPC = os.environ.get('LOG_MPC', False)
 
-LANE_CHANGE_SPEED_MIN = 30 * CV.MPH_TO_MS
+LANE_CHANGE_SPEED_MIN = 30 * CV.KPH_TO_MS
 LANE_CHANGE_TIME_MAX = 10.
 # this corresponds to 80deg/s and 20deg/s steering angle in a toyota corolla
 MAX_CURVATURE_RATES = [0.03762194918267951, 0.003441203371932992]
@@ -50,7 +50,6 @@ class LateralPlanner():
   def __init__(self, CP, use_lanelines=True, wide_camera=False):
     self.use_lanelines = use_lanelines
     self.LP = LanePlanner(wide_camera)
-
     self.op_params = opParams()
 
     self.last_cloudlog_t = 0
@@ -65,13 +64,14 @@ class LateralPlanner():
     self.lane_change_ll_prob = 1.0
     self.prev_one_blinker = False
     self.desire = log.LateralPlan.Desire.none
+    self.auto_lane_change_timer = 0.0
+    self.prev_torque_applied = False
 
     self.path_xyz = np.zeros((TRAJECTORY_SIZE,3))
     self.path_xyz_stds = np.ones((TRAJECTORY_SIZE,3))
     self.plan_yaw = np.zeros((TRAJECTORY_SIZE,))
     self.t_idxs = np.arange(TRAJECTORY_SIZE)
     self.y_pts = np.zeros(TRAJECTORY_SIZE)
-    self.alca_nudge_required = self.op_params.get('alca_nudge_required')
     self.alca_min_speed = self.op_params.get('alca_min_speed')
 
   def setup_mpc(self):
@@ -269,6 +269,7 @@ class LateralPlanner():
     plan_send.lateralPlan.desire = self.desire
     plan_send.lateralPlan.laneChangeState = self.lane_change_state
     plan_send.lateralPlan.laneChangeDirection = self.lane_change_direction
+    plan_send.lateralPlan.autoLaneChangeEnabled = self.auto_lane_change_enabled
     plan_send.lateralPlan.autoLaneChangeTimer = 3 - int(self.auto_lane_change_timer)
 
     pm.send('lateralPlan', plan_send)
