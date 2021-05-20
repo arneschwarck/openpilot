@@ -11,8 +11,8 @@ procs = [
   NativeProcess("camerad", "selfdrive/camerad", ["./camerad"], unkillable=True, driverview=True),
   NativeProcess("clocksd", "selfdrive/clocksd", ["./clocksd"]),
   NativeProcess("dmonitoringmodeld", "selfdrive/modeld", ["./dmonitoringmodeld"], enabled=(not PC or WEBCAM), driverview=True),
-  #NativeProcess("logcatd", "selfdrive/logcatd", ["./logcatd"]),
-  #NativeProcess("loggerd", "selfdrive/loggerd", ["./loggerd"]),
+  NativeProcess("logcatd", "selfdrive/logcatd", ["./logcatd"]),
+  NativeProcess("loggerd", "selfdrive/loggerd", ["./loggerd"]),
   NativeProcess("modeld", "selfdrive/modeld", ["./modeld"]),
   NativeProcess("proclogd", "selfdrive/proclogd", ["./proclogd"]),
   NativeProcess("sensord", "selfdrive/sensord", ["./sensord"], enabled=not PC, persistent=EON, sigkill=EON),
@@ -34,7 +34,7 @@ procs = [
   PythonProcess("timezoned", "selfdrive.timezoned", enabled=TICI, persistent=True),
   PythonProcess("tombstoned", "selfdrive.tombstoned", enabled=not PC, persistent=True),
   PythonProcess("updated", "selfdrive.updated", enabled=not PC, persistent=True),
-  #PythonProcess("uploader", "selfdrive.loggerd.uploader", persistent=False),
+  PythonProcess("uploader", "selfdrive.loggerd.uploader", persistent=False),
   # shutdownd process
   PythonProcess("shutdownd", "selfdrive.shutdownd", persistent=True),
 ]
