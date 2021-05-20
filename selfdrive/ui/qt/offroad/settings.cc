@@ -306,9 +306,10 @@ QWidget * ArnePilot_panel() {
   toggles_list->addWidget(new ParamControl("AutoLaneChangeEnabled",
                                             "Enable Auto Lane Change Assist",
                                             "warnings: it is beta, be careful!!",
-                                            "../assets/offroad/icon_shell.png",
+                                            "../assets/offroad/icon_shell.png"
                                               ));
 
+  toggles_list->addWidget(horizontal_line());
 
   QWidget *widget = new QWidget;
   widget->setLayout(toggles_list);
