@@ -24,8 +24,6 @@ from selfdrive.thermald.power_monitoring import PowerMonitoring
 from selfdrive.version import get_git_branch, terms_version, training_version
 from common.op_params import opParams
 
-import re
-import subprocess
 
 op_params = opParams()
 ArizonaMode = op_params.get('ArizonaMode')
