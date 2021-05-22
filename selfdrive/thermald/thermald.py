@@ -197,7 +197,6 @@ def thermald_thread():
     cloudlog.event("CPR", data=cpr_data)
 
   ts_last_ip = 0
-  ip_addr = '255.255.255.255'
 
   while 1:
     pandaState = messaging.recv_sock(pandaState_sock, wait=True)
@@ -283,7 +282,6 @@ def thermald_thread():
       except Exception:
         ip_addr = 'N/A'
       ts_last_ip = ts
-    msg.deviceState.ipAddr = ip_addr
 
     current_filter.update(msg.deviceState.batteryCurrent / 1e6)
 

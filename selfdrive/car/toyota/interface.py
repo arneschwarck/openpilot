@@ -87,15 +87,15 @@ class CarInterface(CarInterfaceBase):
       tire_stiffness_factor = 0.6371   # hand-tune
       ret.mass = 3115. * CV.LB_TO_KG + STD_CARGO_KG
       if prius_pid:
-        ret.lateralTuning.pid.kpBP = [8, 23, 23.01, 33]
-        ret.lateralTuning.pid.kiBP = [8, 23, 23.01, 33]
-        ret.lateralTuning.pid.kfBP = [0, 23, 33]
-        ret.lateralTuning.pid.kpV = [0.6, 0.6, 0.6, 0.6] # power or torque
-        ret.lateralTuning.pid.kiV = [0.19, 0.19, 0.03, 0.03] # trajectory variance
-        ret.lateralTuning.pid.kfV = [0.00007818594, 0.00007818594, 0.000007818594] # curvature
+        ret.lateralTuning.pid.kpBP = [8, 23, 23.01, 32, 36]
+        ret.lateralTuning.pid.kiBP = [8, 23, 23.01, 32, 36]
+        ret.lateralTuning.pid.kfBP = [0, 23, 33, 40]
+        ret.lateralTuning.pid.kpV = [0.6, 0.6, 0.6, 0.6, 0.6] # power or torque
+        ret.lateralTuning.pid.kiV = [0.19, 0.19, 0.03, 0.03, 0.005] # trajectory variance
+        ret.lateralTuning.pid.kfV = [0.00007818594, 0.00007818594, 0.000007818594, 0.00004] # curvature
       else:
         ret.lateralTuning.init('indi')
-        ret.steerRateCost = 0.5
+        #ret.steerRateCost = 0.5
         ret.lateralTuning.indi.innerLoopGainBP = [0.]
         ret.lateralTuning.indi.innerLoopGainV = [4.0]
         ret.lateralTuning.indi.outerLoopGainBP = [0.]
@@ -104,7 +104,7 @@ class CarInterface(CarInterfaceBase):
         ret.lateralTuning.indi.timeConstantV = [0.1]
         ret.lateralTuning.indi.actuatorEffectivenessBP = [0.]
         ret.lateralTuning.indi.actuatorEffectivenessV = [1.0]
-        ret.steerActuatorDelay = 0.35
+        #ret.steerActuatorDelay = 0.35
 
     elif candidate in [CAR.RAV4, CAR.RAV4H]:
       stop_and_go = True if (candidate in CAR.RAV4H) else False
