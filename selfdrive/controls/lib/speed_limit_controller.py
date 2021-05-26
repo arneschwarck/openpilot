@@ -189,6 +189,7 @@ class SpeedLimitController():
     self._last_params_update = 0.0
     self._is_metric = self._params.get("IsMetric", encoding='utf8') == "1"
     self._is_enabled = self._params.get("SpeedLimitControl", encoding='utf8') == "1"
+    self._delay_increase = self._params.get("SpeedLimitDelayIncrease", encoding='utf8') == "1"
     self._speed_limit_perc_offset = float(self._params.get("SpeedLimitPercOffset"))
     self._op_enabled = False
     self._active_jerk_limits = [0.0, 0.0]
@@ -261,7 +262,8 @@ class SpeedLimitController():
     time = sec_since_boot()
     if time > self._last_params_update + _PARAMS_UPDATE_PERIOD:
       self._is_enabled = self._params.get("SpeedLimitControl", encoding='utf8') == "1"
-      _debug(f'Updated Speed limit params. enabled: {self._is_enabled}')
+      self._delay_increase = self._params.get("SpeedLimitDelayIncrease", encoding='utf8') == "1"
+      _debug(f'Updated Speed limit params. enabled: {self._is_enabled}, delay increase: {self._delay_increase}')
       self._last_params_update = time
 
   def _update_calculations(self):
@@ -279,13 +281,11 @@ class SpeedLimitController():
       self._distance = self._distance_set
 
     # Otherwise update speed limit from the set value.
-    # - Imediate when changing from 0 or when updating to a lower speed limit.
+    # - Imediate when changing from 0 or when updating to a lower speed limit or if delay increase is disabled..
     # - After a predefined period of time when increasing speed limit.
     else:
-      if self._speed_limit == 0.0 or self._speed_limit_set < self._speed_limit:
-        self._speed_limit = self._speed_limit_set
-        self._distance = self._distance_set
-      elif time > self._last_speed_limit_set_change_ts + _WAIT_TIME_LIMIT_RISE:
+      if self._speed_limit == 0.0 or self._speed_limit_set < self._speed_limit or \
+         not self._delay_increase or time > self._last_speed_limit_set_change_ts + _WAIT_TIME_LIMIT_RISE:
         self._speed_limit = self._speed_limit_set
         self._distance = self._distance_set
 
