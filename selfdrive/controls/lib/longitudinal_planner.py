@@ -260,6 +260,7 @@ class Planner():
 
     longitudinalPlan.speedLimitControlState = self.speed_limit_controller.state
     longitudinalPlan.speedLimit = float(self.speed_limit_controller.speed_limit)
+    longitudinalPlan.distToSpeedLimit = float(self.speed_limit_controller.distance)
     longitudinalPlan.eventsDEPRECATED = self.events.to_msg()
 
     longitudinalPlan.processingDelay = (plan_send.logMonoTime / 1e9) - sm.rcv_time['radarState']

@@ -35,7 +35,7 @@ static void ui_draw_circle(UIState *s, float x, float y, float size, NVGcolor co
   nvgFill(s->vg);
 }
 
-static void ui_draw_speed_sign(UIState *s, float x, float y, int size, float speed, float speed_offset, const char *font_name, int ring_alpha, int inner_alpha) {
+static void ui_draw_speed_sign(UIState *s, float x, float y, int size, float speed, const char *subtext, float subtext_size, const char *font_name, int ring_alpha, int inner_alpha) {
   ui_draw_circle(s, x, y, float(size), COLOR_RED_ALPHA(ring_alpha));
   ui_draw_circle(s, x, y, float(size) * 0.8, COLOR_WHITE_ALPHA(inner_alpha));
 
@@ -44,12 +44,7 @@ static void ui_draw_speed_sign(UIState *s, float x, float y, int size, float spe
   snprintf(speedlimit_str, sizeof(speedlimit_str), "%d", int(speed));
   ui_draw_text(s, x, y + (bdr_s * 1.5), speedlimit_str, 120, COLOR_BLACK_ALPHA(inner_alpha), font_name);
 
-  if (int(speed_offset) == 0) {
-    return;
-  }
-  char speedlimitoffset_str[16];
-  snprintf(speedlimitoffset_str, sizeof(speedlimitoffset_str), "%+d", int(speed_offset));
-  ui_draw_text(s, x, y + (bdr_s * 1.5) + 55, speedlimitoffset_str, 50, COLOR_BLACK_ALPHA(inner_alpha), font_name);
+  ui_draw_text(s, x, y + (bdr_s * 1.5) + 55, subtext, subtext_size, COLOR_BLACK_ALPHA(inner_alpha), font_name);
 }
 
 static void draw_chevron(UIState *s, float x, float y, float sz, NVGcolor fillColor, NVGcolor glowColor) {
@@ -238,7 +233,7 @@ static void ui_draw_vision_speedlimit(UIState *s) {
     const float sign_center_x = s->viz_rect.x + bdr_s * 3 + viz_maxspeed_w + speed_sgn_r;
     const float sign_center_y = s->viz_rect.y + viz_maxspeed_h / 2;
     const float speed = (s->scene.is_metric ? speedLimit * 3.6 : speedLimit * 2.2369363) + 0.5;
-    const float speed_offset = (s->scene.is_metric ? speedLimitOffset * 3.6 : speedLimitOffset * 2.2369363) + 0.5;
+    const int speed_offset = int((s->scene.is_metric ? speedLimitOffset * 3.6 : speedLimitOffset * 2.2369363) + 0.5);
 
     auto speedLimitControlState = s->scene.controls_state.getSpeedLimitControlState();
     const bool force_active = s->scene.speed_limit_control_enabled && seconds_since_boot() < s->scene.last_speed_limit_sign_tap + 2.0;
@@ -247,7 +242,18 @@ static void ui_draw_vision_speedlimit(UIState *s) {
     const int ring_alpha = inactive ? 100 : 255;
     const int inner_alpha = inactive || temp_inactive ? 100 : 255;
 
-    ui_draw_speed_sign(s, sign_center_x, sign_center_y, speed_sgn_r, speed, speed_offset, "sans-bold", ring_alpha, inner_alpha);
+    const float distToSpeedLimit = s->scene.controls_state.getDistToSpeedLimit();
+    char subtext[16] = "";
+    float subtext_size = 50.0;
+
+    if (distToSpeedLimit > 0.0) {
+      snprintf(subtext, sizeof(subtext), "AHEAD");
+      subtext_size = 30.0;
+    } else if (speed_offset > 0) {
+      snprintf(subtext, sizeof(subtext), "%+d", speed_offset);
+    }
+
+    ui_draw_speed_sign(s, sign_center_x, sign_center_y, speed_sgn_r, speed, subtext, subtext_size, "sans-bold", ring_alpha, inner_alpha);
     s->scene.ui_speed_sgn_x = sign_center_x - speed_sgn_r;
     s->scene.ui_speed_sgn_y = sign_center_y - speed_sgn_r;
   }
@@ -266,7 +272,9 @@ static void ui_draw_vision_turnspeed(UIState *s) {
     const bool inactive = turnSpeedControlState == cereal::ControlsState::SpeedLimitControlState::INACTIVE;
     const int ring_alpha = inactive ? 100 : 255;
 
-    ui_draw_speed_sign(s, sign_center_x, sign_center_y, speed_sgn_r, speed, 0, "sans-bold", ring_alpha, ring_alpha);
+    const char subtext[16] = "";
+
+    ui_draw_speed_sign(s, sign_center_x, sign_center_y, speed_sgn_r, speed, subtext, 50.0, "sans-bold", ring_alpha, ring_alpha);
   }
 }
 

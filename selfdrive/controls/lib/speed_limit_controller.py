@@ -18,9 +18,6 @@ _MIN_ADAPTING_BRAKE_JERK = -0.5  # Minimum jerk allowed when adapting to lower s
 _SPEED_OFFSET_TH = -1.  # m/s Maximum offset between speed limit and current speed for adapting state.
 
 _LIMIT_ADAPT_TIME_PER_MS = 1.  # Ideal adapt time(s) to lower speed limit. i.e. braking for every m/s of speed delta.
-_MIN_LIMIT_ADAPT_TIME = 5.  # s, Minimum time to provide for adapting logic.
-
-_MAX_SPEED_OFFSET_DELTA = 1.0  # m/s Maximum delta for speed limit changes.
 
 _MAX_MAP_DATA_AGE = 10.0  # s Maximum time to hold to map data, then consider it invalid.
 
@@ -60,12 +57,14 @@ class SpeedLimitResolver():
     combined = 4
 
   def __init__(self, policy=Policy.map_data_priority):
-    self._results = {}
+    self._limit_solutions = {}  # Store for speed limit solutions from different sources
+    self._distance_solutions = {}  # Store for distance to current speed limit start for different sources
     self._v_ego = 0.
     self._current_speed_limit = 0.
     self._policy = policy
     self._next_speed_limit_prev = 0.
     self.speed_limit = 0.
+    self.distance = 0.
 
   def resolve(self, v_ego, current_speed_limit, sm):
     self._v_ego = v_ego
@@ -76,16 +75,18 @@ class SpeedLimitResolver():
     self._get_from_map_data()
     self._consolidate()
 
-    return self.speed_limit
+    return self.speed_limit, self.distance
 
   def _get_from_car_state(self):
-    self._results[SpeedLimitResolver.Key.car_state] = self._sm['carState'].cruiseState.speedLimit
+    self._limit_solutions[SpeedLimitResolver.Key.car_state] = self._sm['carState'].cruiseState.speedLimit
+    self._distance_solutions[SpeedLimitResolver.Key.car_state] = 0.
 
   def _get_from_map_data(self):
     # Ignore if no live map data
     sock = 'liveMapData'
     if self._sm.logMonoTime[sock] is None:
-      self._results[SpeedLimitResolver.Key.map_data] = 0.
+      self._limit_solutions[SpeedLimitResolver.Key.map_data] = 0.
+      self._distance_solutions[SpeedLimitResolver.Key.map_data] = 0.
       _debug('SL: No map data for speed limit')
       return
 
@@ -97,21 +98,28 @@ class SpeedLimitResolver():
     # Calculate the age of the gps fix. Ignore if too old.
     gps_fix_age = time.time() - map_data.lastGpsTimestamp * 1e-3
     if gps_fix_age > _MAX_MAP_DATA_AGE:
-      self._results[SpeedLimitResolver.Key.map_data] = 0.
+      self._limit_solutions[SpeedLimitResolver.Key.map_data] = 0.
+      self._distance_solutions[SpeedLimitResolver.Key.map_data] = 0.
       _debug(f'SL: Ignoring map data as is too old. Age: {gps_fix_age}')
       return
 
     # When we have no ahead speed limit to consider or it is greater than current speed limit
     # or car has stopped, then provide current value and reset tracking.
     if next_speed_limit == 0. or self._v_ego == 0. or next_speed_limit > self._current_speed_limit:
-      self._results[SpeedLimitResolver.Key.map_data] = speed_limit
+      self._limit_solutions[SpeedLimitResolver.Key.map_data] = speed_limit
+      self._distance_solutions[SpeedLimitResolver.Key.map_data] = 0.
       self._next_speed_limit_prev = 0.
       return
+
+    # Calculate the actual distance to the speed limit ahead corrected by gps_fix_age
+    distance_since_fix = self._v_ego * gps_fix_age
+    distance_to_speed_limit_ahead = max(0., map_data.speedLimitAheadDistance - distance_since_fix)
 
     # When we have a next_speed_limit value that has not changed from a provided next speed limit value
     # in previous resolutions, we keep providing it.
     if next_speed_limit == self._next_speed_limit_prev:
-      self._results[SpeedLimitResolver.Key.map_data] = next_speed_limit
+      self._limit_solutions[SpeedLimitResolver.Key.map_data] = next_speed_limit
+      self._distance_solutions[SpeedLimitResolver.Key.map_data] = distance_to_speed_limit_ahead
       return
 
     # Reset tracking
@@ -123,43 +131,55 @@ class SpeedLimitResolver():
 
     # When we detect we are close enough, we provide the next limit value and track it.
     if next_speed_limit_time <= adapt_time:
-      self._results[SpeedLimitResolver.Key.map_data] = next_speed_limit
+      self._limit_solutions[SpeedLimitResolver.Key.map_data] = next_speed_limit
+      self._distance_solutions[SpeedLimitResolver.Key.map_data] = distance_to_speed_limit_ahead
       self._next_speed_limit_prev = next_speed_limit
       return
 
-    # Otherwise we just provide the map datae speed limit.
-    self._results[SpeedLimitResolver.Key.map_data] = speed_limit
+    # Otherwise we just provide the map data speed limit.
+    self.distance_to_map_speed_limit = 0.
+    self._limit_solutions[SpeedLimitResolver.Key.map_data] = speed_limit
+    self._distance_solutions[SpeedLimitResolver.Key.map_data] = 0.
 
   def _consolidate(self):
-    values = []
+    limits = np.array([])
+    distances = np.array([])
 
     if self._policy == SpeedLimitResolver.Policy.car_state_only or \
        self._policy == SpeedLimitResolver.Policy.car_state_priority or \
        self._policy == SpeedLimitResolver.Policy.combined:
-      values.append(self._results[SpeedLimitResolver.Key.car_state])
+      limits = np.append(limits, self._limit_solutions[SpeedLimitResolver.Key.car_state])
+      distances = np.append(distances, self._distance_solutions[SpeedLimitResolver.Key.car_state])
 
     if self._policy == SpeedLimitResolver.Policy.map_data_only or \
        self._policy == SpeedLimitResolver.Policy.map_data_priority or \
        self._policy == SpeedLimitResolver.Policy.combined:
-      values.append(self._results[SpeedLimitResolver.Key.map_data])
+      limits = np.append(limits, self._limit_solutions[SpeedLimitResolver.Key.map_data])
+      distances = np.append(distances, self._distance_solutions[SpeedLimitResolver.Key.map_data])
 
-    if max(values) == 0.:
+    if np.amax(limits) == 0.:
       if self._policy == SpeedLimitResolver.Policy.car_state_priority:
-        values.append(self._results[SpeedLimitResolver.Key.map_data])
+        limits = np.append(limits, self._limit_solutions[SpeedLimitResolver.Key.map_data])
+        distances = np.append(distances, self._distance_solutions[SpeedLimitResolver.Key.map_data])
 
       elif self._policy == SpeedLimitResolver.Policy.map_data_priority:
-        values.append(self._results[SpeedLimitResolver.Key.car_state])
+        limits = np.append(limits, self._limit_solutions[SpeedLimitResolver.Key.car_state])
+        distances = np.append(distances, self._distance_solutions[SpeedLimitResolver.Key.car_state])
 
     # Get all non-zero values and set the minimum if any, otherwise 0.
-    values = np.array(values)
-    values = values[values > 0.]
+    mask = limits > 0.
+    limits = limits[mask]
+    distances = distances[mask]
 
-    if len(values) > 0:
-      self.speed_limit = np.amin(values)
+    if len(limits) > 0:
+      min_idx = np.argmin(limits)
+      self.speed_limit = limits[min_idx]
+      self.distance = distances[min_idx]
     else:
       self.speed_limit = 0.
+      self.distance = 0.
 
-    _debug(f'SL: *** Speed Limit set: {self.speed_limit}')
+    _debug(f'SL: *** Speed Limit set: {self.speed_limit}, distance: {self.distance}')
 
 
 class SpeedLimitController():
@@ -183,9 +203,11 @@ class SpeedLimitController():
     self._speed_limit_set = 0.0
     self._speed_limit_set_prev = 0.0
     self._speed_limit_set_change = 0.0
+    self._distance_set = 0.0
     self._speed_limit = 0.0
     self._speed_limit_prev = 0.0
     self._speed_limit_changed = False
+    self._distance = 0.
     self._last_speed_limit_set_change_ts = 0.0
     self._state = SpeedLimitControlState.inactive
     self._state_prev = SpeedLimitControlState.inactive
@@ -215,6 +237,7 @@ class SpeedLimitController():
         # of canceling delayed increase limit, if pending.
         self._speed_limit = self._speed_limit_set
         self._speed_limit_prev = self._speed_limit
+        self._distance = self._distance_set
 
     self._state = value
 
@@ -230,6 +253,10 @@ class SpeedLimitController():
   def speed_limit(self):
     return self._speed_limit
 
+  @property
+  def distance(self):
+    return self._distance
+
   def _update_params(self):
     time = sec_since_boot()
     if time > self._last_params_update + _PARAMS_UPDATE_PERIOD:
@@ -242,16 +269,29 @@ class SpeedLimitController():
     time = sec_since_boot()
     if self._speed_limit_set != self._speed_limit_set_prev:
       self._last_speed_limit_set_change_ts = time
-    # Update speed limit from the set value.
+
+    # Set distance to speed limit to 0 by default. i.e. active speed limit.
+    # If the speed limit is ahead, we will update it below.
+    self._distance = 0.
+
+    # If not change on limit, we just update the distance to it.
+    if self._speed_limit == self._speed_limit_set:
+      self._distance = self._distance_set
+
+    # Otherwise update speed limit from the set value.
     # - Imediate when changing from 0 or when updating to a lower speed limit.
     # - After a predefined period of time when increasing speed limit.
-    if self._speed_limit != self._speed_limit_set:
+    else:
       if self._speed_limit == 0.0 or self._speed_limit_set < self._speed_limit:
         self._speed_limit = self._speed_limit_set
+        self._distance = self._distance_set
       elif time > self._last_speed_limit_set_change_ts + _WAIT_TIME_LIMIT_RISE:
         self._speed_limit = self._speed_limit_set
+        self._distance = self._distance_set
+
     # Update current velocity offset (error)
     self._v_offset = self.speed_limit_offseted - self._v_ego
+
     # Update change tracking variables
     self._speed_limit_changed = self._speed_limit != self._speed_limit_prev
     self._v_cruise_setpoint_changed = self._v_cruise_setpoint != self._v_cruise_setpoint_prev
@@ -348,7 +388,7 @@ class SpeedLimitController():
     self._v_ego = v_ego
     self._a_ego = a_ego
 
-    self._speed_limit_set = self._resolver.resolve(v_ego, self.speed_limit, sm)
+    self._speed_limit_set, self._distance_set = self._resolver.resolve(v_ego, self.speed_limit, sm)
     self._v_cruise_setpoint = v_cruise_setpoint
     self._active_accel_limits = accel_limits
     self._active_jerk_limits = jerk_limits
