@@ -35,7 +35,7 @@ static void ui_draw_circle(UIState *s, float x, float y, float size, NVGcolor co
   nvgFill(s->vg);
 }
 
-static void ui_draw_speed_sign(UIState *s, float x, float y, int size, float speed, const char *subtext, float subtext_size, const char *font_name, int ring_alpha, int inner_alpha) {
+static void ui_draw_speed_sign(UIState *s, float x, float y, int size, float speed, const char *subtext, float subtext_size, bool is_map_sourced, const char *font_name, int ring_alpha, int inner_alpha) {
   ui_draw_circle(s, x, y, float(size), COLOR_RED_ALPHA(ring_alpha));
   ui_draw_circle(s, x, y, float(size) * 0.8, COLOR_WHITE_ALPHA(inner_alpha));
 
@@ -45,6 +45,12 @@ static void ui_draw_speed_sign(UIState *s, float x, float y, int size, float spe
   ui_draw_text(s, x, y, speedlimit_str, 120, COLOR_BLACK_ALPHA(inner_alpha), font_name);
 
   ui_draw_text(s, x, y + 55, subtext, subtext_size, COLOR_BLACK_ALPHA(inner_alpha), font_name);
+
+  if (is_map_sourced && s->scene.show_debug_ui) {
+    const int img_size = 35;
+    const int img_y = int(y - 55);
+    ui_draw_image(s, {int(x - (img_size / 2)), img_y - (img_size / 2), img_size, img_size}, "map_source_icon", inner_alpha);
+  }
 }
 
 static void ui_draw_turn_speed_sign(UIState *s, float x, float y, int size, float speed, const char *subtext, const char *font_name, int alpha) {
@@ -65,7 +71,6 @@ static void ui_draw_turn_speed_sign(UIState *s, float x, float y, int size, floa
   const int img_size = 35;
   const int img_y = int(y - 0.35 * size + 17);
   ui_draw_image(s, {int(x - (img_size / 2)), img_y - (img_size / 2), img_size, img_size}, "turn_icon", 1.0);
-
 
   char speedlimit_str[16];
   nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
@@ -271,6 +276,7 @@ static void ui_draw_vision_speedlimit(UIState *s) {
     const int inner_alpha = inactive || temp_inactive ? 100 : 255;
 
     const float distToSpeedLimit = s->scene.controls_state.getDistToSpeedLimit();
+    const bool is_map_sourced = s->scene.controls_state.getIsMapSpeedLimit();
     char subtext[16] = "";
     float subtext_size = 50.0;
 
@@ -281,7 +287,7 @@ static void ui_draw_vision_speedlimit(UIState *s) {
       snprintf(subtext, sizeof(subtext), "%+d", speed_offset);
     }
 
-    ui_draw_speed_sign(s, sign_center_x, sign_center_y, speed_sgn_r, speed, subtext, subtext_size, "sans-bold", ring_alpha, inner_alpha);
+    ui_draw_speed_sign(s, sign_center_x, sign_center_y, speed_sgn_r, speed, subtext, subtext_size, is_map_sourced, "sans-bold", ring_alpha, inner_alpha);
     s->scene.ui_speed_sgn_x = sign_center_x - speed_sgn_r;
     s->scene.ui_speed_sgn_y = sign_center_y - speed_sgn_r;
   }
@@ -655,6 +661,7 @@ void ui_nvg_init(UIState *s) {
       {"hands_on_wheel", "../assets/img_hands_on_wheel.png"},
       {"trafficSign_turn", "../assets/img_trafficSign_turn.png"},
       {"turn_icon", "../assets/img_turn_icon.png"},
+      {"map_source_icon", "../assets/img_world_icon.png"},
       {"driver_face", "../assets/img_driver_face.png"},
       {"button_settings", "../assets/images/button_settings.png"},
       {"button_home", "../assets/images/button_home.png"},

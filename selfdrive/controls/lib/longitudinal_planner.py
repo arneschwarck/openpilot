@@ -15,7 +15,7 @@ from selfdrive.controls.lib.fcw import FCWChecker
 from selfdrive.controls.lib.long_mpc import LongitudinalMpc
 from selfdrive.controls.lib.drive_helpers import V_CRUISE_MAX
 from selfdrive.controls.lib.turn_controller import TurnController
-from selfdrive.controls.lib.speed_limit_controller import SpeedLimitController
+from selfdrive.controls.lib.speed_limit_controller import SpeedLimitController, SpeedLimitResolver
 from selfdrive.controls.lib.turn_speed_controller import TurnSpeedController
 
 
@@ -262,6 +262,7 @@ class Planner():
     longitudinalPlan.speedLimitControlState = self.speed_limit_controller.state
     longitudinalPlan.speedLimit = float(self.speed_limit_controller.speed_limit)
     longitudinalPlan.distToSpeedLimit = float(self.speed_limit_controller.distance)
+    longitudinalPlan.isMapSpeedLimit = bool(self.speed_limit_controller.source == SpeedLimitResolver.Source.map_data)
     longitudinalPlan.eventsDEPRECATED = self.events.to_msg()
 
     longitudinalPlan.processingDelay = (plan_send.logMonoTime / 1e9) - sm.rcv_time['radarState']
