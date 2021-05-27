@@ -362,7 +362,7 @@ class SpeedLimitController():
       self.v_limit_future = max(self._v_ego + self.a_limit * 4., self.speed_limit_offseted)  # speed in 4 seconds.
     # active
     elif self.state == SpeedLimitControlState.active:
-      # Calculate following same cruise logic in planner.py
+      # Calculate following same cruise logic in longitudinal_planner.py
       self.v_limit, self.a_limit = speed_smoother(self._v_ego, self._a_ego, self.speed_limit_offseted,
                                                   self._active_accel_limits[1], self._active_accel_limits[0],
                                                   self._active_jerk_limits[1], self._active_jerk_limits[0],

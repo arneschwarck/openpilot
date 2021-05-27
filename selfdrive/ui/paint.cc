@@ -289,8 +289,11 @@ static void ui_draw_vision_speedlimit(UIState *s) {
 
 static void ui_draw_vision_turnspeed(UIState *s) {
   const float turnSpeed = s->scene.controls_state.getTurnSpeed();
+  const float vEgo = s->scene.car_state.getVEgo();
+  const bool show = s->scene.controls_state.getEnabled() && turnSpeed > 0.0 &&
+                    (turnSpeed < vEgo || s->scene.show_debug_ui);
 
-  if (turnSpeed > 0.0 && s->scene.controls_state.getEnabled()) {
+  if (show) {
     const int viz_maxspeed_h = 202;
     const float sign_center_x = s->viz_rect.right() - bdr_s * 4 - speed_sgn_r * 3;
     const float sign_center_y = s->viz_rect.y + bdr_s * 1.5 + viz_maxspeed_h / 2;
