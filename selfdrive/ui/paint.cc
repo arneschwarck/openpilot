@@ -30,7 +30,7 @@ static void ui_draw_text(const UIState *s, float x, float y, const char *string,
 
 static void ui_draw_circle(UIState *s, float x, float y, float size, NVGcolor color) {
   nvgBeginPath(s->vg);
-  nvgCircle(s->vg, x, y + (bdr_s * 1.5), size);
+  nvgCircle(s->vg, x, y, size);
   nvgFillColor(s->vg, color);
   nvgFill(s->vg);
 }
@@ -42,9 +42,37 @@ static void ui_draw_speed_sign(UIState *s, float x, float y, int size, float spe
   char speedlimit_str[16];
   nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
   snprintf(speedlimit_str, sizeof(speedlimit_str), "%d", int(speed));
-  ui_draw_text(s, x, y + (bdr_s * 1.5), speedlimit_str, 120, COLOR_BLACK_ALPHA(inner_alpha), font_name);
+  ui_draw_text(s, x, y, speedlimit_str, 120, COLOR_BLACK_ALPHA(inner_alpha), font_name);
 
-  ui_draw_text(s, x, y + (bdr_s * 1.5) + 55, subtext, subtext_size, COLOR_BLACK_ALPHA(inner_alpha), font_name);
+  ui_draw_text(s, x, y + 55, subtext, subtext_size, COLOR_BLACK_ALPHA(inner_alpha), font_name);
+}
+
+static void ui_draw_turn_speed_sign(UIState *s, float x, float y, int size, float speed, const char *subtext, const char *font_name, int alpha) {
+  nvgLineJoin(s->vg, NVG_ROUND);
+  nvgStrokeWidth(s->vg, 15.0);
+  nvgStrokeColor(s->vg, COLOR_RED_ALPHA(alpha));
+
+  nvgBeginPath(s->vg);
+  nvgMoveTo(s->vg, x, y - 0.73205 * size);
+  nvgLineTo(s->vg, x - size, y + size);
+  nvgLineTo(s->vg, x + size, y + size);
+  nvgClosePath(s->vg);
+
+  nvgFillColor(s->vg, COLOR_WHITE_ALPHA(alpha));
+  nvgFill(s->vg);
+  nvgStroke(s->vg);
+
+  const int img_size = 35;
+  const int img_y = int(y - 0.35 * size + 17);
+  ui_draw_image(s, {int(x - (img_size / 2)), img_y - (img_size / 2), img_size, img_size}, "turn_icon", 1.0);
+
+
+  char speedlimit_str[16];
+  nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
+  snprintf(speedlimit_str, sizeof(speedlimit_str), "%d", int(speed));
+  ui_draw_text(s, x, y + bdr_s + 5, speedlimit_str, 100., COLOR_BLACK_ALPHA(alpha), font_name);
+
+  ui_draw_text(s, x, y + bdr_s + 45, subtext, 30., COLOR_BLACK_ALPHA(alpha), font_name);
 }
 
 static void draw_chevron(UIState *s, float x, float y, float sz, NVGcolor fillColor, NVGcolor glowColor) {
@@ -231,7 +259,7 @@ static void ui_draw_vision_speedlimit(UIState *s) {
     const int viz_maxspeed_w = 184;
     const int viz_maxspeed_h = 202;
     const float sign_center_x = s->viz_rect.x + bdr_s * 3 + viz_maxspeed_w + speed_sgn_r;
-    const float sign_center_y = s->viz_rect.y + viz_maxspeed_h / 2;
+    const float sign_center_y = s->viz_rect.y + bdr_s * 1.5 + viz_maxspeed_h / 2;
     const float speed = (s->scene.is_metric ? speedLimit * 3.6 : speedLimit * 2.2369363) + 0.5;
     const int speed_offset = int((s->scene.is_metric ? speedLimitOffset * 3.6 : speedLimitOffset * 2.2369363) + 0.5);
 
@@ -265,16 +293,20 @@ static void ui_draw_vision_turnspeed(UIState *s) {
   if (turnSpeed > 0.0 && s->scene.controls_state.getEnabled()) {
     const int viz_maxspeed_h = 202;
     const float sign_center_x = s->viz_rect.right() - bdr_s * 4 - speed_sgn_r * 3;
-    const float sign_center_y = s->viz_rect.y + viz_maxspeed_h / 2;
+    const float sign_center_y = s->viz_rect.y + bdr_s * 1.5 + viz_maxspeed_h / 2;
     const float speed = (s->scene.is_metric ? turnSpeed * 3.6 : turnSpeed * 2.2369363) + 0.5;
 
     auto turnSpeedControlState = s->scene.controls_state.getTurnSpeedControlState();
     const bool inactive = turnSpeedControlState == cereal::ControlsState::SpeedLimitControlState::INACTIVE;
-    const int ring_alpha = inactive ? 100 : 255;
+    const int alpha = inactive ? 100 : 255;
 
-    const char subtext[16] = "";
+    const float distToTurn = s->scene.controls_state.getDistToTurn();
+    char subtext[16] = "";
 
-    ui_draw_speed_sign(s, sign_center_x, sign_center_y, speed_sgn_r, speed, subtext, 50.0, "sans-bold", ring_alpha, ring_alpha);
+    if (distToTurn > 0.0) {
+      snprintf(subtext, sizeof(subtext), "AHEAD");
+    }
+    ui_draw_turn_speed_sign(s, sign_center_x, sign_center_y, speed_sgn_r, speed, subtext, "sans-bold", alpha);
   }
 }
 
@@ -618,6 +650,7 @@ void ui_nvg_init(UIState *s) {
       {"wheel", "../assets/img_chffr_wheel.png"},
       {"hands_on_wheel", "../assets/img_hands_on_wheel.png"},
       {"trafficSign_turn", "../assets/img_trafficSign_turn.png"},
+      {"turn_icon", "../assets/img_turn_icon.png"},
       {"driver_face", "../assets/img_driver_face.png"},
       {"button_settings", "../assets/images/button_settings.png"},
       {"button_home", "../assets/images/button_home.png"},

@@ -257,6 +257,7 @@ class Planner():
 
     longitudinalPlan.turnSpeedControlState = self.turn_speed_controller.state
     longitudinalPlan.turnSpeed = float(self.turn_speed_controller.speed_limit)
+    longitudinalPlan.distToTurn = float(self.turn_speed_controller.distance)
 
     longitudinalPlan.speedLimitControlState = self.speed_limit_controller.state
     longitudinalPlan.speedLimit = float(self.speed_limit_controller.speed_limit)
