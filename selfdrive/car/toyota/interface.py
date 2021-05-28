@@ -91,20 +91,20 @@ class CarInterface(CarInterfaceBase):
         ret.lateralTuning.pid.kiBP = [0, 8, 23.6, 23.7, 40]
         ret.lateralTuning.pid.kfBP = [0, 40]
         ret.lateralTuning.pid.kpV = [0.6, 0.38, 0.38, 0.6, 0.6]
-        ret.lateralTuning.pid.kiV = [0.3, 0.45, 0.45, 0.05, 0.05]
+        ret.lateralTuning.pid.kiV = [0.3, 0.45, 0.45, 0.03, 0.03]
         ret.lateralTuning.pid.kfV = [0.000153263811757641, 0.000153263811757641]
       else:
         ret.lateralTuning.init('indi')
-        #ret.steerRateCost = 0.5
-        ret.lateralTuning.indi.innerLoopGainBP = [0.]
-        ret.lateralTuning.indi.innerLoopGainV = [4.0]
-        ret.lateralTuning.indi.outerLoopGainBP = [0.]
-        ret.lateralTuning.indi.outerLoopGainV = [3.0]
-        ret.lateralTuning.indi.timeConstantBP = [0.]
-        ret.lateralTuning.indi.timeConstantV = [0.1]
-        ret.lateralTuning.indi.actuatorEffectivenessBP = [0.]
-        ret.lateralTuning.indi.actuatorEffectivenessV = [1.0]
-        #ret.steerActuatorDelay = 0.35
+        ret.lateralTuning.indi.innerLoopGainBP = [0]
+        ret.lateralTuning.indi.innerLoopGainV = [9.0]
+        ret.lateralTuning.indi.outerLoopGainBP = [0]
+        ret.lateralTuning.indi.outerLoopGainV = [15.0]
+        ret.lateralTuning.indi.timeConstantBP = [0]
+        ret.lateralTuning.indi.timeConstantV = [5.5]
+        ret.lateralTuning.indi.actuatorEffectivenessBP = [0]
+        ret.lateralTuning.indi.actuatorEffectivenessV = [9.0]
+        ret.steerActuatorDelay = 0.6
+        tire_stiffness_factor = 0.996
 
     elif candidate in [CAR.RAV4, CAR.RAV4H]:
       stop_and_go = True if (candidate in CAR.RAV4H) else False
