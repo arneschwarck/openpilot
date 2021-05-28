@@ -88,7 +88,7 @@ class CarInterface(CarInterfaceBase):
       ret.mass = 3115. * CV.LB_TO_KG + STD_CARGO_KG
       if prius_pid:
         ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.6], [0.1]]
-        ret.lateralTuning.pid.kfV = [0.00006]#[0.00007818594]
+        ret.lateralTuning.pid.kfV = [0.00007818594]
         #ret.lateralTuning.pid.kpBP = [8, 23, 23.01, 33]
         #ret.lateralTuning.pid.kiBP = [8, 23, 23.01, 33]
         #ret.lateralTuning.pid.kfBP = [0, 23, 33]
