@@ -413,6 +413,8 @@ selfdrive/modeld/dmonitoringmodeld.cc
 selfdrive/modeld/constants.py
 selfdrive/modeld/modeld
 selfdrive/modeld/dmonitoringmodeld
+selfdrive/modeld/trafficd.cc
+selfdrive/modeld/trafficd
 
 selfdrive/modeld/models/commonmodel.cc
 selfdrive/modeld/models/commonmodel.h
